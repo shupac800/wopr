@@ -1,0 +1,355 @@
+/* WOPR War Room — CRT Terminal Aesthetic */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --green: #33ff33;
+  --green-dim: #1a8c1a;
+  --green-dark: #0a3d0a;
+  --green-glow: rgba(51, 255, 51, 0.6);
+  --bg: #000000;
+  --font: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--green);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+/* === CRT Overlay === */
+#crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Scanlines */
+#crt-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  z-index: 1001;
+}
+
+/* Vignette */
+#crt-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.5) 90%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+  z-index: 1002;
+}
+
+/* Screen flash effect */
+#screen-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
+  transition: opacity 0.05s;
+}
+
+#screen-flash.flash {
+  opacity: 0.7;
+}
+
+/* === Layout === */
+#app {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* === Terminal Panel (Left) === */
+#terminal-panel {
+  width: 420px;
+  min-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--green-dark);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.85);
+  position: relative;
+}
+
+#terminal-header {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--green-dark);
+  text-align: center;
+  text-shadow: 0 0 10px var(--green-glow);
+  letter-spacing: 3px;
+  font-size: 16px;
+}
+
+#terminal-header .subtitle {
+  font-size: 10px;
+  color: var(--green-dim);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+/* Boot / Message area */
+#terminal-messages {
+  padding: 15px;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-dark) transparent;
+}
+
+#terminal-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+#terminal-messages::-webkit-scrollbar-thumb {
+  background: var(--green-dark);
+}
+
+#terminal-messages .line {
+  margin-bottom: 4px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+#terminal-messages .line.dim {
+  color: var(--green-dim);
+}
+
+#terminal-messages .line.bright {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow);
+}
+
+/* Cursor blink */
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--green);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* === Strategy List === */
+#strategy-panel {
+  display: none;
+  flex-direction: column;
+  max-height: 60%;
+  border-top: 1px solid var(--green-dark);
+}
+
+#strategy-panel.visible {
+  display: flex;
+}
+
+#strategy-panel-header {
+  padding: 8px 15px;
+  border-bottom: 1px solid var(--green-dark);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--green-dim);
+}
+
+#strategy-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-dark) transparent;
+  padding: 5px 0;
+}
+
+#strategy-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#strategy-list::-webkit-scrollbar-thumb {
+  background: var(--green-dark);
+}
+
+.strategy-item {
+  padding: 4px 15px;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--green-dim);
+  transition: background 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.strategy-item:hover {
+  background: rgba(51, 255, 51, 0.05);
+  color: var(--green);
+}
+
+.strategy-item.selected {
+  background: rgba(51, 255, 51, 0.12);
+  color: var(--green);
+  text-shadow: 0 0 6px var(--green-glow);
+}
+
+.strategy-item .number {
+  display: inline-block;
+  width: 35px;
+  color: var(--green-dark);
+  text-align: right;
+  margin-right: 8px;
+}
+
+.strategy-item.selected .number {
+  color: var(--green-dim);
+}
+
+/* === Globe Container (Right) === */
+#globe-container {
+  flex: 1;
+  height: 100%;
+  position: relative;
+}
+
+#globe-container canvas {
+  display: block;
+}
+
+/* === Status Bar === */
+#status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  background: rgba(0, 0, 0, 0.9);
+  border-top: 1px solid var(--green-dark);
+  z-index: 100;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+#defcon-indicator {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow);
+}
+
+#defcon-indicator.defcon-1,
+#defcon-indicator.defcon-2 {
+  color: #ff3333;
+  text-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
+  animation: pulse-red 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-red {
+  from { opacity: 0.7; }
+  to { opacity: 1.0; }
+}
+
+#system-clock {
+  color: var(--green-dim);
+}
+
+#wopr-status {
+  color: var(--green-dim);
+}
+
+/* === Boot Screen === */
+#boot-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#boot-screen .boot-text {
+  font-size: 18px;
+  text-shadow: 0 0 15px var(--green-glow);
+  letter-spacing: 3px;
+  text-align: center;
+  line-height: 2;
+}
+
+#boot-screen.hidden {
+  display: none;
+}
+
+/* === Ending overlay === */
+#ending-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#ending-overlay.visible {
+  display: flex;
+}
+
+#ending-overlay .ending-text {
+  font-size: 20px;
+  text-shadow: 0 0 20px var(--green-glow);
+  letter-spacing: 4px;
+  text-align: center;
+  line-height: 2.5;
+  max-width: 700px;
+}

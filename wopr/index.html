@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WOPR — War Operation Plan Response</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Boot Screen -->
+  <div id="boot-screen">
+    <div class="boot-text">
+      WOPR<br>
+      WAR OPERATION PLAN RESPONSE
+    </div>
+  </div>
+
+  <!-- CRT Overlay -->
+  <div id="crt-overlay"></div>
+
+  <!-- Screen Flash (for detonations) -->
+  <div id="screen-flash"></div>
+
+  <!-- Ending Overlay -->
+  <div id="ending-overlay">
+    <div class="ending-text"></div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app">
+    <!-- Terminal Panel (Left) -->
+    <div id="terminal-panel">
+      <div id="terminal-header">
+        WOPR COMMAND TERMINAL
+        <div class="subtitle">NORTH AMERICAN AEROSPACE DEFENSE COMMAND</div>
+      </div>
+
+      <div id="terminal-messages"></div>
+
+      <div id="strategy-panel">
+        <div id="strategy-panel-header">SELECT STRATEGY ↑↓ ENTER</div>
+        <div id="strategy-list"></div>
+      </div>
+    </div>
+
+    <!-- 3D Globe (Right) -->
+    <div id="globe-container"></div>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="status-bar">
+    <div id="defcon-indicator">DEFCON 5</div>
+    <div id="wopr-status">INITIALIZING</div>
+    <div id="system-clock">00:00:00 ZULU</div>
+  </div>
+
+  <!-- Three.js + addons from CDN (r137 — stable legacy global build) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/ShaderPass.js"></script>
+
+  <!-- App Scripts -->
+  <script src="js/coastlines.js"></script>
+  <script src="js/mapdata.js"></script>
+  <script src="js/globe.js"></script>
+  <script src="js/missiles.js"></script>
+  <script src="js/strategies.js"></script>
+  <script src="js/terminal.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
