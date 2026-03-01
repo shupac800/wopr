@@ -55,7 +55,12 @@
     <div id="system-clock">00:00:00 ZULU</div>
   </div>
 
-  <!-- Three.js + addons from CDN (r137 — stable legacy global build) -->
+  <!-- Global config -->
+  <script>
+    const USE_3D_GLOBE = false; // true = 3D Three.js globe, false = 2D Mercator map
+  </script>
+
+  <!-- Three.js + addons (only needed for 3D mode, but loaded either way for simplicity) -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/EffectComposer.js"></script>
@@ -70,6 +75,7 @@
   <script src="js/mapdata.js"></script>
   <script src="js/globe.js"></script>
   <script src="js/missiles.js"></script>
+  <script src="js/map2d.js"></script>
   <script src="js/strategies.js"></script>
   <script src="js/terminal.js"></script>
   <script src="js/main.js"></script>

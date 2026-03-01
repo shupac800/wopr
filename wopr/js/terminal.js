@@ -79,6 +79,41 @@ class TerminalUI {
     this.scrollToBottom();
   }
 
+  // Typewrite text into a new line, but leave the line open for appending
+  typewriteAppend(text, className = '') {
+    return new Promise(resolve => {
+      const line = document.createElement('div');
+      line.className = 'line ' + className;
+      this.messagesEl.appendChild(line);
+      this._lastLine = line;
+
+      let i = 0;
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      line.appendChild(cursor);
+
+      const interval = setInterval(() => {
+        if (i < text.length) {
+          line.insertBefore(document.createTextNode(text[i]), cursor);
+          i++;
+          this.scrollToBottom();
+        } else {
+          clearInterval(interval);
+          line.removeChild(cursor);
+          resolve();
+        }
+      }, this.typewriterSpeed);
+    });
+  }
+
+  // Append text instantly to the last line created by typewriteAppend
+  appendToLastLine(text) {
+    if (this._lastLine) {
+      this._lastLine.appendChild(document.createTextNode(text));
+      this.scrollToBottom();
+    }
+  }
+
   printBlank() {
     const line = document.createElement('div');
     line.className = 'line';
@@ -242,7 +277,6 @@ class TerminalUI {
 
     const casualties = Math.floor(Math.random() * 50 + 10) * sequence.missiles.length;
     await this.typewrite(`  ESTIMATED CASUALTIES: ${casualties}M`, 'dim');
-    await this.typewrite('  AWAITING FURTHER ORDERS...', 'dim');
   }
 
   async showEnding() {

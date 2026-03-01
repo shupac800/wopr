@@ -14,12 +14,17 @@
     setTimeout(() => flashEl.classList.remove('flash'), 100);
   }
 
-  // === Initialize Globe ===
+  // === Initialize Renderer (3D or 2D) ===
   const globeContainer = document.getElementById('globe-container');
-  const globe = new GlobeRenderer(globeContainer);
+  let globe, missiles;
 
-  // === Initialize Missile System ===
-  const missiles = new MissileSystem(globe.scene, globe);
+  if (USE_3D_GLOBE) {
+    globe = new GlobeRenderer(globeContainer);
+    missiles = new MissileSystem(globe.scene, globe);
+  } else {
+    globe = new MapRenderer2D(globeContainer);
+    missiles = new MissileSystem2D(globe);
+  }
   missiles.onDetonation = screenFlash;
 
   // === Initialize Terminal ===
@@ -59,13 +64,8 @@
   state = State.IDLE;
   terminal.enableInput();
 
-  // === Strategy Selection Handler ===
-  terminal.onStrategySelect = async (strategyName, index) => {
-    if (state !== State.IDLE) return;
-
-    state = State.EXECUTING;
-    terminal.disableInput();
-
+  // === Run a single strategy, return when complete ===
+  async function runStrategy(strategyName) {
     // Build launch sequence
     const sequence = engine.buildLaunchSequence(strategyName);
 
@@ -83,38 +83,46 @@
     await waitForMissiles();
 
     // Show aftermath
-    state = State.AFTERMATH;
     terminal.setStatus('ASSESSING DAMAGE');
     await terminal.showAftermath(sequence);
 
-    // Check for ending
-    if (engine.shouldEndGame()) {
-      state = State.ENDING;
-      terminal.disableInput();
-      terminal.setStatus('SIMULATION COMPLETE');
-      await terminal.showEnding();
+    // Dramatic "WINNER: NONE"
+    terminal.printBlank();
+    await terminal.typewriteAppend('WINNER: ', 'bright');
+    await delay(1500);
+    terminal.appendToLastLine('NONE');
+    await delay(1000);
+  }
 
-      // Show ending overlay
-      const overlay = document.getElementById('ending-overlay');
-      overlay.classList.add('visible');
-      const endingText = overlay.querySelector('.ending-text');
-      endingText.innerHTML = '';
-      await typewriteElement(endingText, 'A STRANGE GAME.');
-      await delay(1000);
-      await typewriteElement(endingText, '<br><br>THE ONLY WINNING MOVE IS NOT TO PLAY.');
-      await delay(1500);
-      await typewriteElement(endingText, '<br><br>HOW ABOUT A NICE GAME OF CHESS?');
+  // === Run all strategies sequentially from a starting index, looping ===
+  async function runSequentialFrom(startIndex) {
+    state = State.EXECUTING;
+    terminal.disableInput();
 
-      // Allow restart after a moment
-      await delay(3000);
-      overlay.addEventListener('click', () => location.reload(), { once: true });
-    } else {
-      // Return to idle
-      state = State.IDLE;
+    let idx = startIndex;
+    while (true) {
+      const strategyName = strategies[idx];
+      terminal.selectIndex(idx);
+
+      await runStrategy(strategyName);
+
+      // Clear blasts from globe
+      missiles.clear();
+
+      // Brief pause before next strategy
       terminal.setDefcon(5);
-      terminal.setStatus('AWAITING ORDERS');
-      terminal.enableInput();
+      terminal.setStatus('NEXT TARGET');
+      await delay(800);
+
+      // Advance to next, loop back to 0
+      idx = (idx + 1) % strategies.length;
     }
+  }
+
+  // === Strategy Selection Handler ===
+  terminal.onStrategySelect = async (strategyName, index) => {
+    if (state !== State.IDLE) return;
+    await runSequentialFrom(index);
   };
 
   // === Keyboard ===
@@ -129,8 +137,13 @@
     const delta = globe.clock.getDelta();
     const elapsed = globe.clock.getElapsedTime();
 
-    globe.render(elapsed);
     missiles.update(delta);
+
+    if (USE_3D_GLOBE) {
+      globe.render(elapsed);
+    } else {
+      globe.render(elapsed, missiles);
+    }
   }
 
   animate();
