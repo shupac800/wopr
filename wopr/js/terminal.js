@@ -275,7 +275,9 @@ class TerminalUI {
       await this.typewrite(`               ...AND ${targetNames.length - 5} MORE`, 'dim');
     }
 
-    const casualties = Math.floor(Math.random() * 50 + 10) * sequence.missiles.length;
+    const targetPop = [...new Set(sequence.missiles.map(m => m.target))];
+    const totalPop = targetPop.reduce((sum, c) => sum + (c.pop || 1), 0);
+    const casualties = Math.round(totalPop * (0.3 + Math.random() * 0.4) * 10) / 10;
     await this.typewrite(`  ESTIMATED CASUALTIES: ${casualties}M`, 'dim');
   }
 
