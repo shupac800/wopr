@@ -13,10 +13,12 @@ class GlobeRenderer {
     this.clock = new THREE.Clock();
     this.autoRotate = true;
 
-    this.init();
+    this.coastlinesReady = this.init();
   }
 
-  init() {
+  async init() {
+    // Load Natural Earth coastlines before building scene
+    await loadCoastlines();
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
 

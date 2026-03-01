@@ -1,9 +1,19 @@
 // 2D Mercator Map Renderer (Canvas-based)
 // Implements the same interface as GlobeRenderer + MissileSystem for main.js
 
-// === LON_OFFSET shifts the map center (positive = shift right/east) ===
-// 10 degrees puts the Atlantic Ocean in the center
-const LON_OFFSET = 10;
+// === Geographic bounds of conts.png ===
+// The image is equirectangular. These define what lat/lon the image edges map to.
+// The image fills the full canvas; latLonToXY uses these same bounds.
+// This guarantees dots always align with the image by construction.
+// Calibrated from user click data (least-squares fit):
+//   London (51.5°N, 0.1°W) at x=46.1% y=37.3%
+//   Moscow (55.8°N, 37.6°E) at x=54.9% y=35.5%
+//   Washington (38.9°N, 77.0°W) at x=26.5% y=45.0%
+//   Equator at y=62.0%
+const MAP_LON_LEFT  = -186.0;
+const MAP_LON_RIGHT =  217.5;
+const MAP_LAT_TOP   =  129.2;
+const MAP_LAT_BOTTOM = -79.2;
 
 class MapRenderer2D {
   constructor(container) {
@@ -27,8 +37,52 @@ class MapRenderer2D {
       return performance.now() / 1000 - this._startTime;
     };
 
+    // Load continent outline image and pre-tint it blue
+    this._mapImage = null;
+    this._tintedMap = null;
+    const img = new Image();
+    img.onload = () => {
+      this._mapImage = img;
+      this._buildTintedMap();
+    };
+    img.src = 'data/conts.png';
+
     this._resize();
     window.addEventListener('resize', () => this._resize());
+
+    // CALIBRATION: click on map to log pixel fraction
+    this.canvas.addEventListener('click', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const xFrac = (e.clientX - rect.left) / rect.width;
+      const yFrac = (e.clientY - rect.top) / rect.height;
+      console.log(`CLICK: x=${(xFrac*100).toFixed(1)}% y=${(yFrac*100).toFixed(1)}%`);
+      // Also show it on screen briefly
+      document.title = `x=${(xFrac*100).toFixed(1)}% y=${(yFrac*100).toFixed(1)}%`;
+    });
+  }
+
+  // Pre-render a blue-tinted version of the map image
+  // Uses composite ops only (no getImageData) to avoid CORS issues on file://
+  // White lines × blue = blue lines, black × blue = black
+  _buildTintedMap() {
+    if (!this._mapImage) return;
+    const iw = this._mapImage.width;
+    const ih = this._mapImage.height;
+
+    const off = document.createElement('canvas');
+    off.width = iw;
+    off.height = ih;
+    const octx = off.getContext('2d');
+
+    // Draw original white-on-black image
+    octx.drawImage(this._mapImage, 0, 0);
+
+    // Multiply with blue: white→blue, black stays black
+    octx.globalCompositeOperation = 'multiply';
+    octx.fillStyle = '#4488ff';
+    octx.fillRect(0, 0, iw, ih);
+
+    this._tintedMap = off;
   }
 
   _resize() {
@@ -36,18 +90,23 @@ class MapRenderer2D {
     this.canvas.height = this.container.clientHeight * window.devicePixelRatio;
     this.w = this.canvas.width;
     this.h = this.canvas.height;
+    this._buildTintedMap();
   }
 
-  // Convert lat/lon to canvas pixel coordinates (Mercator, centered on Atlantic)
+  // Convert lat/lon to canvas pixel coordinates
+  // Calibrated at consistent window size:
+  //   London (51.5°N, 0.1°W) → x=46.1% y=37.1%
+  //   Miami  (25.8°N, 80.2°W) → x=25.9% y=53.5%
+  //   Equator → y=64.9%
   latLonToXY(lat, lon) {
-    // Shift longitude so Atlantic is centered
-    let adjustedLon = lon + LON_OFFSET;
-    // Wrap to [-180, 180]
-    if (adjustedLon > 180) adjustedLon -= 360;
-    if (adjustedLon < -180) adjustedLon += 360;
+    while (lon < -180) lon += 360;
+    while (lon > 180) lon -= 360;
 
-    const x = (adjustedLon + 180) / 360 * this.w;
-    const y = (90 - lat) / 180 * this.h;
+    const xFrac = 0.002522 * lon + 0.4613;
+    const x = xFrac * this.w;
+
+    const yFrac = -0.00003811 * lat * lat - 0.003435 * lat + 0.6490;
+    const y = yFrac * this.h;
     return [x, y];
   }
 
@@ -93,11 +152,12 @@ class MapRenderer2D {
     ctx.lineTo(w, eqY);
     ctx.stroke();
 
-    // Draw continents
-    ctx.strokeStyle = 'rgba(68, 136, 255, 0.8)';
-    ctx.lineWidth = 1.5;
-    for (const [name, coords] of Object.entries(CONTINENT_OUTLINES)) {
-      this._drawCoastline(ctx, coords);
+    // Draw continent outlines from image — fills the entire canvas
+    // latLonToXY uses the same bounds, so everything aligns by construction
+    if (this._tintedMap) {
+      ctx.globalCompositeOperation = 'lighten';
+      ctx.drawImage(this._tintedMap, 0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
     }
 
     // Draw city markers
@@ -192,11 +252,10 @@ class MapRenderer2D {
     return [x, baseY - arcH];
   }
 
-  // Blast radius in pixels (100 miles on Mercator)
+  // Blast radius in pixels (100 miles on map)
   _blastPixelRadius() {
     // 100 miles ≈ 1.45 degrees latitude
-    // Map height = 180 degrees
-    return (1.45 / 180) * this.h;
+    return (1.45 / (MAP_LAT_TOP - MAP_LAT_BOTTOM)) * this.h;
   }
 
   _drawCoastline(ctx, coords) {

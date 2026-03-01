@@ -20,6 +20,7 @@
 
   if (USE_3D_GLOBE) {
     globe = new GlobeRenderer(globeContainer);
+    await globe.coastlinesReady;
     missiles = new MissileSystem(globe.scene, globe);
   } else {
     globe = new MapRenderer2D(globeContainer);

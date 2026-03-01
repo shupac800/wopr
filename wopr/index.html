@@ -57,7 +57,7 @@
 
   <!-- Global config -->
   <script>
-    const USE_3D_GLOBE = false; // true = 3D Three.js globe, false = 2D Mercator map
+    const USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
   </script>
 
   <!-- Three.js + addons (only needed for 3D mode, but loaded either way for simplicity) -->
@@ -69,6 +69,9 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/CopyShader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/ShaderPass.js"></script>
+
+  <!-- TopoJSON client (for Natural Earth data) -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 
   <!-- App Scripts -->
   <script src="js/coastlines.js"></script>

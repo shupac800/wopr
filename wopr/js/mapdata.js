@@ -3,100 +3,13 @@
 
 // Major world cities for targeting
 const CITIES = [
-  // North America
-  { name: "WASHINGTON DC", lat: 38.9, lon: -77.0, country: "US", region: "us" },
-  { name: "NEW YORK", lat: 40.7, lon: -74.0, country: "US", region: "us" },
-  { name: "LOS ANGELES", lat: 34.0, lon: -118.2, country: "US", region: "us" },
-  { name: "CHICAGO", lat: 41.9, lon: -87.6, country: "US", region: "us" },
-  { name: "HOUSTON", lat: 29.8, lon: -95.4, country: "US", region: "us" },
-  { name: "SEATTLE", lat: 47.6, lon: -122.3, country: "US", region: "us" },
-  { name: "HONOLULU", lat: 21.3, lon: -157.8, country: "US", region: "hawaii" },
-  { name: "ANCHORAGE", lat: 61.2, lon: -149.9, country: "US", region: "alaska" },
-  { name: "HAVANA", lat: 23.1, lon: -82.4, country: "CUBA", region: "cuba" },
-  { name: "MEXICO CITY", lat: 19.4, lon: -99.1, country: "MEXICO", region: "mexico" },
-  { name: "MANAGUA", lat: 12.1, lon: -86.3, country: "NICARAGUA", region: "nicaragua" },
-  { name: "OTTAWA", lat: 45.4, lon: -75.7, country: "CANADA", region: "canada" },
-  { name: "KINGSTON", lat: 18.0, lon: -76.8, country: "JAMAICA", region: "jamaica" },
-
-  // Europe
-  { name: "MOSCOW", lat: 55.8, lon: 37.6, country: "USSR", region: "ussr" },
-  { name: "LENINGRAD", lat: 59.9, lon: 30.3, country: "USSR", region: "ussr" },
-  { name: "KIEV", lat: 50.5, lon: 30.5, country: "USSR", region: "ussr" },
   { name: "LONDON", lat: 51.5, lon: -0.1, country: "UK", region: "english" },
-  { name: "PARIS", lat: 48.9, lon: 2.4, country: "FRANCE", region: "french" },
-  { name: "BERLIN", lat: 52.5, lon: 13.4, country: "GERMANY", region: "nato" },
-  { name: "ROME", lat: 41.9, lon: 12.5, country: "ITALY", region: "italian" },
-  { name: "WARSAW", lat: 52.2, lon: 21.0, country: "POLAND", region: "pact" },
-  { name: "PRAGUE", lat: 50.1, lon: 14.4, country: "CZECHOSLOVAKIA", region: "czech" },
-  { name: "BUCHAREST", lat: 44.4, lon: 26.1, country: "ROMANIA", region: "romanian" },
-  { name: "SOFIA", lat: 42.7, lon: 23.3, country: "BULGARIA", region: "bulgarian" },
-  { name: "TIRANA", lat: 41.3, lon: 19.8, country: "ALBANIA", region: "albanian" },
-  { name: "COPENHAGEN", lat: 55.7, lon: 12.6, country: "DENMARK", region: "danish" },
-  { name: "LISBON", lat: 38.7, lon: -9.1, country: "PORTUGAL", region: "portugal" },
-  { name: "ISTANBUL", lat: 41.0, lon: 29.0, country: "TURKEY", region: "turkish" },
-  { name: "ANKARA", lat: 39.9, lon: 32.9, country: "TURKEY", region: "turkish" },
-  { name: "REYKJAVIK", lat: 64.1, lon: -21.9, country: "ICELAND", region: "iceland" },
-  { name: "BERN", lat: 46.9, lon: 7.4, country: "SWITZERLAND", region: "swiss" },
-  { name: "MUNICH", lat: 48.1, lon: 11.6, country: "GERMANY", region: "bavarian" },
-  { name: "NICOSIA", lat: 35.2, lon: 33.4, country: "CYPRUS", region: "cypress" },
-
-  // Middle East
-  { name: "TEHRAN", lat: 35.7, lon: 51.4, country: "IRAN", region: "iranian" },
-  { name: "BAGHDAD", lat: 33.3, lon: 44.4, country: "IRAQ", region: "iraq" },
-  { name: "RIYADH", lat: 24.7, lon: 46.7, country: "SAUDI ARABIA", region: "saudi" },
-  { name: "TEL AVIV", lat: 32.1, lon: 34.8, country: "ISRAEL", region: "isreal" },
-  { name: "BEIRUT", lat: 33.9, lon: 35.5, country: "LEBANON", region: "lebanon" },
-  { name: "DAMASCUS", lat: 33.5, lon: 36.3, country: "SYRIA", region: "syrian" },
-  { name: "CAIRO", lat: 30.0, lon: 31.2, country: "EGYPT", region: "egypt" },
-  { name: "BAKU", lat: 40.4, lon: 49.9, country: "USSR", region: "caspian" },
-
-  // Africa
-  { name: "KHARTOUM", lat: 15.6, lon: 32.5, country: "SUDAN", region: "sudan" },
-  { name: "KINSHASA", lat: -4.3, lon: 15.3, country: "ZAIRE", region: "zaire" },
-  { name: "NDJAMENA", lat: 12.1, lon: 15.0, country: "CHAD", region: "chad" },
-  { name: "ADDIS ABABA", lat: 9.0, lon: 38.7, country: "ETHIOPIA", region: "ethiopian" },
-  { name: "NAIROBI", lat: -1.3, lon: 36.8, country: "KENYA", region: "kenya" },
-  { name: "KAMPALA", lat: 0.3, lon: 32.6, country: "UGANDA", region: "uganda" },
-  { name: "PRETORIA", lat: -25.7, lon: 28.2, country: "S.AFRICA", region: "s.african" },
-  { name: "LIBREVILLE", lat: 0.4, lon: 9.5, country: "GABON", region: "gabon" },
-  { name: "RABAT", lat: 34.0, lon: -6.8, country: "MOROCCO", region: "moroccan" },
-  { name: "TUNIS", lat: 36.8, lon: 10.2, country: "TUNISIA", region: "tunisian" },
-  { name: "ALGIERS", lat: 36.8, lon: 3.1, country: "ALGERIA", region: "algerian" },
-  { name: "TRIPOLI", lat: 32.9, lon: 13.2, country: "LIBYA", region: "libyan" },
-
-  // Asia
-  { name: "BEIJING", lat: 39.9, lon: 116.4, country: "CHINA", region: "china" },
-  { name: "SHANGHAI", lat: 31.2, lon: 121.5, country: "CHINA", region: "china" },
-  { name: "HONG KONG", lat: 22.3, lon: 114.2, country: "HONG KONG", region: "hongkong" },
-  { name: "TOKYO", lat: 35.7, lon: 139.7, country: "JAPAN", region: "fareast" },
-  { name: "TAIPEI", lat: 25.0, lon: 121.5, country: "TAIWAN", region: "taiwan" },
-  { name: "HANOI", lat: 21.0, lon: 105.9, country: "VIETNAM", region: "vietnamese" },
-  { name: "BANGKOK", lat: 13.8, lon: 100.5, country: "THAILAND", region: "thai" },
-  { name: "RANGOON", lat: 16.9, lon: 96.2, country: "BURMA", region: "burmese" },
-  { name: "PHNOM PENH", lat: 11.6, lon: 104.9, country: "CAMBODIA", region: "cambodian" },
-  { name: "NEW DELHI", lat: 28.6, lon: 77.2, country: "INDIA", region: "india" },
-  { name: "ISLAMABAD", lat: 33.7, lon: 73.0, country: "PAKISTAN", region: "pakistan" },
-  { name: "KABUL", lat: 34.5, lon: 69.2, country: "AFGHANISTAN", region: "afghan" },
-  { name: "DHAKA", lat: 23.8, lon: 90.4, country: "BANGLADESH", region: "bangladesh" },
-  { name: "KUALA LUMPUR", lat: 3.1, lon: 101.7, country: "MALAYSIA", region: "malaysian" },
-  { name: "SINGAPORE", lat: 1.3, lon: 103.8, country: "SINGAPORE", region: "seato" },
-  { name: "ULAANBAATAR", lat: 47.9, lon: 106.9, country: "MONGOLIA", region: "mongolian" },
-
-  // South America
-  { name: "BUENOS AIRES", lat: -34.6, lon: -58.4, country: "ARGENTINA", region: "argentina" },
-  { name: "BRASILIA", lat: -15.8, lon: -47.9, country: "BRAZIL", region: "brazilian" },
-  { name: "SANTIAGO", lat: -33.4, lon: -70.6, country: "CHILE", region: "chile" },
-  { name: "CARACAS", lat: 10.5, lon: -66.9, country: "VENEZUELA", region: "venezuela" },
-  { name: "BOGOTA", lat: 4.7, lon: -74.1, country: "COLOMBIA", region: "colombia" },
-  { name: "LIMA", lat: -12.0, lon: -77.0, country: "PERU", region: "peru" },
-
-  // Oceania
-  { name: "CANBERRA", lat: -35.3, lon: 149.1, country: "AUSTRALIA", region: "australian" },
+  { name: "MOSCOW", lat: 55.8, lon: 37.6, country: "USSR", region: "ussr" },
+  { name: "WASHINGTON DC", lat: 38.9, lon: -77.0, country: "US", region: "us" },
+  { name: "MIAMI", lat: 25.8, lon: -80.2, country: "US", region: "us" },
+  { name: "LOS ANGELES", lat: 34.1, lon: -118.2, country: "US", region: "us" },
+  { name: "PARIS", lat: 48.9, lon: 2.3, country: "FRANCE", region: "french" },
   { name: "SYDNEY", lat: -33.9, lon: 151.2, country: "AUSTRALIA", region: "australian" },
-
-  // Arctic/Other
-  { name: "NUUK", lat: 64.2, lon: -51.7, country: "GREENLAND", region: "greenland" },
-  { name: "MURMANSK", lat: 68.9, lon: 33.1, country: "USSR", region: "arctic" },
 ];
 
 // Region keyword mapping for strategy name parsing
