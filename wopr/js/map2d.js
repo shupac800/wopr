@@ -50,15 +50,65 @@ class MapRenderer2D {
     this._resize();
     window.addEventListener('resize', () => this._resize());
 
-    // CALIBRATION: click on map to log pixel fraction
-    this.canvas.addEventListener('click', (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const xFrac = (e.clientX - rect.left) / rect.width;
-      const yFrac = (e.clientY - rect.top) / rect.height;
-      console.log(`CLICK: x=${(xFrac*100).toFixed(1)}% y=${(yFrac*100).toFixed(1)}%`);
-      // Also show it on screen briefly
-      document.title = `x=${(xFrac*100).toFixed(1)}% y=${(yFrac*100).toFixed(1)}%`;
-    });
+    // Submarine markers for current scenario
+    this._submarines = [];
+
+    // Hover detection for city labels
+    this.tooltip = document.getElementById('city-tooltip');
+    this.hoveredCity = null;
+    this.canvas.addEventListener('mousemove', (e) => this._onMouseMove(e));
+    this.canvas.addEventListener('mouseleave', () => this._hideTooltip());
+  }
+
+  _onMouseMove(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const mx = (event.clientX - rect.left) / rect.width * this.w;
+    const my = (event.clientY - rect.top) / rect.height * this.h;
+
+    // Find closest city within 10px screen distance
+    const threshold = 10 * window.devicePixelRatio;
+    let closest = null;
+    let bestDist = threshold;
+
+    for (const city of CITIES) {
+      const [cx, cy] = this.latLonToXY(city.lat, city.lon);
+      const dx = mx - cx;
+      const dy = my - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < bestDist) {
+        bestDist = dist;
+        closest = city;
+      }
+    }
+
+    // Also check submarine markers
+    for (const sub of this._submarines) {
+      const [sx, sy] = this.latLonToXY(sub.lat, sub.lon);
+      const dx = mx - sx;
+      const dy = my - sy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < bestDist) {
+        bestDist = dist;
+        closest = sub;
+      }
+    }
+
+    if (closest) {
+      this.tooltip.textContent = closest.name;
+      this.tooltip.classList.add('visible');
+      this.tooltip.style.left = (event.clientX + 14) + 'px';
+      this.tooltip.style.top = (event.clientY - 10) + 'px';
+      this.hoveredCity = closest;
+    } else {
+      this._hideTooltip();
+    }
+  }
+
+  _hideTooltip() {
+    if (this.tooltip) {
+      this.tooltip.classList.remove('visible');
+      this.hoveredCity = null;
+    }
   }
 
   // Pre-render a blue-tinted version of the map image
@@ -116,6 +166,14 @@ class MapRenderer2D {
     return { x, y, z: 0, lat, lon, copy: function() {} };
   }
 
+  showSubmarines(submarines) {
+    this._submarines = submarines || [];
+  }
+
+  clearSubmarines() {
+    this._submarines = [];
+  }
+
   render(time, missileSystem) {
     const ctx = this.ctx;
     const w = this.w;
@@ -163,12 +221,34 @@ class MapRenderer2D {
     // Draw city markers
     const pulse = 0.5 + 0.5 * Math.sin(time * 2);
     const dotAlpha = 0.4 + pulse * 0.5;
-    ctx.fillStyle = `rgba(51, 255, 51, ${dotAlpha})`;
     for (const city of CITIES) {
       const [cx, cy] = this.latLonToXY(city.lat, city.lon);
+      ctx.fillStyle = city.type === 'base'
+        ? `rgba(255, 51, 51, ${dotAlpha})`
+        : `rgba(51, 255, 51, ${dotAlpha})`;
       ctx.beginPath();
       ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    // Draw submarine markers (colored plus signs)
+    const subSize = 4;
+    ctx.lineWidth = 1.5;
+    for (const sub of this._submarines) {
+      const [sx, sy] = this.latLonToXY(sub.lat, sub.lon);
+      if (sub.nation === 'us') {
+        ctx.strokeStyle = `rgba(255, 51, 51, ${dotAlpha})`;       // red
+      } else if (sub.nation === 'ussr') {
+        ctx.strokeStyle = `rgba(255, 136, 51, ${dotAlpha})`;      // orange
+      } else {
+        ctx.strokeStyle = `rgba(255, 255, 51, ${dotAlpha})`;      // yellow
+      }
+      ctx.beginPath();
+      ctx.moveTo(sx - subSize, sy);
+      ctx.lineTo(sx + subSize, sy);
+      ctx.moveTo(sx, sy - subSize);
+      ctx.lineTo(sx, sy + subSize);
+      ctx.stroke();
     }
 
     // Draw blast marks (persistent)
@@ -213,9 +293,9 @@ class MapRenderer2D {
         // Trail — curved arc
         if (m._2dStarted || m.started) {
           const prog = m.progress;
-          const trailAlpha = m.fading ? Math.max(0, (1 - m.fadeAge / 2.0) * 0.6) : 0.6;
+          const trailAlpha = m.done ? 0.55 : 0.6;
           if (trailAlpha > 0) {
-            ctx.strokeStyle = `rgba(51, 255, 51, ${trailAlpha})`;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${trailAlpha})`;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             const steps = 40;
@@ -229,13 +309,25 @@ class MapRenderer2D {
             ctx.stroke();
           }
 
-          // Missile head
+          // Missile head — red triangle pointing in direction of travel
           if (!m.done) {
             const [hx, hy] = this._arcPoint(ox, oy, tx, ty, prog);
-            ctx.fillStyle = '#fff';
+            // Compute tangent by sampling a tiny step ahead
+            const dt = 0.01;
+            const [hx2, hy2] = this._arcPoint(ox, oy, tx, ty, Math.min(prog + dt, 1.0));
+            const angle = Math.atan2(hy2 - hy, hx2 - hx);
+            const size = 7.5;
+            ctx.strokeStyle = '#ff3333';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.arc(hx, hy, 3, 0, Math.PI * 2);
-            ctx.fill();
+            // Tip: forward along angle
+            ctx.moveTo(hx + Math.cos(angle) * size, hy + Math.sin(angle) * size);
+            // Base left
+            ctx.lineTo(hx + Math.cos(angle + 2.356) * size * 0.7, hy + Math.sin(angle + 2.356) * size * 0.7);
+            // Base right
+            ctx.lineTo(hx + Math.cos(angle - 2.356) * size * 0.7, hy + Math.sin(angle - 2.356) * size * 0.7);
+            ctx.closePath();
+            ctx.stroke();
           }
         }
       }
@@ -304,6 +396,17 @@ class MissileSystem2D {
     this.blastMarks = [];
     this.onDetonation = null;
     this.BLAST_RADIUS_DEG = 1.45; // 100 miles in degrees
+    this.destroyedSites = [];
+  }
+
+  isDestroyed(lat, lon) {
+    const threshSq = this.BLAST_RADIUS_DEG * this.BLAST_RADIUS_DEG;
+    for (const site of this.destroyedSites) {
+      const dlat = lat - site.lat;
+      const dlon = lon - site.lon;
+      if (dlat * dlat + dlon * dlon < threshSq) return true;
+    }
+    return false;
   }
 
   launchSequence(sequence) {
@@ -323,9 +426,6 @@ class MissileSystem2D {
       elapsed: 0,
       speed: 0.4 + Math.random() * 0.15,
       done: false,
-      fading: false,
-      fadeAge: 0,
-      cleaned: false,
     };
     this.activeMissiles.push(missile);
     return missile;
@@ -347,8 +447,10 @@ class MissileSystem2D {
       grown: false,
     });
 
+    this.destroyedSites.push({ lat: targetCity.lat, lon: targetCity.lon });
+
     if (this.onDetonation) {
-      this.onDetonation();
+      this.onDetonation(targetCity);
     }
   }
 
@@ -361,6 +463,11 @@ class MissileSystem2D {
       if (m.elapsed < m.delay) continue;
 
       if (!m._2dStarted) {
+        // Check if origin has been destroyed — missile can't launch from a crater
+        if (m.origin.type !== 'sub' && this.isDestroyed(m.origin.lat, m.origin.lon)) {
+          m.done = true;
+          continue;
+        }
         m._2dStarted = true;
         m.started = true;
       }
@@ -371,21 +478,11 @@ class MissileSystem2D {
         m.progress = 1.0;
         m.done = true;
         this.createDetonation(m.target);
-        m.fading = true;
-        m.fadeAge = 0;
         continue;
       }
     }
 
-    // Fade trails
-    for (const m of this.activeMissiles) {
-      if (m.fading) {
-        m.fadeAge += deltaTime;
-        if (m.fadeAge >= 2.0) {
-          m.cleaned = true;
-        }
-      }
-    }
+    // (trails persist until clear() is called)
 
     // Update detonation flashes
     for (const d of this.detonations) {
@@ -400,19 +497,21 @@ class MissileSystem2D {
       if (b.age / b.growDuration >= 1.0) b.grown = true;
     }
 
-    // Cleanup
-    this.activeMissiles = this.activeMissiles.filter(m => !m.cleaned);
+    // Cleanup — keep done missiles for persistent trail rendering
+    // (removed from list only on clear())
     this.detonations = this.detonations.filter(d => !d.done);
   }
 
   isIdle() {
     const growing = this.blastMarks.some(b => !b.grown);
-    return this.activeMissiles.length === 0 && this.detonations.length === 0 && !growing;
+    const active = this.activeMissiles.some(m => !m.done);
+    return !active && this.detonations.length === 0 && !growing;
   }
 
   clear() {
     this.activeMissiles = [];
     this.detonations = [];
     this.blastMarks = [];
+    this.destroyedSites = [];
   }
 }

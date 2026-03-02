@@ -5,13 +5,19 @@
   // === State ===
   const State = { BOOT: 0, IDLE: 1, EXECUTING: 2, AFTERMATH: 3, ENDING: 4 };
   let state = State.BOOT;
+  let infoPanel = null;
 
   // === Screen flash element ===
   const flashEl = document.getElementById('screen-flash');
 
-  function screenFlash() {
-    flashEl.classList.add('flash');
-    setTimeout(() => flashEl.classList.remove('flash'), 100);
+  function screenFlash(targetCity) {
+    if (typeof SCREEN_FLASH === 'undefined' || SCREEN_FLASH) {
+      flashEl.classList.add('flash');
+      setTimeout(() => flashEl.classList.remove('flash'), 100);
+    }
+    if (infoPanel) {
+      infoPanel.logDetonation(targetCity);
+    }
   }
 
   // === Initialize Renderer (3D or 2D) ===
@@ -32,6 +38,9 @@
   const terminal = new TerminalUI();
   terminal.setDefcon(5);
   terminal.setStatus('WOPR ONLINE');
+
+  // === Initialize Info Panel (right side) ===
+  infoPanel = new InfoPanel();
 
   // === Initialize Strategy Engine ===
   const engine = new StrategyEngine();
@@ -70,18 +79,63 @@
     // Build launch sequence
     const sequence = engine.buildLaunchSequence(strategyName);
 
-    // Update DEFCON
-    terminal.setDefcon(sequence.defcon);
+    // Determine initial DEFCON from the scenario (before escalation forced it to 1)
+    const initialDefcon = (typeof STRATEGY_SCENARIOS !== 'undefined' && STRATEGY_SCENARIOS[strategyName])
+      ? (STRATEGY_SCENARIOS[strategyName].defcon || engine.getDefcon(strategyName))
+      : engine.getDefcon(strategyName);
+
+    // Update DEFCON to initial level
+    terminal.setDefcon(initialDefcon);
+    infoPanel.setDefcon(initialDefcon);
     terminal.setStatus('EXECUTING STRATEGY');
 
-    // Show log
-    await terminal.showExecutionLog(strategyName, sequence.defcon);
+    // Prepare right panel
+    infoPanel.beginStrategy(sequence);
+
+    // Show submarine markers on globe/map
+    if (sequence.submarines && sequence.submarines.length > 0) {
+      globe.showSubmarines(sequence.submarines);
+    }
+
+    // Show log (with narrative if scenario provides one)
+    await terminal.showExecutionLog(strategyName, initialDefcon, sequence.narrative);
+
+    // Schedule DEFCON ramp-down during escalation
+    // Find the max delay to know the total timeline
+    let maxMissileDelay = 0;
+    for (const m of sequence.missiles) {
+      if (m.delay > maxMissileDelay) maxMissileDelay = m.delay;
+    }
+
+    // Ramp DEFCON from initial level down to 1 over the course of the scenario
+    const defconTimers = [];
+    if (initialDefcon > 1) {
+      const steps = initialDefcon - 1; // e.g. DEFCON 3 → 2 → 1 = 2 steps
+      const stepInterval = maxMissileDelay / (steps + 1);
+      for (let d = initialDefcon - 1; d >= 1; d--) {
+        const t = (initialDefcon - d) * stepInterval;
+        const timer = setTimeout(() => {
+          terminal.setDefcon(d);
+          infoPanel.setDefcon(d);
+          if (d <= 2) terminal.setStatus('GLOBAL ESCALATION');
+          if (d === 1) terminal.setStatus('TOTAL NUCLEAR WAR');
+        }, t);
+        defconTimers.push(timer);
+      }
+    } else {
+      terminal.setStatus('TOTAL NUCLEAR WAR');
+    }
 
     // Launch missiles
     missiles.launchSequence(sequence);
 
     // Wait for missiles to finish
     await waitForMissiles();
+
+    // Clear any pending DEFCON timers
+    defconTimers.forEach(t => clearTimeout(t));
+    terminal.setDefcon(1);
+    infoPanel.setDefcon(1);
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
@@ -107,11 +161,13 @@
 
       await runStrategy(strategyName);
 
-      // Clear blasts from globe
+      // Clear blasts and subs from globe
       missiles.clear();
+      globe.clearSubmarines();
 
       // Brief pause before next strategy
       terminal.setDefcon(5);
+      infoPanel.setDefcon(5);
       terminal.setStatus('NEXT TARGET');
       await delay(800);
 

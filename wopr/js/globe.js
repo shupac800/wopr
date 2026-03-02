@@ -9,6 +9,7 @@ class GlobeRenderer {
     this.controls = null;
     this.globe = null;
     this.cityMarkers = [];
+    this.subMarkers = [];
     this.composer = null;
     this.clock = new THREE.Clock();
     this.autoRotate = true;
@@ -55,6 +56,15 @@ class GlobeRenderer {
     // Post-processing (bloom)
     this.setupBloom();
 
+    // Hover detection
+    this.raycaster = new THREE.Raycaster();
+    this.raycaster.params.Mesh = { threshold: 0.03 };
+    this.mouse = new THREE.Vector2();
+    this.tooltip = document.getElementById('city-tooltip');
+    this.hoveredCity = null;
+    this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    this.renderer.domElement.addEventListener('mouseleave', () => this.hideTooltip());
+
     // Resize handler
     window.addEventListener('resize', () => this.onResize());
   }
@@ -77,40 +87,42 @@ class GlobeRenderer {
     this.globe = new THREE.Mesh(geometry, material);
     this.scene.add(this.globe);
 
-    // Earth edge — fresnel/rim glow shader sphere
-    const rimGeom = new THREE.SphereGeometry(1.001, 64, 32);
-    const rimMat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      uniforms: {
-        rimColor: { value: new THREE.Color(0xffffff) },
-        rimPower: { value: 3.0 },
-        rimStrength: { value: 0.8 },
-      },
-      vertexShader: `
-        varying vec3 vNormal;
-        varying vec3 vViewDir;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
-          vViewDir = normalize(-mvPos.xyz);
-          gl_Position = projectionMatrix * mvPos;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 rimColor;
-        uniform float rimPower;
-        uniform float rimStrength;
-        varying vec3 vNormal;
-        varying vec3 vViewDir;
-        void main() {
-          float rim = 1.0 - max(0.0, dot(vNormal, vViewDir));
-          rim = pow(rim, rimPower) * rimStrength;
-          gl_FragColor = vec4(rimColor, rim);
-        }
-      `,
-    });
-    this.scene.add(new THREE.Mesh(rimGeom, rimMat));
+    // Earth edge — fresnel/rim glow shader sphere (optional)
+    if (typeof EDGE_GLOW !== 'undefined' && EDGE_GLOW) {
+      const rimGeom = new THREE.SphereGeometry(1.001, 64, 32);
+      const rimMat = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        uniforms: {
+          rimColor: { value: new THREE.Color(0xffffff) },
+          rimPower: { value: 3.0 },
+          rimStrength: { value: 0.8 },
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+          void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+            vViewDir = normalize(-mvPos.xyz);
+            gl_Position = projectionMatrix * mvPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 rimColor;
+          uniform float rimPower;
+          uniform float rimStrength;
+          varying vec3 vNormal;
+          varying vec3 vViewDir;
+          void main() {
+            float rim = 1.0 - max(0.0, dot(vNormal, vViewDir));
+            rim = pow(rim, rimPower) * rimStrength;
+            gl_FragColor = vec4(rimColor, rim);
+          }
+        `,
+      });
+      this.scene.add(new THREE.Mesh(rimGeom, rimMat));
+    }
 
     // Equator ring — white
     const eqGeom = new THREE.BufferGeometry();
@@ -152,11 +164,12 @@ class GlobeRenderer {
   buildCityMarkers() {
     CITIES.forEach(city => {
       const pos = this.latLonToVec3(city.lat, city.lon, 1.008);
+      const isBase = city.type === 'base';
 
-      // Small glowing dot
+      // Small glowing dot — red for military bases, green for cities
       const dotGeom = new THREE.SphereGeometry(0.008, 6, 6);
       const dotMat = new THREE.MeshBasicMaterial({
-        color: 0x33ff33,
+        color: isBase ? 0xff3333 : 0x33ff33,
         transparent: true,
         opacity: 0.8,
       });
@@ -166,6 +179,52 @@ class GlobeRenderer {
       this.scene.add(dot);
       this.cityMarkers.push(dot);
     });
+  }
+
+  // Build a plus-sign geometry in local XY plane
+  _buildPlusGeometry(size) {
+    const pts = new Float32Array([
+      // Horizontal bar
+      -size, 0, 0,  size, 0, 0,
+      // Vertical bar
+      0, -size, 0,  0, size, 0,
+    ]);
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    return geom;
+  }
+
+  // Show submarine markers for a scenario (called from main.js)
+  _subColor(nation) {
+    if (nation === 'us') return 0xff3333;       // red
+    if (nation === 'ussr') return 0xff8833;      // orange
+    return 0xffff33;                              // yellow (uk, france, china, etc.)
+  }
+
+  showSubmarines(submarines) {
+    this.clearSubmarines();
+    for (const sub of submarines) {
+      const pos = this.latLonToVec3(sub.lat, sub.lon, 1.008);
+      const geom = this._buildPlusGeometry(0.012);
+      const mat = new THREE.LineBasicMaterial({
+        color: this._subColor(sub.nation),
+        transparent: true,
+        opacity: 0.9,
+      });
+      const plus = new THREE.LineSegments(geom, mat);
+      plus.position.copy(pos);
+      plus.lookAt(0, 0, 0);
+      plus.userData = { city: { name: sub.name, lat: sub.lat, lon: sub.lon, type: 'sub' } };
+      this.scene.add(plus);
+      this.subMarkers.push(plus);
+    }
+  }
+
+  clearSubmarines() {
+    for (const m of this.subMarkers) {
+      this.scene.remove(m);
+    }
+    this.subMarkers = [];
   }
 
   setupBloom() {
@@ -196,17 +255,87 @@ class GlobeRenderer {
     }
   }
 
-  // Pulse city markers
+  // Pulse city and sub markers
   updateMarkers(time) {
     this.cityMarkers.forEach((marker, i) => {
       const pulse = 0.5 + 0.5 * Math.sin(time * 2 + i * 0.5);
       marker.material.opacity = 0.4 + pulse * 0.5;
     });
+    this.subMarkers.forEach((marker, i) => {
+      const pulse = 0.5 + 0.5 * Math.sin(time * 3 + i * 0.7);
+      marker.material.opacity = 0.5 + pulse * 0.4;
+    });
+  }
+
+  onMouseMove(event) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this._mouseClientX = event.clientX;
+    this._mouseClientY = event.clientY;
+    const mx = event.clientX - rect.left;
+    const my = event.clientY - rect.top;
+
+    // Screen-space proximity check — 10px threshold
+    let closest = null;
+    let bestDist = 10;
+    const camPos = this.camera.position;
+    const allMarkers = this.cityMarkers.concat(this.subMarkers);
+    for (const marker of allMarkers) {
+      // Skip markers on far side — dot product of (camera→marker) with surface normal
+      // If marker faces away from camera, it's on the back of the globe
+      const toCamera = new THREE.Vector3().subVectors(camPos, marker.position);
+      if (toCamera.dot(marker.position) < 0) continue;
+      const pos = marker.position.clone().project(this.camera);
+      const sx = (pos.x * 0.5 + 0.5) * rect.width;
+      const sy = (-pos.y * 0.5 + 0.5) * rect.height;
+      const dist = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
+      if (dist < bestDist) {
+        bestDist = dist;
+        closest = marker;
+      }
+    }
+
+    if (closest) {
+      const city = closest.userData.city;
+      this.tooltip.textContent = city.name;
+      this.tooltip.classList.add('visible');
+      this.tooltip.style.left = (event.clientX + 14) + 'px';
+      this.tooltip.style.top = (event.clientY - 10) + 'px';
+      this.hoveredCity = city;
+      this._hoveredMarker = closest;
+    } else {
+      this.hideTooltip();
+    }
+  }
+
+  hideTooltip() {
+    if (this.tooltip) {
+      this.tooltip.classList.remove('visible');
+      this.hoveredCity = null;
+      this._hoveredMarker = null;
+    }
+  }
+
+  // Hide tooltip if hovered city rotated away from pointer
+  checkTooltipValidity() {
+    if (!this._hoveredMarker || !this.hoveredCity) return;
+    // Back side of globe — marker faces away from camera
+    const toCamera = new THREE.Vector3().subVectors(this.camera.position, this._hoveredMarker.position);
+    if (toCamera.dot(this._hoveredMarker.position) < 0) { this.hideTooltip(); return; }
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const pos = this._hoveredMarker.position.clone().project(this.camera);
+    const sx = (pos.x * 0.5 + 0.5) * rect.width + rect.left;
+    const sy = (-pos.y * 0.5 + 0.5) * rect.height + rect.top;
+    const dx = (this._mouseClientX || 0) - sx;
+    const dy = (this._mouseClientY || 0) - sy;
+    if (Math.sqrt(dx * dx + dy * dy) > 10) {
+      this.hideTooltip();
+    }
   }
 
   render(time) {
     this.controls.update();
     this.updateMarkers(time);
+    this.checkTooltipValidity();
 
     if (this.composer) {
       this.composer.render();

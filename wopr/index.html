@@ -27,6 +27,9 @@
     <div class="ending-text"></div>
   </div>
 
+  <!-- City Tooltip -->
+  <div id="city-tooltip"></div>
+
   <!-- Main App -->
   <div id="app">
     <!-- Terminal Panel (Left) -->
@@ -44,8 +47,51 @@
       </div>
     </div>
 
-    <!-- 3D Globe (Right) -->
+    <!-- 3D Globe (Center) -->
     <div id="globe-container"></div>
+
+    <!-- Info Panel (Right) -->
+    <div id="info-panel">
+      <!-- Top: Attack Assessment -->
+      <div id="attack-panel">
+        <div id="attack-panel-header">ATTACK ASSESSMENT</div>
+        <div id="attack-log"></div>
+        <div id="attack-summary">
+          WARHEADS DEPLOYED: <span id="warheads-deployed">0</span><br>
+          TARGETS DESTROYED: <span id="targets-destroyed">0</span><br>
+          EST. CASUALTIES: <span id="est-casualties">0</span>M
+        </div>
+      </div>
+
+      <!-- Bottom: Strategic Forces -->
+      <div id="forces-panel">
+        <div id="forces-panel-header">STRATEGIC FORCES</div>
+        <div id="forces-readout">
+          <div class="forces-section">
+            <div class="section-title">NATO / UNITED STATES</div>
+            <div class="forces-row"><span class="label">ICBM SILOS</span><span class="value" id="nato-icbm">1,054</span></div>
+            <div class="forces-row"><span class="label">SLBM (SUBMARINE)</span><span class="value" id="nato-slbm">640</span></div>
+            <div class="forces-row"><span class="label">STRATEGIC BOMBERS</span><span class="value" id="nato-bombers">297</span></div>
+            <div class="forces-row"><span class="label">TOTAL WARHEADS</span><span class="value" id="nato-total">11,000</span></div>
+            <div class="forces-row"><span class="label">FORCE STATUS</span><span class="value active" id="nato-status">READY</span></div>
+          </div>
+          <div class="forces-section">
+            <div class="section-title">WARSAW PACT / USSR</div>
+            <div class="forces-row"><span class="label">ICBM SILOS</span><span class="value" id="pact-icbm">1,398</span></div>
+            <div class="forces-row"><span class="label">SLBM (SUBMARINE)</span><span class="value" id="pact-slbm">980</span></div>
+            <div class="forces-row"><span class="label">STRATEGIC BOMBERS</span><span class="value" id="pact-bombers">150</span></div>
+            <div class="forces-row"><span class="label">TOTAL WARHEADS</span><span class="value" id="pact-total">10,000</span></div>
+            <div class="forces-row"><span class="label">FORCE STATUS</span><span class="value active" id="pact-status">READY</span></div>
+          </div>
+          <div class="forces-section">
+            <div class="section-title">SITUATION</div>
+            <div class="forces-row"><span class="label">DEFCON LEVEL</span><span class="value active" id="forces-defcon">5</span></div>
+            <div class="forces-row"><span class="label">THREAT LEVEL</span><span class="value" id="threat-level">NOMINAL</span></div>
+            <div class="forces-row"><span class="label">EXCHANGE TYPE</span><span class="value" id="exchange-type">---</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Status Bar -->
@@ -58,6 +104,8 @@
   <!-- Global config -->
   <script>
     const USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
+    const EDGE_GLOW = false;   // true = fresnel rim glow on globe edge
+    const SCREEN_FLASH = false; // true = white flash on missile detonation
   </script>
 
   <!-- Three.js + addons (only needed for 3D mode, but loaded either way for simplicity) -->
@@ -76,10 +124,12 @@
   <!-- App Scripts -->
   <script src="js/coastlines.js"></script>
   <script src="js/mapdata.js"></script>
+  <script src="js/scenarios.js"></script>
   <script src="js/globe.js"></script>
   <script src="js/missiles.js"></script>
   <script src="js/map2d.js"></script>
   <script src="js/strategies.js"></script>
+  <script src="js/infopanel.js"></script>
   <script src="js/terminal.js"></script>
   <script src="js/main.js"></script>
 </body>

@@ -88,7 +88,7 @@ const CITIES = [
   { name: "BERN", lat: 46.9, lon: 7.4, country: "SWITZERLAND", region: "swiss", pop: 0.1 },
   { name: "VIENNA", lat: 48.2, lon: 16.4, country: "AUSTRIA", region: "nato", pop: 1.9 },
   { name: "DUBLIN", lat: 53.3, lon: -6.3, country: "IRELAND", region: "english", pop: 0.5 },
-  { name: "NICOSIA", lat: 35.2, lon: 33.4, country: "CYPRUS", region: "cypress", pop: 0.2 },
+  { name: "NICOSIA", lat: 35.2, lon: 33.4, country: "CYPRUS", region: "cyprus", pop: 0.2 },
   { name: "LUXEMBOURG", lat: 49.6, lon: 6.1, country: "LUXEMBOURG", region: "nato", pop: 0.1 },
   // === EUROPE — WARSAW PACT ===
   { name: "MOSCOW", lat: 55.8, lon: 37.6, country: "USSR", region: "ussr", pop: 8.9 },
@@ -123,14 +123,14 @@ const CITIES = [
   { name: "BASRA", lat: 30.5, lon: 47.8, country: "IRAQ", region: "iraq", pop: 1.3 },
   { name: "RIYADH", lat: 24.7, lon: 46.7, country: "SAUDI ARABIA", region: "saudi", pop: 5.2 },
   { name: "JEDDAH", lat: 21.5, lon: 39.2, country: "SAUDI ARABIA", region: "saudi", pop: 3.4 },
-  { name: "TEL AVIV", lat: 32.1, lon: 34.8, country: "ISRAEL", region: "isreal", pop: 0.5 },
-  { name: "JERUSALEM", lat: 31.8, lon: 35.2, country: "ISRAEL", region: "isreal", pop: 0.9 },
+  { name: "TEL AVIV", lat: 32.1, lon: 34.8, country: "ISRAEL", region: "israel", pop: 0.5 },
+  { name: "JERUSALEM", lat: 31.8, lon: 35.2, country: "ISRAEL", region: "israel", pop: 0.9 },
   { name: "BEIRUT", lat: 33.9, lon: 35.5, country: "LEBANON", region: "lebanon", pop: 0.4 },
   { name: "DAMASCUS", lat: 33.5, lon: 36.3, country: "SYRIA", region: "syrian", pop: 1.7 },
   { name: "ALEPPO", lat: 36.2, lon: 37.2, country: "SYRIA", region: "syrian", pop: 1.9 },
   { name: "CAIRO", lat: 30.0, lon: 31.2, country: "EGYPT", region: "egypt", pop: 9.5 },
   { name: "ALEXANDRIA", lat: 31.2, lon: 29.9, country: "EGYPT", region: "egypt", pop: 5.2 },
-  { name: "AMMAN", lat: 31.9, lon: 35.9, country: "JORDAN", region: "isreal", pop: 1.1 },
+  { name: "AMMAN", lat: 31.9, lon: 35.9, country: "JORDAN", region: "israel", pop: 1.1 },
   { name: "KUWAIT CITY", lat: 29.4, lon: 47.9, country: "KUWAIT", region: "saudi", pop: 0.2 },
   { name: "MUSCAT", lat: 23.6, lon: 58.5, country: "OMAN", region: "saudi", pop: 0.8 },
   { name: "SANAA", lat: 15.4, lon: 44.2, country: "YEMEN", region: "saudi", pop: 1.9 },
@@ -436,6 +436,221 @@ const CITIES = [
   { name: "ADELAIDE", lat: -34.9, lon: 138.6, country: "AUSTRALIA", region: "australian", pop: 1.3 },
 ];
 
+// 1983-era military installations — NATO and Warsaw Pact
+// type: "base" distinguishes from cities; pop: 0 (military, not civilian)
+const MILITARY_BASES = [
+  // === US — STRATEGIC COMMAND ===
+  { name: "NORAD", lat: 38.74, lon: -104.84, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "SAC HQ (OFFUTT AFB)", lat: 41.12, lon: -95.91, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "PENTAGON", lat: 38.87, lon: -77.06, country: "US", region: "us", type: "base", pop: 0 },
+  // === US — ICBM FIELDS ===
+  { name: "MALMSTROM AFB", lat: 47.51, lon: -111.18, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "MINOT AFB", lat: 48.42, lon: -101.36, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "F.E. WARREN AFB", lat: 41.15, lon: -104.87, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "WHITEMAN AFB", lat: 38.73, lon: -93.55, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "GRAND FORKS AFB", lat: 47.97, lon: -97.40, country: "US", region: "us", type: "base", pop: 0 },
+  // === US — STRATEGIC BOMBER BASES ===
+  { name: "BARKSDALE AFB", lat: 32.50, lon: -93.66, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "ELLSWORTH AFB", lat: 44.15, lon: -103.10, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "DYESS AFB", lat: 32.42, lon: -99.85, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "GRIFFISS AFB", lat: 43.23, lon: -75.41, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "LORING AFB", lat: 46.95, lon: -67.89, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "CASTLE AFB", lat: 37.38, lon: -120.57, country: "US", region: "us", type: "base", pop: 0 },
+  // === US — SUBMARINE BASES ===
+  { name: "KINGS BAY NSB", lat: 30.80, lon: -81.56, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "BANGOR NSB", lat: 47.72, lon: -122.71, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "HOLY LOCH (US)", lat: 55.98, lon: -4.93, country: "UK", region: "uk", type: "base", pop: 0 },
+  // === US — PACIFIC / ATLANTIC ===
+  { name: "ELMENDORF AFB", lat: 61.25, lon: -149.81, country: "US", region: "alaska", type: "base", pop: 0 },
+  { name: "EIELSON AFB", lat: 64.66, lon: -147.10, country: "US", region: "alaska", type: "base", pop: 0 },
+  { name: "HICKAM AFB", lat: 21.32, lon: -157.94, country: "US", region: "hawaii", type: "base", pop: 0 },
+  { name: "PEARL HARBOR", lat: 21.35, lon: -157.97, country: "US", region: "hawaii", type: "base", pop: 0 },
+  { name: "NORFOLK NB", lat: 36.95, lon: -76.33, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "CAMP PENDLETON", lat: 33.30, lon: -117.35, country: "US", region: "us", type: "base", pop: 0 },
+  // === US — EARLY WARNING / COMMS ===
+  { name: "THULE AB", lat: 76.53, lon: -68.70, country: "DENMARK", region: "nato", type: "base", pop: 0 },
+  { name: "CLEAR AFS", lat: 64.30, lon: -149.19, country: "US", region: "alaska", type: "base", pop: 0 },
+  { name: "CAPE CANAVERAL", lat: 28.49, lon: -80.58, country: "US", region: "us", type: "base", pop: 0 },
+  { name: "VANDENBERG AFB", lat: 34.73, lon: -120.57, country: "US", region: "us", type: "base", pop: 0 },
+  // === NATO — UK ===
+  { name: "RAF LAKENHEATH", lat: 52.41, lon: 0.56, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "RAF MILDENHALL", lat: 52.36, lon: 0.49, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "RAF BENTWATERS", lat: 52.13, lon: 1.44, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "RAF UPPER HEYFORD", lat: 51.93, lon: -1.25, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "RAF GREENHAM COMMON", lat: 51.38, lon: -1.28, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "RAF FYLINGDALES", lat: 54.36, lon: -0.67, country: "UK", region: "uk", type: "base", pop: 0 },
+  { name: "FASLANE (CLYDE)", lat: 56.07, lon: -4.82, country: "UK", region: "uk", type: "base", pop: 0 },
+  // === NATO — WEST GERMANY ===
+  { name: "RAMMSTEIN AB", lat: 49.44, lon: 7.60, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  { name: "BITBURG AB", lat: 49.95, lon: 6.57, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  { name: "SPANGDAHLEM AB", lat: 49.97, lon: 6.69, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  { name: "HAHN AB", lat: 49.95, lon: 7.26, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  { name: "SEMBACH AB", lat: 49.51, lon: 7.87, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  { name: "FULDA GAP", lat: 50.55, lon: 9.68, country: "W.GERMANY", region: "nato", type: "base", pop: 0 },
+  // === NATO — OTHER EUROPE ===
+  { name: "KEFLAVIK NAS", lat: 63.97, lon: -22.61, country: "ICELAND", region: "nato", type: "base", pop: 0 },
+  { name: "AVIANO AB", lat: 46.03, lon: 12.60, country: "ITALY", region: "italian", type: "base", pop: 0 },
+  { name: "SIGONELLA NAS", lat: 37.40, lon: 14.92, country: "ITALY", region: "italian", type: "base", pop: 0 },
+  { name: "INCIRLIK AB", lat: 37.00, lon: 35.43, country: "TURKEY", region: "turkish", type: "base", pop: 0 },
+  { name: "ROTA NS", lat: 36.64, lon: -6.35, country: "SPAIN", region: "nato", type: "base", pop: 0 },
+  { name: "SOUDA BAY", lat: 35.49, lon: 24.12, country: "GREECE", region: "nato", type: "base", pop: 0 },
+  { name: "LAJES FIELD", lat: 38.76, lon: -27.09, country: "PORTUGAL", region: "nato", type: "base", pop: 0 },
+  // === NATO — PACIFIC / ASIA ===
+  { name: "YOKOTA AB", lat: 35.75, lon: 139.35, country: "JAPAN", region: "fareast", type: "base", pop: 0 },
+  { name: "KADENA AB", lat: 26.35, lon: 127.77, country: "JAPAN", region: "fareast", type: "base", pop: 0 },
+  { name: "MISAWA AB", lat: 40.70, lon: 141.37, country: "JAPAN", region: "fareast", type: "base", pop: 0 },
+  { name: "OSAN AB", lat: 37.09, lon: 127.03, country: "S.KOREA", region: "fareast", type: "base", pop: 0 },
+  { name: "KUNSAN AB", lat: 35.90, lon: 126.62, country: "S.KOREA", region: "fareast", type: "base", pop: 0 },
+  { name: "CLARK AB", lat: 15.19, lon: 120.56, country: "PHILIPPINES", region: "seato", type: "base", pop: 0 },
+  { name: "SUBIC BAY", lat: 14.79, lon: 120.27, country: "PHILIPPINES", region: "seato", type: "base", pop: 0 },
+  { name: "DIEGO GARCIA", lat: -7.32, lon: 72.42, country: "UK", region: "uk", type: "base", pop: 0 },
+  // === USSR — STRATEGIC COMMAND ===
+  { name: "MOSCOW PVO HQ", lat: 55.75, lon: 37.62, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "KALININGRAD HQ", lat: 54.71, lon: 20.50, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  // === USSR — ICBM FIELDS ===
+  { name: "KOZELSK (SS-19)", lat: 54.04, lon: 36.01, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "TATISHCHEVO (SS-19)", lat: 51.72, lon: 45.29, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "DOMBAROVSKY (SS-18)", lat: 50.75, lon: 59.53, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "KARTALY (SS-18)", lat: 53.05, lon: 60.65, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "ALEYSK (SS-18)", lat: 52.50, lon: 82.78, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "UZHUR (SS-18)", lat: 55.31, lon: 89.83, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "GLADKAYA (SS-18)", lat: 53.80, lon: 92.87, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "PERVOMAYSK (SS-19)", lat: 48.04, lon: 30.87, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "DERAZHNYA (SS-20)", lat: 49.26, lon: 27.43, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "YOSHKAR-OLA (SS-13)", lat: 56.63, lon: 47.87, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "TEYKOVO (SS-25)", lat: 56.86, lon: 40.54, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  // === USSR — STRATEGIC BOMBER BASES ===
+  { name: "ENGELS AB", lat: 51.48, lon: 46.20, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "UKRAINKA AB", lat: 51.17, lon: 128.40, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "MOZDOK AB", lat: 43.79, lon: 44.59, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  // === USSR — SUBMARINE BASES ===
+  { name: "POLYARNY (NORTH FLEET)", lat: 69.20, lon: 33.47, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "GADZHIYEVO", lat: 69.25, lon: 33.32, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "SEVERODVINSK", lat: 64.57, lon: 39.85, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "PETROPAVLOVSK-K", lat: 53.01, lon: 158.65, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "VLADIVOSTOK NB", lat: 43.12, lon: 131.90, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  // === USSR — AIR DEFENSE / EARLY WARNING ===
+  { name: "SARY SHAGAN", lat: 46.00, lon: 73.60, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "BAIKONUR COSMODROME", lat: 45.97, lon: 63.31, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "PLESETSK COSMODROME", lat: 62.93, lon: 40.58, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  { name: "PECHORA RADAR", lat: 65.20, lon: 57.35, country: "USSR", region: "ussr", type: "base", pop: 0 },
+  // === USSR — FORWARD DEPLOYED (WARSAW PACT) ===
+  { name: "WUNSDORF (GSFG HQ)", lat: 52.17, lon: 13.47, country: "E.GERMANY", region: "pact", type: "base", pop: 0 },
+  { name: "ZOSSEN-WUNSDORF", lat: 52.17, lon: 13.47, country: "E.GERMANY", region: "pact", type: "base", pop: 0 },
+  { name: "MILOVICE", lat: 50.23, lon: 14.89, country: "CZECHOSLOVAKIA", region: "pact", type: "base", pop: 0 },
+  { name: "LEGNICA (NORTHERN GROUP)", lat: 51.21, lon: 16.16, country: "POLAND", region: "pact", type: "base", pop: 0 },
+  // === FRANCE — FORCE DE FRAPPE ===
+  { name: "ILE LONGUE (SSBN)", lat: 48.31, lon: -4.51, country: "FRANCE", region: "france", type: "base", pop: 0 },
+  { name: "PLATEAU D'ALBION", lat: 44.10, lon: 5.52, country: "FRANCE", region: "france", type: "base", pop: 0 },
+  // === CHINA ===
+  { name: "JIANSHUI (DF-4)", lat: 23.63, lon: 102.83, country: "CHINA", region: "china", type: "base", pop: 0 },
+  { name: "DATONG (DF-5)", lat: 40.08, lon: 113.30, country: "CHINA", region: "china", type: "base", pop: 0 },
+  { name: "LUOYANG (DF-5)", lat: 34.68, lon: 112.45, country: "CHINA", region: "china", type: "base", pop: 0 },
+  { name: "XINING (DF-4)", lat: 36.62, lon: 101.77, country: "CHINA", region: "china", type: "base", pop: 0 },
+  { name: "LOP NOR (TEST SITE)", lat: 41.73, lon: 88.33, country: "CHINA", region: "china", type: "base", pop: 0 },
+];
+
+// Merge bases into CITIES so they can be used as launch origins/targets
+for (const base of MILITARY_BASES) {
+  CITIES.push(base);
+}
+
+// SSBN patrol positions — plausible 1983-era ocean locations
+// Each position is a potential submarine location; scenarios pick a subset
+// Subs are NEVER targets — they launch missiles but cannot be struck
+const SSBN_PATROLS = {
+  us: [
+    // Atlantic — Ohio-class and Lafayette-class patrol zones
+    { name: "SSBN ATLANTIC-1", lat: 52.0, lon: -30.0, nation: "us" },
+    { name: "SSBN ATLANTIC-2", lat: 48.0, lon: -22.0, nation: "us" },
+    { name: "SSBN ATLANTIC-3", lat: 38.0, lon: -55.0, nation: "us" },
+    { name: "SSBN ATLANTIC-4", lat: 42.0, lon: -40.0, nation: "us" },
+    { name: "SSBN ATLANTIC-5", lat: 35.0, lon: -65.0, nation: "us" },
+    // Pacific — Trident patrol zones
+    { name: "SSBN PACIFIC-1", lat: 45.0, lon: -155.0, nation: "us" },
+    { name: "SSBN PACIFIC-2", lat: 38.0, lon: -170.0, nation: "us" },
+    { name: "SSBN PACIFIC-3", lat: 30.0, lon: -145.0, nation: "us" },
+    { name: "SSBN PACIFIC-4", lat: 50.0, lon: -165.0, nation: "us" },
+    // Arctic / Norwegian Sea
+    { name: "SSBN ARCTIC-US", lat: 68.0, lon: -10.0, nation: "us" },
+  ],
+  ussr: [
+    // Barents Sea / Arctic — Delta and Typhoon class bastions
+    { name: "SSBN BARENTS-1", lat: 72.0, lon: 35.0, nation: "ussr" },
+    { name: "SSBN BARENTS-2", lat: 74.0, lon: 40.0, nation: "ussr" },
+    { name: "SSBN BARENTS-3", lat: 70.0, lon: 28.0, nation: "ussr" },
+    { name: "SSBN WHITE SEA", lat: 66.0, lon: 38.0, nation: "ussr" },
+    { name: "SSBN ARCTIC-1", lat: 78.0, lon: 45.0, nation: "ussr" },
+    { name: "SSBN ARCTIC-2", lat: 76.0, lon: 55.0, nation: "ussr" },
+    // Sea of Okhotsk — Pacific Fleet bastion
+    { name: "SSBN OKHOTSK-1", lat: 54.0, lon: 150.0, nation: "ussr" },
+    { name: "SSBN OKHOTSK-2", lat: 50.0, lon: 148.0, nation: "ussr" },
+    { name: "SSBN OKHOTSK-3", lat: 56.0, lon: 145.0, nation: "ussr" },
+    // North Atlantic / GIUK gap
+    { name: "SSBN N.ATLANTIC", lat: 62.0, lon: -15.0, nation: "ussr" },
+    // Mediterranean (rare, but occasional deployment)
+    { name: "SSBN MED", lat: 35.0, lon: 18.0, nation: "ussr" },
+  ],
+  uk: [
+    // North Atlantic — Resolution-class Polaris boats
+    { name: "SSBN UK-ATLANTIC-1", lat: 58.0, lon: -15.0, nation: "uk" },
+    { name: "SSBN UK-ATLANTIC-2", lat: 55.0, lon: -20.0, nation: "uk" },
+  ],
+  france: [
+    // Bay of Biscay / North Atlantic — Le Redoutable class
+    { name: "SSBN FR-ATLANTIC-1", lat: 46.0, lon: -10.0, nation: "france" },
+    { name: "SSBN FR-ATLANTIC-2", lat: 50.0, lon: -12.0, nation: "france" },
+  ],
+  china: [
+    // South China Sea — Xia-class (Type 092), single boat, limited patrols
+    { name: "SSBN PRC-1", lat: 18.0, lon: 112.0, nation: "china" },
+  ],
+};
+
+// Determine how many subs each nation deploys based on DEFCON / scenario intensity
+// Returns an array of submarine position objects for rendering
+function assignSubmarines(regions, defcon) {
+  const subs = [];
+  const used = new Set();
+
+  function pick(pool, count) {
+    // Shuffle and pick
+    const shuffled = pool.filter(s => !used.has(s.name)).sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, count);
+    picked.forEach(s => { used.add(s.name); subs.push(s); });
+    return picked;
+  }
+
+  const intensity = Math.max(1, 6 - defcon); // 1-5
+
+  // US/NATO involvement
+  if (regions.some(r => ["us", "nato", "uk", "alaska", "hawaii"].includes(r))) {
+    pick(SSBN_PATROLS.us, Math.min(2 + intensity, 8));
+  }
+
+  // USSR involvement
+  if (regions.some(r => ["ussr", "pact"].includes(r))) {
+    pick(SSBN_PATROLS.ussr, Math.min(2 + intensity, 9));
+  }
+
+  // UK involvement
+  if (regions.some(r => ["uk", "nato"].includes(r))) {
+    pick(SSBN_PATROLS.uk, Math.min(1, intensity));
+  }
+
+  // France involvement
+  if (regions.some(r => ["france", "nato"].includes(r))) {
+    pick(SSBN_PATROLS.france, Math.min(1, intensity));
+  }
+
+  // China — only had 1 SSBN in 1983 (Xia class), and it barely worked
+  if (regions.some(r => r === "china") && defcon <= 2) {
+    pick(SSBN_PATROLS.china, 1);
+  }
+
+  return subs;
+}
+
 // Region keyword mapping for strategy name parsing
 const REGION_KEYWORDS = {
   "U.S.": ["us"],
@@ -444,7 +659,7 @@ const REGION_KEYWORDS = {
   "WARSAW PACT": ["pact", "ussr", "czech", "romanian", "bulgarian", "albanian"],
   "PACT": ["pact", "ussr", "czech", "romanian", "bulgarian"],
   "FAR EAST": ["fareast", "china", "hongkong", "taiwan"],
-  "MIDDLE EAST": ["isreal", "syrian", "lebanon", "iraq", "iranian", "saudi", "egypt"],
+  "MIDDLE EAST": ["israel", "syrian", "lebanon", "iraq", "iranian", "saudi", "egypt"],
   "SEATO": ["seato", "thai", "malaysian", "australian"],
   "ATLANTIC": ["us", "english", "iceland", "nato"],
   "PACIFIC": ["us", "fareast", "australian", "hawaiian"],
@@ -473,8 +688,8 @@ const REGION_KEYWORDS = {
   "TAIWAN": ["taiwan"],
   "PORTUGAL": ["portugal"],
   "ALBANIAN": ["albanian"],
-  "PALESTINIAN": ["isreal", "syrian", "lebanon"],
-  "PALISTINIAN": ["isreal", "syrian", "lebanon"],
+  "PALESTINIAN": ["israel", "syrian", "lebanon"],
+  "PALISTINIAN": ["israel", "syrian", "lebanon"],
   "MOROCCAN": ["moroccan"],
   "BAVARIAN": ["bavarian"],
   "CZECH": ["czech"],
@@ -501,8 +716,10 @@ const REGION_KEYWORDS = {
   "VENEZUELA": ["venezuela"],
   "MAYLASIAN": ["malaysian"],
   "MALAYSIAN": ["malaysian"],
-  "ISREAL": ["isreal"],
-  "CYPRESS": ["cypress"],
+  "ISREAL": ["israel"],
+  "ISRAEL": ["israel"],
+  "CYPRESS": ["cyprus"],
+  "CYPRUS": ["cyprus"],
   "EGYPT": ["egypt"],
   "BANGLADESH": ["bangladesh"],
   "KENYA": ["kenya"],
@@ -528,7 +745,7 @@ const ESCALATION_KEYWORDS = {
   5: ["MINIMAL", "LOCAL", "INCIDENT", "DOMESTIC", "LIGHT", "DECOY", "DISCRETIONARY", "ALERT", "OPTION", "CLANDESTINE"],
   4: ["MANEUVER", "DEFENSE", "CONTAINMENT", "SUBVERSION", "CONFRONTATION", "PARAMILITARY", "MISDIRECTION", "INTERDICTION", "ALTERNATE"],
   3: ["PROVOCATION", "ESCALATION", "REBELLION", "REVOLUTION", "TACTICAL", "SURGICAL", "TERRITORIAL"],
-  2: ["STRIKE", "HEAVY", "OFFENSIVE", "THEATERWIDE", "TAKEOVER", "SUDDEN", "SURPRISE", "THRUST", "PREEMPTIVE", "MAXIMUM", "MASSIVE", "SOVEREIGNTY", "RETALIATIO", "ACTION"],
+  2: ["STRIKE", "HEAVY", "OFFENSIVE", "THEATERWIDE", "TAKEOVER", "SUDDEN", "SURPRISE", "THRUST", "PREEMPTIVE", "MAXIMUM", "MASSIVE", "SOVEREIGNTY", "RETALIATION", "ACTION"],
   1: ["FIRST STRIKE", "DECAPITATING", "WAR"]
 };
 
@@ -538,7 +755,7 @@ const EMBEDDED_STRATEGIES = [
   "US USSR ESCALATION","MIDDLE EAST WAR","USSR CHINA ATTACK","INDIA PAKISTAN WAR",
   "MEDITERRANEAN WAR","HONGKONG VARIANT","SEATO DECAPITATING","CUBAN PROVOCATION",
   "ATLANTIC HEAVY","CUBAN PARAMILITARY","NICARAGUAN PREEMPTIVE","PACIFIC TERRITORIAL",
-  "BURMESE THEATERWIDE","TURKISH DECOY","ANGENTINA(SIC) ESCALATION","ICELAND MAXIMUM",
+  "BURMESE THEATERWIDE","TURKISH DECOY","ARGENTINA ESCALATION","ICELAND MAXIMUM",
   "ARABIAN THEATERWIDE","U.S. SUBVERSION","AUSTRALIAN MANEUVER","SUDAN SURPRISE",
   "NATO TERRITORIAL","ZAIRE ALLIANCE","ICELAND INCIDENT","ENGLISH ESCALATION",
   "MIDDLE EAST HEAVY","MEXICAN TAKEOVER","CHAD ALERT","SAUDI MANEUVER",
@@ -549,16 +766,16 @@ const EMBEDDED_STRATEGIES = [
   "CZECH OPTION","FRENCH ALLIANCE","ARABIAN CLANDESTINE","GABON REBELLION",
   "NORTHERN MAXIMUM","DANISH PARAMILITARY","SEATO TAKEOVER","HAWAIIAN ESCALATION",
   "IRANIAN MANEUVER","NATO CONTAINMENT","SWISS INCIDENT","CUBAN MINIMAL",
-  "CHAD ALERT","ICELAND ESCALATION","VIETNAMESE RETALIATIO","SYRIAN PROVOCATION",
+  "CHAD ALERT","ICELAND ESCALATION","VIETNAMESE RETALIATION","SYRIAN PROVOCATION",
   "LIBYAN LOCAL","GABON TAKEOVER","ROMANIAN WAR","MIDDLE EAST OFFENSIVE",
   "DENMARK MASSIVE","CHILE CONFRONTATION","S.AFRICAN SUBVERSION","USSR ALERT",
   "NICARAGUAN THRUST","GREENLAND DOMESTIC","ICELAND HEAVY","KENYA OPTION",
   "PACIFIC DEFENSE","UGANDA MAXIMUM","THAI SUBVERSION","ROMANIAN STRIKE",
   "PAKISTAN SOVEREIGNTY","AFGHAN MISDIRECTION","ETHIOPIAN LOCAL","ITALIAN TAKEOVER",
   "VIETNAMESE INCIDENT","ENGLISH PREEMPTIVE","DENMARK ALTERNATE","THAI CONFRONTATION",
-  "TAIWAN SURPRISE","BRAZILIAN STRIKE","VENEZUELA SUDDEN","MAYLASIAN ALERT",
-  "ISREAL DISCRETIONARY","LIBYAN ACTION","PALISTINIAN TACTICAL","NATO ALTERNATE",
-  "CYPRESS MANEUVER","EGYPT MISDIRECTION","BANGLADESH THRUST","KENYA DEFENSE",
+  "TAIWAN SURPRISE","BRAZILIAN STRIKE","VENEZUELA SUDDEN","MALAYSIAN ALERT",
+  "ISRAEL DISCRETIONARY","LIBYAN ACTION","PALESTINIAN TACTICAL","NATO ALTERNATE",
+  "CYPRUS MANEUVER","EGYPT MISDIRECTION","BANGLADESH THRUST","KENYA DEFENSE",
   "BANGLADESH CONTAINMENT","VIETNAMESE STRIKE","ALBANIAN CONTAINMENT","GABON SURPRISE",
   "IRAQ SOVEREIGNTY","VIETNAMESE SUDDEN","LEBANON INTERDICTION","TAIWAN DOMESTIC",
   "ALGERIAN SOVEREIGNTY","ARABIAN STRIKE","ATLANTIC SUDDEN","MONGOLIAN THRUST",

@@ -252,12 +252,16 @@ class TerminalUI {
   }
 
   // === Strategy Execution Log ===
-  async showExecutionLog(strategyName, defcon) {
+  async showExecutionLog(strategyName, defcon, narrative) {
     this.printBlank();
     await this.typewrite(`> STRATEGY SELECTED: ${strategyName}`, 'bright');
     await this.delay(300);
     await this.typewrite(`  DEFCON LEVEL: ${defcon}`, defcon <= 2 ? 'bright' : 'dim');
     await this.delay(200);
+    if (narrative) {
+      await this.typewrite(`  ${narrative}`, 'dim');
+      await this.delay(300);
+    }
     await this.typewrite('  COMPUTING OPTIMAL STRIKE PATTERNS...', 'dim');
     await this.delay(500);
     await this.typewrite('  LAUNCHING PRIMARY STRIKE...', 'bright');

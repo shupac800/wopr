@@ -7,11 +7,27 @@ class MissileSystem {
     this.activeMissiles = [];
     this.detonations = [];
     this.blastMarks = []; // persistent blast circles on globe
+    this.persistentTrails = []; // trails that persist until clear()
     this.onDetonation = null; // callback for screen flash
 
     // 100 miles in radians on globe surface (Earth radius ~3959 mi)
     // Globe radius = 1.0, so scale factor = 100 / 3959
     this.BLAST_RADIUS = 100 / 3959;
+    this.destroyedSites = []; // lat/lon of detonation sites
+  }
+
+  // Check if a lat/lon is within blast radius of any detonation
+  isDestroyed(lat, lon) {
+    // Compare using great-circle distance approximation in degrees
+    // BLAST_RADIUS is in globe-units (~100mi); convert to degrees (~1.44°)
+    const threshDeg = 1.44;
+    const threshSq = threshDeg * threshDeg;
+    for (const site of this.destroyedSites) {
+      const dlat = lat - site.lat;
+      const dlon = lon - site.lon;
+      if (dlat * dlat + dlon * dlon < threshSq) return true;
+    }
+    return false;
   }
 
   // Create a ballistic arc between two lat/lon points
@@ -43,22 +59,36 @@ class MissileSystem {
 
     // Trail line (full arc, initially invisible)
     const trailGeom = new THREE.BufferGeometry().setFromPoints(arcPoints);
+    trailGeom.setDrawRange(0, 0); // draw nothing until missile starts flying
     const trailMat = new THREE.LineBasicMaterial({
-      color: 0x33ff33,
+      color: 0xffffff,
       transparent: true,
       opacity: 0.0,
+      depthWrite: false, // prevent invisible trails from occluding scene objects
     });
     const trail = new THREE.Line(trailGeom, trailMat);
     this.scene.add(trail);
 
-    // Missile head (bright point)
-    const headGeom = new THREE.SphereGeometry(0.012, 6, 6);
-    const headMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+    // Missile head — red equilateral triangle (cone viewed from side)
+    const triSize = 0.027;
+    const triShape = new THREE.BufferGeometry();
+    const h3 = triSize * Math.sqrt(3) / 2;
+    // Triangle in local XY: point at +Y (forward), base at -Y
+    triShape.setAttribute('position', new THREE.Float32BufferAttribute([
+      0, h3 * 0.667, 0,              // tip (forward)
+      -triSize / 2, -h3 * 0.333, 0,  // base left
+      triSize / 2, -h3 * 0.333, 0,   // base right
+    ], 3));
+    triShape.setIndex([0, 1, 2]);
+    triShape.computeVertexNormals();
+    const edges = new THREE.EdgesGeometry(triShape);
+    const headMat = new THREE.LineBasicMaterial({
+      color: 0xff3333,
       transparent: true,
       opacity: 0.0,
+      depthWrite: false,
     });
-    const head = new THREE.Mesh(headGeom, headMat);
+    const head = new THREE.LineSegments(edges, headMat);
     head.position.copy(arcPoints[0]);
     this.scene.add(head);
 
@@ -165,9 +195,12 @@ class MissileSystem {
       grown: false,
     });
 
-    // Trigger screen flash
+    // Record this site as destroyed
+    this.destroyedSites.push({ lat: targetCity.lat, lon: targetCity.lon });
+
+    // Trigger screen flash and info panel update
     if (this.onDetonation) {
-      this.onDetonation();
+      this.onDetonation(targetCity);
     }
   }
 
@@ -181,6 +214,14 @@ class MissileSystem {
       if (m.elapsed < m.delay) continue;
 
       if (!m.started) {
+        // Check if origin has been destroyed — missile can't launch from a crater
+        if (m.origin.type !== 'sub' && this.isDestroyed(m.origin.lat, m.origin.lon)) {
+          m.done = true;
+          m.cleaned = true;
+          this.scene.remove(m.trail);
+          this.scene.remove(m.head);
+          continue;
+        }
         m.started = true;
         m.headMat.opacity = 1.0;
         m.trailMat.opacity = 0.6;
@@ -200,15 +241,28 @@ class MissileSystem {
         const targetPos = this.globe.latLonToVec3(m.target.lat, m.target.lon, 1.01);
         this.createDetonation(targetPos, m.target);
 
-        // Start fading trail
-        m.fading = true;
-        m.fadeAge = 0;
+        // Trail persists — dim it slightly but keep visible until clear()
+        m.trailMat.opacity = 0.55;
+        this.persistentTrails.push(m.trail);
+        m.cleaned = true;
         continue;
       }
 
-      // Move head along arc
+      // Move head along arc and orient triangle to face direction of travel
       const idx = Math.floor(m.progress * (m.arcPoints.length - 1));
-      m.head.position.copy(m.arcPoints[Math.min(idx, m.arcPoints.length - 1)]);
+      const clampIdx = Math.min(idx, m.arcPoints.length - 1);
+      m.head.position.copy(m.arcPoints[clampIdx]);
+
+      // Compute tangent direction from current to next arc point
+      const nextIdx = Math.min(clampIdx + 1, m.arcPoints.length - 1);
+      if (nextIdx !== clampIdx) {
+        const tangent = new THREE.Vector3().subVectors(m.arcPoints[nextIdx], m.arcPoints[clampIdx]).normalize();
+        const up = m.arcPoints[clampIdx].clone().normalize(); // radial "up" from globe center
+        const right = new THREE.Vector3().crossVectors(tangent, up).normalize();
+        const correctedUp = new THREE.Vector3().crossVectors(right, tangent).normalize();
+        const mat4 = new THREE.Matrix4().makeBasis(right, tangent, correctedUp);
+        m.head.setRotationFromMatrix(mat4);
+      }
 
       // Draw trail up to current position
       const positions = m.trailGeom.attributes.position.array;
@@ -219,21 +273,7 @@ class MissileSystem {
       m.trailGeom.setDrawRange(0, drawUpTo + 1);
     }
 
-    // Fade completed missile trails
-    for (const m of this.activeMissiles) {
-      if (m.fading) {
-        m.fadeAge += deltaTime;
-        const fade = 1.0 - (m.fadeAge / 2.0);
-        if (fade <= 0) {
-          m.trailMat.opacity = 0;
-          this.scene.remove(m.trail);
-          m.fading = false;
-          m.cleaned = true;
-        } else {
-          m.trailMat.opacity = fade * 0.6;
-        }
-      }
-    }
+    // (trails persist until clear() is called)
 
     // Update flash detonations (temporary expanding ring)
     for (const d of this.detonations) {
@@ -286,6 +326,9 @@ class MissileSystem {
       this.scene.remove(m.trail);
       this.scene.remove(m.head);
     }
+    for (const t of this.persistentTrails) {
+      this.scene.remove(t);
+    }
     for (const d of this.detonations) {
       this.scene.remove(d.ring);
     }
@@ -293,7 +336,9 @@ class MissileSystem {
       this.scene.remove(b.line);
     }
     this.activeMissiles = [];
+    this.persistentTrails = [];
     this.detonations = [];
     this.blastMarks = [];
+    this.destroyedSites = [];
   }
 }
