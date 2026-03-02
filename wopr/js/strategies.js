@@ -141,8 +141,8 @@ class StrategyEngine {
       return sub;
     };
 
-    // Collect all targets from prior waves (for retaliation filtering)
-    const priorTargets = new Set();
+    // Collect all target locations from prior waves (for retaliation filtering)
+    const priorTargetLocs = []; // {lat, lon} of prior targets
 
     for (const wave of scenario.waves) {
       const baseDelay = wave.delay || 0;
@@ -175,10 +175,18 @@ class StrategyEngine {
       // Combine land + sub origins
       const allOrigins = origins.concat(subOrigins);
 
-      // Filter origins for retaliation waves — skip cities that were targeted earlier
-      // (subs are never targeted so they always survive for retaliation)
+      // Filter origins for retaliation waves — skip origins near prior target sites
+      // Uses ~1.44° proximity (same as runtime blast radius check)
+      // Subs are never targeted so they always survive for retaliation
+      const isNearPriorTarget = (c) => {
+        const thresh = 1.44 * 1.44;
+        return priorTargetLocs.some(t => {
+          const dlat = c.lat - t.lat, dlon = c.lon - t.lon;
+          return dlat * dlat + dlon * dlon < thresh;
+        });
+      };
       const activeOrigins = wave.retaliation
-        ? allOrigins.filter(c => c.type === "sub" || !priorTargets.has(c.name))
+        ? allOrigins.filter(c => c.type === "sub" || !isNearPriorTarget(c))
         : allOrigins;
 
       if (activeOrigins.length === 0) continue;
@@ -197,9 +205,9 @@ class StrategyEngine {
         missileIdx++;
       }
 
-      // Record this wave's targets for future retaliation checks
+      // Record this wave's target locations for future retaliation checks
       for (const t of targets) {
-        priorTargets.add(t.name);
+        priorTargetLocs.push({ lat: t.lat, lon: t.lon });
       }
     }
 
@@ -209,7 +217,7 @@ class StrategyEngine {
     }
 
     // ESCALATION — any nuclear use inevitably leads to global annihilation
-    this.addEscalation(missiles, submarines, [...priorTargets]);
+    this.addEscalation(missiles, submarines, priorTargetLocs);
 
     // Escalation involves ALL submarine nations — ensure they're all shown
     const allSubs = assignSubmarines(

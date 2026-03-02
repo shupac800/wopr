@@ -117,13 +117,11 @@
         const timer = setTimeout(() => {
           terminal.setDefcon(d);
           infoPanel.setDefcon(d);
+          terminal.printDefconChange(d);
           if (d <= 2) terminal.setStatus('GLOBAL ESCALATION');
-          if (d === 1) terminal.setStatus('TOTAL NUCLEAR WAR');
         }, t);
         defconTimers.push(timer);
       }
-    } else {
-      terminal.setStatus('TOTAL NUCLEAR WAR');
     }
 
     // Launch missiles

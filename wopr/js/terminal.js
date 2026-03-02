@@ -38,6 +38,12 @@ class TerminalUI {
     }
   }
 
+  // Print a DEFCON change notification to the terminal message area
+  printDefconChange(level) {
+    const cls = level <= 2 ? 'bright' : 'dim';
+    this.print(`  ** DEFCON ${level} **`, cls);
+  }
+
   setStatus(text) {
     this.woprStatus.textContent = text;
   }
