@@ -651,7 +651,7 @@ function assignSubmarines(regions, defcon) {
   return subs;
 }
 
-// Region keyword mapping for strategy name parsing
+// Region keyword mapping for scenario name parsing
 const REGION_KEYWORDS = {
   "U.S.": ["us"],
   "USSR": ["ussr"],
@@ -750,7 +750,7 @@ const ESCALATION_KEYWORDS = {
 };
 
 // Embedded fallback for file:// protocol (fetch won't work)
-const EMBEDDED_STRATEGIES = [
+const EMBEDDED_SCENARIOS = [
   "U.S. FIRST STRIKE","USSR FIRST STRIKE","NATO / WARSAW PACT","FAR EAST STRATEGY",
   "US USSR ESCALATION","MIDDLE EAST WAR","USSR CHINA ATTACK","INDIA PAKISTAN WAR",
   "MEDITERRANEAN WAR","HONGKONG VARIANT","SEATO DECAPITATING","CUBAN PROVOCATION",

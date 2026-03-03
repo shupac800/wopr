@@ -128,7 +128,7 @@ class MissileSystem {
     return missile;
   }
 
-  // Launch a full strategy sequence
+  // Launch a full scenario sequence
   launchSequence(sequence) {
     sequence.missiles.forEach(m => {
       this.launchMissile(m.origin, m.target, m.delay);

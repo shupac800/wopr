@@ -79,8 +79,8 @@
   // === Initialize Info Panel (right side) ===
   infoPanel = new InfoPanel();
 
-  // === Initialize Strategy Engine ===
-  const engine = new StrategyEngine();
+  // === Initialize Scenario Engine ===
+  const engine = new ScenarioEngine();
 
   // === Boot Sequence ===
   const bootScreen = document.getElementById('boot-screen');
@@ -103,26 +103,26 @@
   // Run terminal boot sequence
   await terminal.runBootSequence();
 
-  // Load strategies
-  const strategies = await engine.load();
-  terminal.buildStrategyList(strategies);
+  // Load scenarios
+  const scenarios = await engine.load();
+  terminal.buildScenarioList(scenarios);
 
   // Enter IDLE
   state = State.IDLE;
   terminal.enableInput();
 
-  // === Run a single strategy, return when complete ===
-  async function runStrategy(strategyName) {
+  // === Run a single scenario, return when complete ===
+  async function runScenario(scenarioName) {
     const myGen = runGen;
     const aborted = () => runGen !== myGen;
 
     // Build launch sequence
-    const sequence = engine.buildLaunchSequence(strategyName);
+    const sequence = engine.buildLaunchSequence(scenarioName);
 
     // Determine initial DEFCON from the scenario (before escalation forced it to 1)
-    const initialDefcon = (typeof STRATEGY_SCENARIOS !== 'undefined' && STRATEGY_SCENARIOS[strategyName])
-      ? (STRATEGY_SCENARIOS[strategyName].defcon || engine.getDefcon(strategyName))
-      : engine.getDefcon(strategyName);
+    const initialDefcon = (typeof SCENARIOS !== 'undefined' && SCENARIOS[scenarioName])
+      ? (SCENARIOS[scenarioName].defcon || engine.getDefcon(scenarioName))
+      : engine.getDefcon(scenarioName);
 
     // Show elapsed timer at 00:00 (starts ticking on first missile launch)
     showElapsed();
@@ -130,10 +130,10 @@
     // Update DEFCON to initial level
     terminal.setDefcon(initialDefcon);
     infoPanel.setDefcon(initialDefcon);
-    terminal.setStatus('EXECUTING STRATEGY');
+    terminal.setStatus('EXECUTING SCENARIO');
 
     // Prepare right panel
-    infoPanel.beginStrategy(sequence);
+    infoPanel.beginScenario(sequence);
 
     // Show submarine markers on globe/map
     if (sequence.submarines && sequence.submarines.length > 0) {
@@ -141,7 +141,7 @@
     }
 
     // Show log (with narrative if scenario provides one)
-    await terminal.showExecutionLog(strategyName, initialDefcon, sequence.narrative);
+    await terminal.showExecutionLog(scenarioName, initialDefcon, sequence.narrative);
     if (aborted()) return;
 
     // Schedule DEFCON ramp-down during escalation
@@ -202,18 +202,18 @@
     await delay(1000);
   }
 
-  // === Run all strategies sequentially from a starting index, looping ===
+  // === Run all scenarios sequentially from a starting index, looping ===
   async function runSequentialFrom(startIndex) {
     const myGen = ++runGen;
     state = State.EXECUTING;
-    terminal.enableInput(); // keep input enabled so user can click a new strategy
+    terminal.enableInput(); // keep input enabled so user can click a new scenario
 
     let idx = startIndex;
     while (myGen === runGen) {
-      const strategyName = strategies[idx];
+      const scenarioName = scenarios[idx];
       terminal.selectIndex(idx);
 
-      await runStrategy(strategyName);
+      await runScenario(scenarioName);
       if (myGen !== runGen) return;
 
       // Clear blasts, subs, and elapsed display from globe
@@ -221,7 +221,7 @@
       missiles.clear();
       globe.clearSubmarines();
 
-      // Brief pause before next strategy
+      // Brief pause before next scenario
       terminal.setDefcon(5);
       infoPanel.setDefcon(5);
       terminal.setStatus('NEXT TARGET');
@@ -229,12 +229,12 @@
       if (myGen !== runGen) return;
 
       // Advance to next, loop back to 0
-      idx = (idx + 1) % strategies.length;
+      idx = (idx + 1) % scenarios.length;
     }
   }
 
-  // === Strategy Selection Handler ===
-  terminal.onStrategySelect = async (strategyName, index) => {
+  // === Scenario Selection Handler ===
+  terminal.onScenarioSelect = async (scenarioName, index) => {
     if (state === State.EXECUTING) {
       // Abort the current run: bump generation, clear visuals, timers, and terminal effects
       runGen++;

@@ -1,6 +1,6 @@
-const STRATEGY_SCENARIOS = {};
+const SCENARIOS = {};
 
-STRATEGY_SCENARIOS["U.S. FIRST STRIKE"] = {
+SCENARIOS["U.S. FIRST STRIKE"] = {
   narrative: "STRATCOM initiates SIOP-6 preemptive launch sequence. Primary counterforce strike targets Soviet ICBM fields, command nodes, and naval assets.",
   waves: [
     { from: ["OMAHA", "COLORADO SPRINGS", "WASHINGTON DC"], to: ["MOSCOW", "LENINGRAD", "MINSK", "KIEV", "SVERDLOVSK"], delay: 0 },
@@ -13,7 +13,7 @@ STRATEGY_SCENARIOS["U.S. FIRST STRIKE"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["USSR FIRST STRIKE"] = {
+SCENARIOS["USSR FIRST STRIKE"] = {
   narrative: "Soviet strategic forces execute RYAN war plan. Massive first strike targets US command authority, ICBM silos, and coastal population centers.",
   waves: [
     { from: ["MOSCOW", "LENINGRAD", "SVERDLOVSK"], to: ["WASHINGTON DC", "OMAHA", "COLORADO SPRINGS", "NORFOLK", "NEW YORK"], delay: 0 },
@@ -26,7 +26,7 @@ STRATEGY_SCENARIOS["USSR FIRST STRIKE"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["NATO / WARSAW PACT"] = {
+SCENARIOS["NATO / WARSAW PACT"] = {
   narrative: "Warsaw Pact armor crosses the Fulda Gap. NATO tactical nuclear release authority granted; full alliance nuclear exchange follows conventional breakthrough.",
   waves: [
     { from: ["EAST BERLIN", "WARSAW", "PRAGUE", "BUDAPEST"], to: ["BERLIN", "FRANKFURT", "BONN", "HAMBURG", "COLOGNE"], delay: 0 },
@@ -38,7 +38,7 @@ STRATEGY_SCENARIOS["NATO / WARSAW PACT"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["FAR EAST STRATEGY"] = {
+SCENARIOS["FAR EAST STRATEGY"] = {
   narrative: "DPRK launches ballistic strikes against South Korean and Japanese targets. PACOM executes theater nuclear option; Chinese forward staging areas targeted in second wave.",
   waves: [
     { from: ["PYONGYANG"], to: ["SEOUL", "INCHEON", "TOKYO"], delay: 0 },
@@ -49,7 +49,7 @@ STRATEGY_SCENARIOS["FAR EAST STRATEGY"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["US USSR ESCALATION"] = {
+SCENARIOS["US USSR ESCALATION"] = {
   narrative: "Border incident in Central Europe initiates limited exchange. Mutual escalation protocols activate; theater conflict expands to intercontinental threshold.",
   waves: [
     { from: ["BERLIN", "FRANKFURT"], to: ["EAST BERLIN", "WARSAW", "PRAGUE"], delay: 0 },
@@ -60,7 +60,7 @@ STRATEGY_SCENARIOS["US USSR ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["MIDDLE EAST WAR"] = {
+SCENARIOS["MIDDLE EAST WAR"] = {
   narrative: "Israeli preemptive strike on Syrian and Iraqi nuclear infrastructure triggers Soviet response. Superpower confrontation escalates beyond regional containment.",
   waves: [
     { from: ["TEL AVIV", "JERUSALEM"], to: ["DAMASCUS", "BAGHDAD", "CAIRO", "AMMAN"], delay: 0 },
@@ -71,7 +71,7 @@ STRATEGY_SCENARIOS["MIDDLE EAST WAR"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["USSR CHINA ATTACK"] = {
+SCENARIOS["USSR CHINA ATTACK"] = {
   narrative: "Sino-Soviet border clashes escalate. Soviet Far Eastern Military District executes preemptive counterforce strike against PLA nuclear arsenal and command nodes.",
   waves: [
     { from: ["VLADIVOSTOK", "IRKUTSK", "KHABAROVSK"], to: ["BEIJING", "SHENYANG", "HARBIN", "XIAN", "LHASA"], delay: 0 },
@@ -81,7 +81,7 @@ STRATEGY_SCENARIOS["USSR CHINA ATTACK"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["INDIA PAKISTAN WAR"] = {
+SCENARIOS["INDIA PAKISTAN WAR"] = {
   narrative: "Pakistani first strike targets Indian command and industrial centers. Indian second-strike capability activates; subcontinental exchange reaches full nuclear threshold.",
   waves: [
     { from: ["ISLAMABAD", "KARACHI", "LAHORE"], to: ["NEW DELHI", "MUMBAI", "CALCUTTA", "BANGALORE"], delay: 0 },
@@ -91,7 +91,7 @@ STRATEGY_SCENARIOS["INDIA PAKISTAN WAR"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["MEDITERRANEAN WAR"] = {
+SCENARIOS["MEDITERRANEAN WAR"] = {
   narrative: "Turkish Straits closure triggers NATO Article 5 response. Soviet Black Sea Fleet engages; Mediterranean theater engulfed in tactical nuclear exchange.",
   waves: [
     { from: ["MOSCOW", "TBILISI", "ODESSA"], to: ["ISTANBUL", "ANKARA", "ATHENS", "ROME", "NAPLES"], delay: 0 },
@@ -102,7 +102,7 @@ STRATEGY_SCENARIOS["MEDITERRANEAN WAR"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["HONGKONG VARIANT"] = {
+SCENARIOS["HONGKONG VARIANT"] = {
   narrative: "PRC mobilizes against Hong Kong colonial administration. British nuclear guarantee invoked; limited exchange contained to regional theater.",
   waves: [
     { from: ["GUANGZHOU", "BEIJING", "SHANGHAI"], to: ["HONG KONG", "MACAU", "TAIPEI", "MANILA"], delay: 0 },
@@ -111,7 +111,7 @@ STRATEGY_SCENARIOS["HONGKONG VARIANT"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["SEATO DECAPITATING"] = {
+SCENARIOS["SEATO DECAPITATING"] = {
   narrative: "Soviet Pacific Fleet submarine-launched first strike targets SEATO command nodes. PLA coordinates second wave against allied Pacific infrastructure.",
   waves: [
     { fromSubs: ["ussr"], subFilter: "OKHOTSK", to: ["MANILA", "BANGKOK", "SINGAPORE", "KUALA LUMPUR"], delay: 0 },
@@ -122,7 +122,7 @@ STRATEGY_SCENARIOS["SEATO DECAPITATING"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["CUBAN PROVOCATION"] = {
+SCENARIOS["CUBAN PROVOCATION"] = {
   narrative: "Cuban MiGs intercept US reconnaissance aircraft over international waters. Castro regime deploys tactical nuclear artillery; CINCLANT authorizes response.",
   waves: [
     { from: ["HAVANA"], to: ["MIAMI", "TAMPA", "NEW ORLEANS"], delay: 0 },
@@ -134,7 +134,7 @@ STRATEGY_SCENARIOS["CUBAN PROVOCATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ATLANTIC HEAVY"] = {
+SCENARIOS["ATLANTIC HEAVY"] = {
   narrative: "Soviet Northern Fleet engages NATO SACLANT forces in convoy interdiction. Tactical nuclear depth charges escalate to coastal strike exchange.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["REYKJAVIK", "OSLO", "BERGEN", "LONDON", "GLASGOW"], delay: 0 },
@@ -145,7 +145,7 @@ STRATEGY_SCENARIOS["ATLANTIC HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CUBAN PARAMILITARY"] = {
+SCENARIOS["CUBAN PARAMILITARY"] = {
   narrative: "Cuban-backed paramilitary forces destabilize Central American governments. Limited US punitive strike authorized against Cuban military infrastructure.",
   waves: [
     { from: ["MIAMI", "NORFOLK"], to: ["HAVANA"], delay: 0 },
@@ -154,7 +154,7 @@ STRATEGY_SCENARIOS["CUBAN PARAMILITARY"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["NICARAGUAN PREEMPTIVE"] = {
+SCENARIOS["NICARAGUAN PREEMPTIVE"] = {
   narrative: "Sandinista government accepts Soviet nuclear deployment. CINCSOUTH executes preemptive strike before operational status achieved.",
   waves: [
     { from: ["WASHINGTON DC", "MIAMI"], to: ["MANAGUA"], delay: 0 },
@@ -165,7 +165,7 @@ STRATEGY_SCENARIOS["NICARAGUAN PREEMPTIVE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["PACIFIC TERRITORIAL"] = {
+SCENARIOS["PACIFIC TERRITORIAL"] = {
   narrative: "Disputed island chain triggers US-Soviet naval confrontation. Limited exchange confined to Pacific theater with mutual stand-down before escalation threshold.",
   waves: [
     { from: ["VLADIVOSTOK", "PETROPAVLOVSK"], fromSubs: ["ussr"], to: ["TOKYO", "GUAM", "HONOLULU"], delay: 0 },
@@ -174,7 +174,7 @@ STRATEGY_SCENARIOS["PACIFIC TERRITORIAL"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["BURMESE THEATERWIDE"] = {
+SCENARIOS["BURMESE THEATERWIDE"] = {
   narrative: "Chinese forces cross Burmese border in force. SEATO theater command activates; India and Soviet advisors drawn into widening regional exchange.",
   waves: [
     { from: ["KUNMING", "CHONGQING", "BEIJING"], to: ["RANGOON", "MANDALAY", "BANGKOK", "CHIANG MAI"], delay: 0 },
@@ -184,7 +184,7 @@ STRATEGY_SCENARIOS["BURMESE THEATERWIDE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["TURKISH DECOY"] = {
+SCENARIOS["TURKISH DECOY"] = {
   narrative: "False flag operation simulates Turkish aggression to trigger NATO Article 5. Soviet intelligence assets expose provocation before full exchange.",
   waves: [
     { from: ["ISTANBUL", "ANKARA"], to: ["SOFIA", "BUCHAREST", "BELGRADE"], delay: 0 },
@@ -193,7 +193,7 @@ STRATEGY_SCENARIOS["TURKISH DECOY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ARGENTINA ESCALATION"] = {
+SCENARIOS["ARGENTINA ESCALATION"] = {
   narrative: "Argentine junta acquires tactical nuclear device. Regional destabilization forces US and Soviet diplomatic crisis into limited military exchange.",
   waves: [
     { from: ["BUENOS AIRES", "CORDOBA"], to: ["SANTIAGO", "MONTEVIDEO", "SAO PAULO"], delay: 0 },
@@ -203,7 +203,7 @@ STRATEGY_SCENARIOS["ARGENTINA ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ICELAND MAXIMUM"] = {
+SCENARIOS["ICELAND MAXIMUM"] = {
   narrative: "Soviet airborne forces seize Keflavik NATO air base. US counterattack triggers maximum theater response; Iceland becomes nuclear flashpoint.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["REYKJAVIK", "OSLO", "BERGEN"], delay: 0 },
@@ -215,7 +215,7 @@ STRATEGY_SCENARIOS["ICELAND MAXIMUM"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ARABIAN THEATERWIDE"] = {
+SCENARIOS["ARABIAN THEATERWIDE"] = {
   narrative: "Soviet-backed Iraqi forces advance on Saudi oil infrastructure. Baghdad launches preemptive strikes against Gulf states; US CENTCOM retaliates with full theater response.",
   waves: [
     { from: ["BAGHDAD", "MOSCOW", "TBILISI"], to: ["RIYADH", "JEDDAH", "KUWAIT CITY", "ABU DHABI"], delay: 0 },
@@ -225,7 +225,7 @@ STRATEGY_SCENARIOS["ARABIAN THEATERWIDE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["U.S. SUBVERSION"] = {
+SCENARIOS["U.S. SUBVERSION"] = {
   narrative: "CIA-backed coup attempt in Warsaw Pact nation detected. US preemptive strikes target Pact command nodes before Soviet countermeasures activate.",
   waves: [
     { from: ["WASHINGTON DC", "FRANKFURT"], to: ["WARSAW", "BUDAPEST", "BUCHAREST"], delay: 0 },
@@ -234,7 +234,7 @@ STRATEGY_SCENARIOS["U.S. SUBVERSION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["AUSTRALIAN MANEUVER"] = {
+SCENARIOS["AUSTRALIAN MANEUVER"] = {
   narrative: "Soviet Pacific Fleet conducts provocative maneuver through Australian territorial waters. ANZUS alliance activates; limited theater response authorized.",
   waves: [
     { from: ["CANBERRA", "DARWIN", "SYDNEY"], to: ["VLADIVOSTOK", "PETROPAVLOVSK"], delay: 0 },
@@ -243,7 +243,7 @@ STRATEGY_SCENARIOS["AUSTRALIAN MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["SUDAN SURPRISE"] = {
+SCENARIOS["SUDAN SURPRISE"] = {
   narrative: "Soviet-aligned Sudanese government granted basing rights for Indian Ocean operations. Combined US-Egyptian preemptive strike eliminates forward deployment capability.",
   waves: [
     { from: ["CAIRO", "WASHINGTON DC"], to: ["KHARTOUM"], delay: 0 },
@@ -253,7 +253,7 @@ STRATEGY_SCENARIOS["SUDAN SURPRISE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["NATO TERRITORIAL"] = {
+SCENARIOS["NATO TERRITORIAL"] = {
   narrative: "Warsaw Pact forces occupy disputed border zone. NATO flexible response activated; limited nuclear demonstration fails to halt advance.",
   waves: [
     { from: ["EAST BERLIN", "WARSAW", "PRAGUE"], to: ["BERLIN", "HAMBURG", "FRANKFURT"], delay: 0 },
@@ -263,7 +263,7 @@ STRATEGY_SCENARIOS["NATO TERRITORIAL"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ZAIRE ALLIANCE"] = {
+SCENARIOS["ZAIRE ALLIANCE"] = {
   narrative: "Soviet-backed Angolan forces cross Zaire border. US AFSOUTH and Belgian paratroopers respond; limited superpower proxy exchange authorized.",
   waves: [
     { from: ["MOSCOW", "LUANDA"], to: ["KINSHASA", "LUBUMBASHI", "BRAZZAVILLE"], delay: 0 },
@@ -273,7 +273,7 @@ STRATEGY_SCENARIOS["ZAIRE ALLIANCE"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ICELAND INCIDENT"] = {
+SCENARIOS["ICELAND INCIDENT"] = {
   narrative: "Unidentified submarine detected in Icelandic waters. NATO SOSUS alerts trigger precautionary alert; incident resolved before nuclear threshold.",
   waves: [
     { from: ["REYKJAVIK"], to: ["MURMANSK"], delay: 0 },
@@ -282,7 +282,7 @@ STRATEGY_SCENARIOS["ICELAND INCIDENT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ENGLISH ESCALATION"] = {
+SCENARIOS["ENGLISH ESCALATION"] = {
   narrative: "Soviet Backfire bombers penetrate UK air defense identification zone. RAF intercept leads to shootdown; rapid escalation through English Channel theater.",
   waves: [
     { from: ["MURMANSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["LONDON", "GLASGOW", "EDINBURGH"], delay: 0 },
@@ -293,7 +293,7 @@ STRATEGY_SCENARIOS["ENGLISH ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["MIDDLE EAST HEAVY"] = {
+SCENARIOS["MIDDLE EAST HEAVY"] = {
   narrative: "Combined Arab strike overwhelms Israeli air defenses. Israeli Jericho missiles respond; superpower nuclear umbrellas activated across full Middle East theater.",
   waves: [
     { from: ["CAIRO", "DAMASCUS", "BAGHDAD", "TEHRAN"], to: ["TEL AVIV", "JERUSALEM", "AMMAN"], delay: 0 },
@@ -304,7 +304,7 @@ STRATEGY_SCENARIOS["MIDDLE EAST HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["MEXICAN TAKEOVER"] = {
+SCENARIOS["MEXICAN TAKEOVER"] = {
   narrative: "Soviet-aligned coup seizes Mexican government and requests nuclear deployment rights. US Southern Command executes preemptive regime elimination strike.",
   waves: [
     { from: ["WASHINGTON DC", "SAN ANTONIO", "SAN DIEGO"], to: ["MEXICO CITY", "GUADALAJARA", "MONTERREY"], delay: 0 },
@@ -314,7 +314,7 @@ STRATEGY_SCENARIOS["MEXICAN TAKEOVER"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CHAD ALERT"] = {
+SCENARIOS["CHAD ALERT"] = {
   narrative: "Libyan armor moves toward Chadian border. US reconnaissance satellite detects possible nuclear artillery deployment; standby alert only.",
   waves: [
     { from: ["TRIPOLI", "BENGHAZI"], to: ["NDJAMENA"], delay: 0 },
@@ -323,7 +323,7 @@ STRATEGY_SCENARIOS["CHAD ALERT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["SAUDI MANEUVER"] = {
+SCENARIOS["SAUDI MANEUVER"] = {
   narrative: "Iranian Revolutionary Guard forces advance toward Saudi oil fields. Limited US punitive strike authorized to protect Gulf Cooperation Council infrastructure.",
   waves: [
     { from: ["TEHRAN", "ISFAHAN"], to: ["RIYADH", "JEDDAH", "KUWAIT CITY"], delay: 0 },
@@ -332,7 +332,7 @@ STRATEGY_SCENARIOS["SAUDI MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["AFRICAN TERRITORIAL"] = {
+SCENARIOS["AFRICAN TERRITORIAL"] = {
   narrative: "Soviet-backed forces seize disputed mineral-rich territory in southern Africa. US-backed South African response escalates to superpower proxy confrontation.",
   waves: [
     { from: ["MOSCOW", "LUANDA"], to: ["PRETORIA", "JOHANNESBURG", "HARARE", "WINDHOEK"], delay: 0 },
@@ -342,7 +342,7 @@ STRATEGY_SCENARIOS["AFRICAN TERRITORIAL"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ETHIOPIAN ESCALATION"] = {
+SCENARIOS["ETHIOPIAN ESCALATION"] = {
   narrative: "Soviet-Cuban forces supporting Mengistu regime clash with US-backed Somali and Eritrean insurgents. Horn of Africa crisis triggers wider superpower exchange.",
   waves: [
     { from: ["ADDIS ABABA", "MOSCOW", "HAVANA"], to: ["MOGADISHU", "ASMARA", "DJIBOUTI", "NAIROBI"], delay: 0 },
@@ -353,7 +353,7 @@ STRATEGY_SCENARIOS["ETHIOPIAN ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["TURKISH HEAVY"] = {
+SCENARIOS["TURKISH HEAVY"] = {
   narrative: "Turkish theater ignites as Soviet armor crosses the Caucasus. Ankara requests immediate nuclear release authority.",
   waves: [
     { from: ["MOSCOW", "TBILISI", "BAKU"], to: ["ISTANBUL", "ANKARA", "IZMIR", "ADANA"], delay: 0 },
@@ -365,7 +365,7 @@ STRATEGY_SCENARIOS["TURKISH HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["NATO INCURSION"] = {
+SCENARIOS["NATO INCURSION"] = {
   narrative: "Pact armor breaches the Fulda Gap under electronic jamming. SACEUR authorizes tactical nuclear release.",
   waves: [
     { from: ["EAST BERLIN", "WARSAW", "PRAGUE", "DRESDEN"], to: ["FRANKFURT", "BONN", "COLOGNE", "HAMBURG"], delay: 0 },
@@ -376,7 +376,7 @@ STRATEGY_SCENARIOS["NATO INCURSION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["U.S. DEFENSE"] = {
+SCENARIOS["U.S. DEFENSE"] = {
   narrative: "NORAD confirms inbound Soviet ICBMs on primary US population centers. Launch-on-warning protocol initiated; US retaliatory strike ordered before impact.",
   waves: [
     { from: ["MOSCOW", "LENINGRAD", "SVERDLOVSK"], fromSubs: ["ussr"], to: ["WASHINGTON DC", "NEW YORK", "CHICAGO", "OMAHA"], delay: 0 },
@@ -385,7 +385,7 @@ STRATEGY_SCENARIOS["U.S. DEFENSE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CAMBODIAN HEAVY"] = {
+SCENARIOS["CAMBODIAN HEAVY"] = {
   narrative: "Vietnamese forces mass on the Cambodian border following Khmer Rouge provocations. Regional powers escalate.",
   waves: [
     { from: ["HANOI", "HO CHI MINH CITY", "DA NANG"], to: ["PHNOM PENH", "BANGKOK", "SINGAPORE"], delay: 0 },
@@ -395,7 +395,7 @@ STRATEGY_SCENARIOS["CAMBODIAN HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["PACT MEDIUM"] = {
+SCENARIOS["PACT MEDIUM"] = {
   narrative: "Warsaw Pact conducts coordinated medium-yield strikes against NATO rear logistics. Response is measured but firm.",
   waves: [
     { from: ["WARSAW", "BUDAPEST", "BUCHAREST"], to: ["BERLIN", "MUNICH", "FRANKFURT", "VIENNA"], delay: 0 },
@@ -405,7 +405,7 @@ STRATEGY_SCENARIOS["PACT MEDIUM"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ARCTIC MINIMAL"] = {
+SCENARIOS["ARCTIC MINIMAL"] = {
   narrative: "Single Soviet submarine launches on anomalous trajectory over the Pole. NORAD classifies as limited probe.",
   waves: [
     { fromSubs: ["ussr"], to: ["THULE", "REYKJAVIK", "ANCHORAGE"], delay: 0 }
@@ -413,7 +413,7 @@ STRATEGY_SCENARIOS["ARCTIC MINIMAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["MEXICAN DOMESTIC"] = {
+SCENARIOS["MEXICAN DOMESTIC"] = {
   narrative: "Domestic insurgency in northern Mexico prompts cross-border military action. Conflict remains contained.",
   waves: [
     { from: ["MEXICO CITY", "MONTERREY"], to: ["TIJUANA", "GUADALAJARA", "PUEBLA"], delay: 0 }
@@ -421,7 +421,7 @@ STRATEGY_SCENARIOS["MEXICAN DOMESTIC"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["TAIWAN THEATERWIDE"] = {
+SCENARIOS["TAIWAN THEATERWIDE"] = {
   narrative: "PRC initiates amphibious assault on Taiwan following failed reunification talks. US 7th Fleet repositions.",
   waves: [
     { from: ["BEIJING", "SHANGHAI", "GUANGZHOU"], to: ["TAIPEI", "KAOHSIUNG", "HONG KONG"], delay: 0 },
@@ -431,7 +431,7 @@ STRATEGY_SCENARIOS["TAIWAN THEATERWIDE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["PACIFIC MANEUVER"] = {
+SCENARIOS["PACIFIC MANEUVER"] = {
   narrative: "Soviet Pacific Fleet exercises off Hokkaido coincide with submarine activity near Guam. CINCPAC elevates readiness.",
   waves: [
     { from: ["VLADIVOSTOK", "PETROPAVLOVSK"], to: ["TOKYO", "OSAKA", "SEOUL", "GUAM"], delay: 0 },
@@ -440,7 +440,7 @@ STRATEGY_SCENARIOS["PACIFIC MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["PORTUGAL REVOLUTION"] = {
+SCENARIOS["PORTUGAL REVOLUTION"] = {
   narrative: "Leftist coup in Lisbon threatens NATO Atlantic flank. Soviet advisors reported in Porto within 48 hours.",
   waves: [
     { from: ["MADRID", "LONDON", "PARIS"], to: ["LISBON", "PORTO"], delay: 0 },
@@ -450,7 +450,7 @@ STRATEGY_SCENARIOS["PORTUGAL REVOLUTION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["ALBANIAN DECOY"] = {
+SCENARIOS["ALBANIAN DECOY"] = {
   narrative: "Albanian troop movements mask a diversionary feint to split NATO attention from the central front.",
   waves: [
     { from: ["TIRANA"], to: ["ATHENS", "BELGRADE"], delay: 0 },
@@ -459,7 +459,7 @@ STRATEGY_SCENARIOS["ALBANIAN DECOY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["PALESTINIAN LOCAL"] = {
+SCENARIOS["PALESTINIAN LOCAL"] = {
   narrative: "Cross-border rocket fire escalates into localized exchange between Israeli and Syrian forces.",
   waves: [
     { from: ["DAMASCUS", "BEIRUT"], to: ["TEL AVIV", "JERUSALEM"], delay: 0 },
@@ -468,7 +468,7 @@ STRATEGY_SCENARIOS["PALESTINIAN LOCAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["MOROCCAN MINIMAL"] = {
+SCENARIOS["MOROCCAN MINIMAL"] = {
   narrative: "Disputed Western Saharan border sparks brief artillery exchange between Morocco and Algeria. Both sides refrain from escalation.",
   waves: [
     { from: ["RABAT", "CASABLANCA"], to: ["ALGIERS", "ORAN"], delay: 0 },
@@ -477,7 +477,7 @@ STRATEGY_SCENARIOS["MOROCCAN MINIMAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["BAVARIAN DIVERSITY"] = {
+SCENARIOS["BAVARIAN DIVERSITY"] = {
   narrative: "Soviet forces probe Bavarian sector as feint to draw NATO reserves from northern German plain.",
   waves: [
     { from: ["EAST BERLIN", "PRAGUE", "BRATISLAVA"], to: ["MUNICH", "FRANKFURT", "VIENNA"], delay: 0 },
@@ -487,7 +487,7 @@ STRATEGY_SCENARIOS["BAVARIAN DIVERSITY"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["CZECH OPTION"] = {
+SCENARIOS["CZECH OPTION"] = {
   narrative: "Prague Spring redux: Soviet armor rolls in as Czechoslovak reformers seek Western guarantees.",
   waves: [
     { from: ["MOSCOW", "WARSAW"], to: ["PRAGUE", "BRATISLAVA"], delay: 0 },
@@ -496,7 +496,7 @@ STRATEGY_SCENARIOS["CZECH OPTION"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["FRENCH ALLIANCE"] = {
+SCENARIOS["FRENCH ALLIANCE"] = {
   narrative: "France activates Force de Frappe as Soviet armor enters West Germany. NATO fires in coordinated wave.",
   waves: [
     { from: ["PARIS", "MARSEILLE", "LYON"], to: ["MOSCOW", "LENINGRAD", "MINSK", "EAST BERLIN"], delay: 0 },
@@ -508,7 +508,7 @@ STRATEGY_SCENARIOS["FRENCH ALLIANCE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ARABIAN CLANDESTINE"] = {
+SCENARIOS["ARABIAN CLANDESTINE"] = {
   narrative: "Unattributed missile strikes hit Gulf oil infrastructure. CIA traces launch origin to rogue state proxy.",
   waves: [
     { from: ["BAGHDAD", "TEHRAN"], to: ["RIYADH", "KUWAIT CITY", "ABU DHABI"], delay: 0 },
@@ -517,7 +517,7 @@ STRATEGY_SCENARIOS["ARABIAN CLANDESTINE"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["GABON REBELLION"] = {
+SCENARIOS["GABON REBELLION"] = {
   narrative: "Military coup in Libreville threatens French access to strategic uranium deposits. Paris deploys Foreign Legion with tactical nuclear authorization.",
   waves: [
     { from: ["PARIS", "MARSEILLE"], fromSubs: ["france"], to: ["LIBREVILLE", "KINSHASA"], delay: 0 },
@@ -526,7 +526,7 @@ STRATEGY_SCENARIOS["GABON REBELLION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["NORTHERN MAXIMUM"] = {
+SCENARIOS["NORTHERN MAXIMUM"] = {
   narrative: "Full northern theater engagement as Soviet Arctic forces surge south. NORAD and SACEUR respond in kind.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK", "MOSCOW"], fromSubs: ["ussr"], to: ["OSLO", "COPENHAGEN", "REYKJAVIK", "THULE"], delay: 0 },
@@ -537,7 +537,7 @@ STRATEGY_SCENARIOS["NORTHERN MAXIMUM"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["DANISH PARAMILITARY"] = {
+SCENARIOS["DANISH PARAMILITARY"] = {
   narrative: "Soviet-backed paramilitary units infiltrate Danish waters under Baltic exercises. Copenhagen requests NATO support.",
   waves: [
     { from: ["LENINGRAD", "RIGA", "TALLINN"], to: ["COPENHAGEN", "OSLO", "STOCKHOLM"], delay: 0 },
@@ -546,7 +546,7 @@ STRATEGY_SCENARIOS["DANISH PARAMILITARY"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["SEATO TAKEOVER"] = {
+SCENARIOS["SEATO TAKEOVER"] = {
   narrative: "Soviet-aligned forces seize key SEATO ports under guise of stabilization. Allies respond with carrier strikes.",
   waves: [
     { from: ["MOSCOW", "VLADIVOSTOK", "HANOI"], to: ["SINGAPORE", "MANILA", "BANGKOK", "KUALA LUMPUR"], delay: 0 },
@@ -558,7 +558,7 @@ STRATEGY_SCENARIOS["SEATO TAKEOVER"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["HAWAIIAN ESCALATION"] = {
+SCENARIOS["HAWAIIAN ESCALATION"] = {
   narrative: "Soviet submarines surface west of Hawaii crossing restricted waters. Pacific Command responds.",
   waves: [
     { from: ["VLADIVOSTOK", "PETROPAVLOVSK"], fromSubs: ["ussr"], to: ["HONOLULU", "GUAM", "ANCHORAGE"], delay: 0 },
@@ -568,7 +568,7 @@ STRATEGY_SCENARIOS["HAWAIIAN ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["IRANIAN MANEUVER"] = {
+SCENARIOS["IRANIAN MANEUVER"] = {
   narrative: "Iranian Revolutionary Guard seizes Strait of Hormuz. US Central Command authorizes precision strike package.",
   waves: [
     { from: ["TEHRAN", "ISFAHAN"], to: ["RIYADH", "KUWAIT CITY", "DOHA", "ABU DHABI"], delay: 0 },
@@ -577,7 +577,7 @@ STRATEGY_SCENARIOS["IRANIAN MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["NATO CONTAINMENT"] = {
+SCENARIOS["NATO CONTAINMENT"] = {
   narrative: "NATO executes containment strike to halt Soviet armor at the Elbe. Escalation deliberately limited.",
   waves: [
     { from: ["FRANKFURT", "BERLIN", "BRUSSELS"], to: ["EAST BERLIN", "WARSAW", "GDANSK", "POZNAN"], delay: 0 },
@@ -586,7 +586,7 @@ STRATEGY_SCENARIOS["NATO CONTAINMENT"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["SWISS INCIDENT"] = {
+SCENARIOS["SWISS INCIDENT"] = {
   narrative: "Classified research facility on Swiss territory destroyed in unattributed strike. Both superpowers deny involvement.",
   waves: [
     { from: ["MOSCOW", "PARIS"], to: ["BERN", "VIENNA"], delay: 0 }
@@ -594,7 +594,7 @@ STRATEGY_SCENARIOS["SWISS INCIDENT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["CUBAN MINIMAL"] = {
+SCENARIOS["CUBAN MINIMAL"] = {
   narrative: "Cuban forces conduct brief incursion into Guantanamo buffer zone. Washington issues final ultimatum.",
   waves: [
     { from: ["HAVANA"], to: ["MIAMI"], delay: 0 },
@@ -603,7 +603,7 @@ STRATEGY_SCENARIOS["CUBAN MINIMAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ICELAND ESCALATION"] = {
+SCENARIOS["ICELAND ESCALATION"] = {
   narrative: "Soviet naval forces establish forward base in Icelandic waters, severing GIUK gap. NATO scrambles to respond.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["REYKJAVIK", "OSLO", "BERGEN"], delay: 0 },
@@ -613,7 +613,7 @@ STRATEGY_SCENARIOS["ICELAND ESCALATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["VIETNAMESE RETALIATION"] = {
+SCENARIOS["VIETNAMESE RETALIATION"] = {
   narrative: "Hanoi retaliates against Chinese punitive expedition with deep strikes into Yunnan and Guangxi. Beijing authorizes full southern theater response.",
   waves: [
     { from: ["HANOI", "DA NANG", "HO CHI MINH CITY"], to: ["GUANGZHOU", "KUNMING", "NANJING"], delay: 0 },
@@ -623,7 +623,7 @@ STRATEGY_SCENARIOS["VIETNAMESE RETALIATION"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["SYRIAN PROVOCATION"] = {
+SCENARIOS["SYRIAN PROVOCATION"] = {
   narrative: "Syrian armor crosses into Israeli-held Golan Heights under Iranian air umbrella. Tel Aviv considers nuclear release.",
   waves: [
     { from: ["DAMASCUS", "ALEPPO", "TEHRAN"], to: ["TEL AVIV", "JERUSALEM", "AMMAN"], delay: 0 },
@@ -633,7 +633,7 @@ STRATEGY_SCENARIOS["SYRIAN PROVOCATION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["LIBYAN LOCAL"] = {
+SCENARIOS["LIBYAN LOCAL"] = {
   narrative: "Libyan forces bombard Tunisian border positions. Egypt mobilizes on eastern flank.",
   waves: [
     { from: ["TRIPOLI", "BENGHAZI"], to: ["TUNIS", "ALGIERS"], delay: 0 },
@@ -642,7 +642,7 @@ STRATEGY_SCENARIOS["LIBYAN LOCAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["GABON TAKEOVER"] = {
+SCENARIOS["GABON TAKEOVER"] = {
   narrative: "Soviet-backed junta seizes Libreville oil terminals and expels French nationals. Paris authorizes full intervention; Moscow warns of consequences.",
   waves: [
     { from: ["PARIS", "LONDON", "MADRID"], fromSubs: ["france"], to: ["LIBREVILLE", "KINSHASA"], delay: 0 },
@@ -652,7 +652,7 @@ STRATEGY_SCENARIOS["GABON TAKEOVER"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ROMANIAN WAR"] = {
+SCENARIOS["ROMANIAN WAR"] = {
   narrative: "Romania defects from the Pact, triggering full Soviet invasion. NATO and China intervene; global conflict ignites.",
   waves: [
     { from: ["MOSCOW", "KIEV", "ODESSA"], to: ["BUCHAREST", "CONSTANTA", "TIMISOARA", "SOFIA"], delay: 0 },
@@ -663,7 +663,7 @@ STRATEGY_SCENARIOS["ROMANIAN WAR"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["MIDDLE EAST OFFENSIVE"] = {
+SCENARIOS["MIDDLE EAST OFFENSIVE"] = {
   narrative: "Coordinated Soviet-sponsored offensive sweeps from Levant to Gulf. US and Israeli forces initiate full nuclear response.",
   waves: [
     { from: ["MOSCOW", "DAMASCUS", "TEHRAN"], to: ["TEL AVIV", "RIYADH", "KUWAIT CITY", "CAIRO"], delay: 0 },
@@ -673,7 +673,7 @@ STRATEGY_SCENARIOS["MIDDLE EAST OFFENSIVE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["DENMARK MASSIVE"] = {
+SCENARIOS["DENMARK MASSIVE"] = {
   narrative: "Soviet Northern Fleet strikes Danish straits to sever NATO Baltic access. Danish and Norwegian assets respond with full theater salvo.",
   waves: [
     { from: ["MOSCOW", "LENINGRAD", "MURMANSK"], fromSubs: ["ussr"], to: ["COPENHAGEN", "OSLO", "HAMBURG"], delay: 0 },
@@ -683,7 +683,7 @@ STRATEGY_SCENARIOS["DENMARK MASSIVE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CHILE CONFRONTATION"] = {
+SCENARIOS["CHILE CONFRONTATION"] = {
   narrative: "Santiago initiates coastal defense following disputed waters incident in Strait of Magellan. Argentine naval forces respond.",
   waves: [
     { from: ["SANTIAGO"], to: ["BUENOS AIRES", "CORDOBA"], delay: 0 },
@@ -692,7 +692,7 @@ STRATEGY_SCENARIOS["CHILE CONFRONTATION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["S.AFRICAN SUBVERSION"] = {
+SCENARIOS["S.AFRICAN SUBVERSION"] = {
   narrative: "Pretoria authorizes covert destabilization operations against frontline states following border incursions.",
   waves: [
     { from: ["PRETORIA", "JOHANNESBURG"], to: ["KINSHASA", "NAIROBI", "KAMPALA"], delay: 0 },
@@ -701,7 +701,7 @@ STRATEGY_SCENARIOS["S.AFRICAN SUBVERSION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["USSR ALERT"] = {
+SCENARIOS["USSR ALERT"] = {
   narrative: "Soviet strategic forces elevated to launch-ready following anomalous radar returns over Arctic. NORAD confirms false alarm too late.",
   waves: [
     { from: ["MOSCOW", "SVERDLOVSK", "NOVOSIBIRSK"], to: ["WASHINGTON DC", "NEW YORK", "CHICAGO"], delay: 0 },
@@ -710,7 +710,7 @@ STRATEGY_SCENARIOS["USSR ALERT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["NICARAGUAN THRUST"] = {
+SCENARIOS["NICARAGUAN THRUST"] = {
   narrative: "Managua-based Soviet proxy forces conduct cross-border offensive into Honduras. Havana activates in solidarity.",
   waves: [
     { from: ["MANAGUA", "HAVANA"], to: ["TEGUCIGALPA", "SAN SALVADOR", "GUATEMALA CITY"], delay: 0 },
@@ -721,7 +721,7 @@ STRATEGY_SCENARIOS["NICARAGUAN THRUST"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["GREENLAND DOMESTIC"] = {
+SCENARIOS["GREENLAND DOMESTIC"] = {
   narrative: "Internal unrest at Thule Air Base triggers emergency evacuation. NORAD monitors for Soviet exploitation.",
   waves: [
     { from: ["THULE"], to: ["NUUK"], delay: 0 }
@@ -729,7 +729,7 @@ STRATEGY_SCENARIOS["GREENLAND DOMESTIC"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ICELAND HEAVY"] = {
+SCENARIOS["ICELAND HEAVY"] = {
   narrative: "Reykjavik authorizes NATO pre-positioning strike against Soviet submarine pens. Northern Fleet retaliates with full theater salvo.",
   waves: [
     { from: ["REYKJAVIK"], to: ["MURMANSK", "ARCHANGELSK"], delay: 0 },
@@ -740,7 +740,7 @@ STRATEGY_SCENARIOS["ICELAND HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["KENYA OPTION"] = {
+SCENARIOS["KENYA OPTION"] = {
   narrative: "Nairobi requests US rapid deployment following Soviet-backed Ethiopian military movements on northern border.",
   waves: [
     { from: ["NAIROBI"], to: ["ADDIS ABABA", "KHARTOUM"], delay: 0 },
@@ -749,7 +749,7 @@ STRATEGY_SCENARIOS["KENYA OPTION"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["PACIFIC DEFENSE"] = {
+SCENARIOS["PACIFIC DEFENSE"] = {
   narrative: "US Pacific Command establishes defensive perimeter following North Korean ballistic missile test over Japanese waters.",
   waves: [
     { from: ["PYONGYANG"], to: ["SEOUL", "TOKYO"], delay: 0 },
@@ -759,7 +759,7 @@ STRATEGY_SCENARIOS["PACIFIC DEFENSE"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["UGANDA MAXIMUM"] = {
+SCENARIOS["UGANDA MAXIMUM"] = {
   narrative: "Kampala offensive against Tanzanian border positions triggers regional escalation. Soviet advisors authorize full commitment.",
   waves: [
     { from: ["KAMPALA"], to: ["DAR ES SALAAM", "NAIROBI", "ADDIS ABABA"], delay: 0 },
@@ -769,7 +769,7 @@ STRATEGY_SCENARIOS["UGANDA MAXIMUM"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["THAI SUBVERSION"] = {
+SCENARIOS["THAI SUBVERSION"] = {
   narrative: "Vietnamese-backed insurgency reaches Bangkok suburbs. Thai forces request covert US assets; Hanoi denies involvement.",
   waves: [
     { from: ["HANOI", "HO CHI MINH CITY"], to: ["BANGKOK", "CHIANG MAI"], delay: 0 },
@@ -778,7 +778,7 @@ STRATEGY_SCENARIOS["THAI SUBVERSION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["ROMANIAN STRIKE"] = {
+SCENARIOS["ROMANIAN STRIKE"] = {
   narrative: "Bucharest executes breakaway preemptive strike against Pact logistics hubs. Moscow responds immediately.",
   waves: [
     { from: ["BUCHAREST"], to: ["WARSAW", "BUDAPEST", "SOFIA"], delay: 0 },
@@ -788,7 +788,7 @@ STRATEGY_SCENARIOS["ROMANIAN STRIKE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["PAKISTAN SOVEREIGNTY"] = {
+SCENARIOS["PAKISTAN SOVEREIGNTY"] = {
   narrative: "Islamabad authorizes tactical nuclear options following Indian armor breakthrough across Punjab.",
   waves: [
     { from: ["NEW DELHI", "MUMBAI", "CALCUTTA"], to: ["LAHORE", "ISLAMABAD", "KARACHI"], delay: 0 },
@@ -797,7 +797,7 @@ STRATEGY_SCENARIOS["PAKISTAN SOVEREIGNTY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["AFGHAN MISDIRECTION"] = {
+SCENARIOS["AFGHAN MISDIRECTION"] = {
   narrative: "Soviet forces in Kabul conduct feint toward Khyber Pass while main column advances on Kandahar. Pakistani ISI responds.",
   waves: [
     { from: ["KABUL"], to: ["ISLAMABAD", "KARACHI"], delay: 0 },
@@ -806,7 +806,7 @@ STRATEGY_SCENARIOS["AFGHAN MISDIRECTION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["ETHIOPIAN LOCAL"] = {
+SCENARIOS["ETHIOPIAN LOCAL"] = {
   narrative: "Addis Ababa authorizes ground offensive against Somali-backed separatists in Ogaden. Cuban forces provide air cover.",
   waves: [
     { from: ["ADDIS ABABA", "HAVANA"], to: ["MOGADISHU"], delay: 0 },
@@ -815,7 +815,7 @@ STRATEGY_SCENARIOS["ETHIOPIAN LOCAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ITALIAN TAKEOVER"] = {
+SCENARIOS["ITALIAN TAKEOVER"] = {
   narrative: "Warsaw Pact forces pre-position along Austrian border as Italian Communist Party nears electoral control. NATO activates Article 5.",
   waves: [
     { from: ["EAST BERLIN", "BUDAPEST", "BELGRADE"], to: ["ROME", "MILAN", "NAPLES"], delay: 0 },
@@ -827,7 +827,7 @@ STRATEGY_SCENARIOS["ITALIAN TAKEOVER"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["VIETNAMESE INCIDENT"] = {
+SCENARIOS["VIETNAMESE INCIDENT"] = {
   narrative: "Hanoi naval vessel fires on US destroyer in Gulf of Tonkin. Congress authorizes retaliatory strikes within the hour.",
   waves: [
     { from: ["HANOI"], to: ["GUAM"], delay: 0 },
@@ -836,7 +836,7 @@ STRATEGY_SCENARIOS["VIETNAMESE INCIDENT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ENGLISH PREEMPTIVE"] = {
+SCENARIOS["ENGLISH PREEMPTIVE"] = {
   narrative: "London authorizes Polaris preemptive launch against Soviet Northern Fleet after confirmed SSBN deployment to Irish Sea.",
   waves: [
     { from: ["LONDON", "GLASGOW", "EDINBURGH"], fromSubs: ["uk"], to: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], delay: 0 },
@@ -847,7 +847,7 @@ STRATEGY_SCENARIOS["ENGLISH PREEMPTIVE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["DENMARK ALTERNATE"] = {
+SCENARIOS["DENMARK ALTERNATE"] = {
   narrative: "NATO alternate plan routes Baltic reinforcements through Jutland following primary corridor interdiction.",
   waves: [
     { from: ["HAMBURG", "OSLO"], to: ["RIGA", "LENINGRAD"], delay: 0 },
@@ -856,7 +856,7 @@ STRATEGY_SCENARIOS["DENMARK ALTERNATE"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["THAI CONFRONTATION"] = {
+SCENARIOS["THAI CONFRONTATION"] = {
   narrative: "Thai and Vietnamese forces exchange fire across the Mekong. SEATO obligations trigger US naval response from Subic Bay.",
   waves: [
     { from: ["BANGKOK"], to: ["HANOI", "DA NANG", "HO CHI MINH CITY"], delay: 0 },
@@ -866,7 +866,7 @@ STRATEGY_SCENARIOS["THAI CONFRONTATION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["TAIWAN SURPRISE"] = {
+SCENARIOS["TAIWAN SURPRISE"] = {
   narrative: "Beijing launches coordinated amphibious and missile strike against Taiwan following failed reunification ultimatum.",
   waves: [
     { from: ["BEIJING", "SHANGHAI", "GUANGZHOU"], to: ["TAIPEI", "KAOHSIUNG"], delay: 0 },
@@ -876,7 +876,7 @@ STRATEGY_SCENARIOS["TAIWAN SURPRISE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["BRAZILIAN STRIKE"] = {
+SCENARIOS["BRAZILIAN STRIKE"] = {
   narrative: "Brasilia activates contingency strike following Argentine forward deployment along disputed Parana basin.",
   waves: [
     { from: ["SAO PAULO", "RIO DE JANEIRO", "BRASILIA"], to: ["BUENOS AIRES", "CORDOBA"], delay: 0 },
@@ -886,7 +886,7 @@ STRATEGY_SCENARIOS["BRAZILIAN STRIKE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["VENEZUELA SUDDEN"] = {
+SCENARIOS["VENEZUELA SUDDEN"] = {
   narrative: "Caracas executes sudden strike against Colombian oil infrastructure following nationalization dispute.",
   waves: [
     { from: ["CARACAS", "MARACAIBO"], to: ["BOGOTA", "LIMA"], delay: 0 },
@@ -895,7 +895,7 @@ STRATEGY_SCENARIOS["VENEZUELA SUDDEN"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["MALAYSIAN ALERT"] = {
+SCENARIOS["MALAYSIAN ALERT"] = {
   narrative: "Kuala Lumpur elevates maritime forces following Vietnamese naval incursion into disputed Spratly waters.",
   waves: [
     { from: ["HANOI", "HO CHI MINH CITY"], to: ["KUALA LUMPUR", "SINGAPORE"], delay: 0 },
@@ -904,7 +904,7 @@ STRATEGY_SCENARIOS["MALAYSIAN ALERT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ISRAEL DISCRETIONARY"] = {
+SCENARIOS["ISRAEL DISCRETIONARY"] = {
   narrative: "Jerusalem authorizes discretionary nuclear alert following Syrian armor concentration on Golan Heights.",
   waves: [
     { from: ["DAMASCUS", "ALEPPO"], to: ["TEL AVIV", "JERUSALEM"], delay: 0 },
@@ -913,7 +913,7 @@ STRATEGY_SCENARIOS["ISRAEL DISCRETIONARY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["LIBYAN ACTION"] = {
+SCENARIOS["LIBYAN ACTION"] = {
   narrative: "Tripoli strikes US naval assets in Gulf of Sidra. Sixth Fleet retaliates with carrier strikes; regional forces mobilize.",
   waves: [
     { from: ["TRIPOLI", "BENGHAZI"], to: ["NAPLES", "SIGONELLA NAS"], delay: 0 },
@@ -923,7 +923,7 @@ STRATEGY_SCENARIOS["LIBYAN ACTION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["PALESTINIAN TACTICAL"] = {
+SCENARIOS["PALESTINIAN TACTICAL"] = {
   narrative: "Palestinian tactical forces execute coordinated cross-border strikes from Lebanon. IDF mounts immediate punitive response.",
   waves: [
     { from: ["BEIRUT", "DAMASCUS"], to: ["TEL AVIV", "JERUSALEM"], delay: 0 },
@@ -932,7 +932,7 @@ STRATEGY_SCENARIOS["PALESTINIAN TACTICAL"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["NATO ALTERNATE"] = {
+SCENARIOS["NATO ALTERNATE"] = {
   narrative: "NATO alternate command activated following primary HQ destruction. Dispersed nodes execute pre-delegated strike authority.",
   waves: [
     { from: ["MOSCOW", "MINSK", "WARSAW"], to: ["BRUSSELS", "LONDON", "PARIS", "FRANKFURT"], delay: 0 },
@@ -941,7 +941,7 @@ STRATEGY_SCENARIOS["NATO ALTERNATE"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["CYPRUS MANEUVER"] = {
+SCENARIOS["CYPRUS MANEUVER"] = {
   narrative: "Nicosia becomes flashpoint as Greek and Turkish Cypriot forces exchange fire near the Green Line.",
   waves: [
     { from: ["NICOSIA"], to: ["ANKARA", "ISTANBUL"], delay: 0 },
@@ -950,7 +950,7 @@ STRATEGY_SCENARIOS["CYPRUS MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["EGYPT MISDIRECTION"] = {
+SCENARIOS["EGYPT MISDIRECTION"] = {
   narrative: "Cairo executes feint against Libyan positions while repositioning armor toward Suez. Israeli intelligence detects the misdirection.",
   waves: [
     { from: ["CAIRO", "ALEXANDRIA"], to: ["TRIPOLI", "BENGHAZI"], delay: 0 },
@@ -959,7 +959,7 @@ STRATEGY_SCENARIOS["EGYPT MISDIRECTION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["BANGLADESH THRUST"] = {
+SCENARIOS["BANGLADESH THRUST"] = {
   narrative: "Dhaka authorizes cross-border thrust following Burmese harassment of Bengali refugees. Indian forces mobilize in support.",
   waves: [
     { from: ["DHAKA", "CHITTAGONG"], to: ["RANGOON", "MANDALAY"], delay: 0 },
@@ -969,7 +969,7 @@ STRATEGY_SCENARIOS["BANGLADESH THRUST"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["KENYA DEFENSE"] = {
+SCENARIOS["KENYA DEFENSE"] = {
   narrative: "Nairobi activates defensive posture following Ugandan armor crossing at Malaba. British forces requested from Mombasa.",
   waves: [
     { from: ["KAMPALA"], to: ["NAIROBI", "MOMBASA"], delay: 0 },
@@ -978,7 +978,7 @@ STRATEGY_SCENARIOS["KENYA DEFENSE"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["BANGLADESH CONTAINMENT"] = {
+SCENARIOS["BANGLADESH CONTAINMENT"] = {
   narrative: "Indian strategic command initiates containment after Dhaka requests Chinese military advisors. Pakistan exploits the distraction.",
   waves: [
     { from: ["NEW DELHI", "CALCUTTA"], to: ["DHAKA", "CHITTAGONG"], delay: 0 },
@@ -988,7 +988,7 @@ STRATEGY_SCENARIOS["BANGLADESH CONTAINMENT"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["VIETNAMESE STRIKE"] = {
+SCENARIOS["VIETNAMESE STRIKE"] = {
   narrative: "Hanoi launches coordinated strike against Chinese border installations. Beijing retaliates with artillery and SRBM barrage.",
   waves: [
     { from: ["HANOI", "DA NANG", "HO CHI MINH CITY"], to: ["GUANGZHOU", "KUNMING", "NANJING"], delay: 0 },
@@ -998,7 +998,7 @@ STRATEGY_SCENARIOS["VIETNAMESE STRIKE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ALBANIAN CONTAINMENT"] = {
+SCENARIOS["ALBANIAN CONTAINMENT"] = {
   narrative: "NATO southern flank executes containment of Albanian provocations along Greek border. Belgrade monitors nervously.",
   waves: [
     { from: ["ATHENS", "ROME"], to: ["TIRANA"], delay: 0 },
@@ -1007,7 +1007,7 @@ STRATEGY_SCENARIOS["ALBANIAN CONTAINMENT"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["GABON SURPRISE"] = {
+SCENARIOS["GABON SURPRISE"] = {
   narrative: "Surprise coup attempt in Libreville catches French intelligence off guard. Soviet transport aircraft detected en route. Paris scrambles intervention force.",
   waves: [
     { from: ["PARIS", "MARSEILLE"], fromSubs: ["france"], to: ["LIBREVILLE", "BRAZZAVILLE"], delay: 0 },
@@ -1016,7 +1016,7 @@ STRATEGY_SCENARIOS["GABON SURPRISE"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["IRAQ SOVEREIGNTY"] = {
+SCENARIOS["IRAQ SOVEREIGNTY"] = {
   narrative: "Baghdad asserts sovereignty over disputed Shatt al-Arab waterway with massed armor. Tehran mobilizes; both sides deploy tactical warheads.",
   waves: [
     { from: ["BAGHDAD", "BASRA"], to: ["TEHRAN", "ISFAHAN", "TABRIZ"], delay: 0 },
@@ -1026,7 +1026,7 @@ STRATEGY_SCENARIOS["IRAQ SOVEREIGNTY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["VIETNAMESE SUDDEN"] = {
+SCENARIOS["VIETNAMESE SUDDEN"] = {
   narrative: "Hanoi executes sudden coordinated strike on Chinese positions along the border. PLAN naval forces sortie from Hainan.",
   waves: [
     { from: ["HANOI", "HO CHI MINH CITY"], to: ["GUANGZHOU", "KUNMING"], delay: 0 },
@@ -1035,7 +1035,7 @@ STRATEGY_SCENARIOS["VIETNAMESE SUDDEN"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["LEBANON INTERDICTION"] = {
+SCENARIOS["LEBANON INTERDICTION"] = {
   narrative: "US Marines and French paratroopers interdict Syrian resupply corridor through the Bekaa Valley. Damascus retaliates.",
   waves: [
     { from: ["DIEGO GARCIA", "PARIS"], fromSubs: ["us", "france"], to: ["BEIRUT", "DAMASCUS"], delay: 0 },
@@ -1044,7 +1044,7 @@ STRATEGY_SCENARIOS["LEBANON INTERDICTION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["TAIWAN DOMESTIC"] = {
+SCENARIOS["TAIWAN DOMESTIC"] = {
   narrative: "Internal political crisis in Taipei prompts PRC saber-rattling. Limited missile tests bracket the island.",
   waves: [
     { from: ["BEIJING", "SHANGHAI"], to: ["TAIPEI", "KAOHSIUNG"], delay: 0 },
@@ -1053,7 +1053,7 @@ STRATEGY_SCENARIOS["TAIWAN DOMESTIC"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ALGERIAN SOVEREIGNTY"] = {
+SCENARIOS["ALGERIAN SOVEREIGNTY"] = {
   narrative: "Algiers asserts sovereignty over disputed Saharan border zone. Moroccan and Libyan forces both mobilize in response.",
   waves: [
     { from: ["ALGIERS", "ORAN"], to: ["RABAT", "CASABLANCA", "TRIPOLI"], delay: 0 },
@@ -1062,7 +1062,7 @@ STRATEGY_SCENARIOS["ALGERIAN SOVEREIGNTY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ARABIAN STRIKE"] = {
+SCENARIOS["ARABIAN STRIKE"] = {
   narrative: "Combined Iranian-Iraqi surprise strike targets Saudi oil infrastructure and Gulf shipping. US Fifth Fleet activates.",
   waves: [
     { from: ["TEHRAN", "BAGHDAD"], to: ["RIYADH", "JEDDAH", "KUWAIT CITY", "ABU DHABI"], delay: 0 },
@@ -1072,7 +1072,7 @@ STRATEGY_SCENARIOS["ARABIAN STRIKE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ATLANTIC SUDDEN"] = {
+SCENARIOS["ATLANTIC SUDDEN"] = {
   narrative: "Soviet submarine wolf pack surfaces and launches without warning against US East Coast population centers. STRATCOM orders immediate retaliatory strike.",
   waves: [
     { fromSubs: ["ussr"], to: ["NEW YORK", "BOSTON", "NORFOLK", "WASHINGTON DC"], delay: 0 },
@@ -1082,7 +1082,7 @@ STRATEGY_SCENARIOS["ATLANTIC SUDDEN"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["MONGOLIAN THRUST"] = {
+SCENARIOS["MONGOLIAN THRUST"] = {
   narrative: "Soviet armored divisions thrust through Mongolia toward Beijing. PLA mobilizes northern military regions for defense in depth.",
   waves: [
     { from: ["ULAANBAATAR", "IRKUTSK", "NOVOSIBIRSK"], to: ["BEIJING", "HARBIN", "SHENYANG"], delay: 0 },
@@ -1092,7 +1092,7 @@ STRATEGY_SCENARIOS["MONGOLIAN THRUST"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["POLISH DECOY"] = {
+SCENARIOS["POLISH DECOY"] = {
   narrative: "Polish military exercises near the Baltic simulate an incursion toward NATO lines. SACEUR assesses as a feint.",
   waves: [
     { from: ["WARSAW", "GDANSK"], to: ["BERLIN", "HAMBURG"], delay: 0 },
@@ -1101,7 +1101,7 @@ STRATEGY_SCENARIOS["POLISH DECOY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["ALASKAN DISCRETIONARY"] = {
+SCENARIOS["ALASKAN DISCRETIONARY"] = {
   narrative: "Soviet Bear bombers probe Alaskan ADIZ for the third time this week. NORAD authorizes discretionary intercept.",
   waves: [
     { from: ["PETROPAVLOVSK", "MAGADAN"], to: ["ANCHORAGE"], delay: 0 },
@@ -1110,7 +1110,7 @@ STRATEGY_SCENARIOS["ALASKAN DISCRETIONARY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["CANADIAN THRUST"] = {
+SCENARIOS["CANADIAN THRUST"] = {
   narrative: "Soviet Arctic forces execute surprise thrust through Canadian Arctic archipelago targeting DEW Line stations and NORAD relay sites.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["OTTAWA", "TORONTO", "MONTREAL", "HALIFAX"], delay: 0 },
@@ -1120,7 +1120,7 @@ STRATEGY_SCENARIOS["CANADIAN THRUST"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["ARABIAN LIGHT"] = {
+SCENARIOS["ARABIAN LIGHT"] = {
   narrative: "Limited exchange of fire between Iranian patrol boats and Saudi naval forces in the Persian Gulf. Both sides stand down.",
   waves: [
     { from: ["TEHRAN"], to: ["RIYADH", "KUWAIT CITY"], delay: 0 },
@@ -1129,7 +1129,7 @@ STRATEGY_SCENARIOS["ARABIAN LIGHT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["S.AFRICAN DOMESTIC"] = {
+SCENARIOS["S.AFRICAN DOMESTIC"] = {
   narrative: "Internal unrest in South African townships triggers state of emergency. Regional neighbors close borders.",
   waves: [
     { from: ["PRETORIA", "JOHANNESBURG"], to: ["CAPE TOWN", "DURBAN"], delay: 0 }
@@ -1137,7 +1137,7 @@ STRATEGY_SCENARIOS["S.AFRICAN DOMESTIC"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["TUNISIAN INCIDENT"] = {
+SCENARIOS["TUNISIAN INCIDENT"] = {
   narrative: "Tunis intercepts Libyan special forces at Medenine border. French Jaguar aircraft deploy to Bizerte.",
   waves: [
     { from: ["TRIPOLI", "BENGHAZI"], to: ["TUNIS"], delay: 0 },
@@ -1146,7 +1146,7 @@ STRATEGY_SCENARIOS["TUNISIAN INCIDENT"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["MALAYSIAN MANEUVER"] = {
+SCENARIOS["MALAYSIAN MANEUVER"] = {
   narrative: "Kuala Lumpur conducts naval maneuver through contested South China Sea lanes. Vietnamese boats intercept.",
   waves: [
     { from: ["KUALA LUMPUR"], to: ["HANOI", "DA NANG"], delay: 0 },
@@ -1155,7 +1155,7 @@ STRATEGY_SCENARIOS["MALAYSIAN MANEUVER"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["JAMAICA DECOY"] = {
+SCENARIOS["JAMAICA DECOY"] = {
   narrative: "Kingston becomes site of Soviet intelligence cutout targeting US Caribbean signals infrastructure.",
   waves: [
     { from: ["KINGSTON"], to: ["MIAMI", "HOUSTON"], delay: 0 },
@@ -1164,7 +1164,7 @@ STRATEGY_SCENARIOS["JAMAICA DECOY"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["MALAYSIAN MINIMAL"] = {
+SCENARIOS["MALAYSIAN MINIMAL"] = {
   narrative: "Kuala Lumpur executes minimal strike against piracy staging bases in disputed waters. Jakarta lodges protest.",
   waves: [
     { from: ["KUALA LUMPUR"], to: ["JAKARTA", "SINGAPORE"], delay: 0 }
@@ -1172,7 +1172,7 @@ STRATEGY_SCENARIOS["MALAYSIAN MINIMAL"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["RUSSIAN SOVEREIGNTY"] = {
+SCENARIOS["RUSSIAN SOVEREIGNTY"] = {
   narrative: "Moscow asserts sovereignty over disputed Arctic shelf. NORAD detects full ICBM silo flush; TACAMO aircraft go airborne.",
   waves: [
     { from: ["MOSCOW", "MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["WASHINGTON DC", "NEW YORK", "OMAHA"], delay: 0 },
@@ -1182,7 +1182,7 @@ STRATEGY_SCENARIOS["RUSSIAN SOVEREIGNTY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CHAD OPTION"] = {
+SCENARIOS["CHAD OPTION"] = {
   narrative: "Ndjamena executes strike against Libyan-held Aouzou Strip following UN resolution failure. French forces provide air cover.",
   waves: [
     { from: ["NDJAMENA", "PARIS"], fromSubs: ["france"], to: ["TRIPOLI", "BENGHAZI"], delay: 0 },
@@ -1191,7 +1191,7 @@ STRATEGY_SCENARIOS["CHAD OPTION"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["BANGLADESH WAR"] = {
+SCENARIOS["BANGLADESH WAR"] = {
   narrative: "Dhaka requests Chinese military advisors, triggering three-front crisis. India mobilizes, Pakistan exploits; regional nuclear threshold breached.",
   waves: [
     { from: ["DHAKA", "CHITTAGONG"], to: ["CALCUTTA", "NEW DELHI", "RANGOON"], delay: 0 },
@@ -1201,7 +1201,7 @@ STRATEGY_SCENARIOS["BANGLADESH WAR"] = {
   defcon: 1
 };
 
-STRATEGY_SCENARIOS["BURMESE CONTAINMENT"] = {
+SCENARIOS["BURMESE CONTAINMENT"] = {
   narrative: "Rangoon containment targets Karen insurgent supply routes crossing Thai border. Bangkok protests.",
   waves: [
     { from: ["RANGOON", "MANDALAY"], to: ["BANGKOK", "CHIANG MAI"], delay: 0 },
@@ -1210,7 +1210,7 @@ STRATEGY_SCENARIOS["BURMESE CONTAINMENT"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["ASIAN THEATERWIDE"] = {
+SCENARIOS["ASIAN THEATERWIDE"] = {
   narrative: "Simultaneous Sino-Soviet deterioration and Korean escalation triggers full Pacific theater activation.",
   waves: [
     { from: ["BEIJING", "SHENYANG", "HARBIN"], to: ["MOSCOW", "IRKUTSK", "VLADIVOSTOK"], delay: 0 },
@@ -1221,7 +1221,7 @@ STRATEGY_SCENARIOS["ASIAN THEATERWIDE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["BULGARIAN CLANDESTINE"] = {
+SCENARIOS["BULGARIAN CLANDESTINE"] = {
   narrative: "Sofia runs clandestine destabilization network through Turkish dissident channels. Ankara discovers the operation.",
   waves: [
     { from: ["SOFIA"], to: ["ISTANBUL", "ANKARA"], delay: 0 },
@@ -1230,7 +1230,7 @@ STRATEGY_SCENARIOS["BULGARIAN CLANDESTINE"] = {
   defcon: 5
 };
 
-STRATEGY_SCENARIOS["GREENLAND INCURSION"] = {
+SCENARIOS["GREENLAND INCURSION"] = {
   narrative: "Soviet airborne forces seize Thule Air Base communications relay. NORAD declares Arctic ADIZ breached.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["THULE", "NUUK"], delay: 0 },
@@ -1240,7 +1240,7 @@ STRATEGY_SCENARIOS["GREENLAND INCURSION"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["EGYPT SURGICAL"] = {
+SCENARIOS["EGYPT SURGICAL"] = {
   narrative: "Cairo executes surgical strike against Libyan armor staging in Cyrenaica. Alexandria naval base sorties to establish exclusion zone.",
   waves: [
     { from: ["CAIRO", "ALEXANDRIA"], to: ["TRIPOLI", "BENGHAZI"], delay: 0 },
@@ -1249,7 +1249,7 @@ STRATEGY_SCENARIOS["EGYPT SURGICAL"] = {
   defcon: 3
 };
 
-STRATEGY_SCENARIOS["CZECH HEAVY"] = {
+SCENARIOS["CZECH HEAVY"] = {
   narrative: "Prague reformist government expels Soviet garrison. Moscow launches heavy strike to restore Pact discipline. NATO intervenes on Czechoslovak behalf.",
   waves: [
     { from: ["MOSCOW", "MINSK", "KIEV"], to: ["PRAGUE", "BRATISLAVA", "BRNO"], delay: 0 },
@@ -1260,7 +1260,7 @@ STRATEGY_SCENARIOS["CZECH HEAVY"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["TAIWAN CONFRONTATION"] = {
+SCENARIOS["TAIWAN CONFRONTATION"] = {
   narrative: "Beijing conducts live-fire exercise bisecting Taiwan Strait shipping. Taipei elevates alert; US 7th Fleet repositions.",
   waves: [
     { from: ["BEIJING", "SHANGHAI"], to: ["TAIPEI", "KAOHSIUNG"], delay: 0 },
@@ -1269,7 +1269,7 @@ STRATEGY_SCENARIOS["TAIWAN CONFRONTATION"] = {
   defcon: 4
 };
 
-STRATEGY_SCENARIOS["GREENLAND MAXIMUM"] = {
+SCENARIOS["GREENLAND MAXIMUM"] = {
   narrative: "Soviet occupation of Greenland triggers full NATO Article 5 response. Denmark invokes nuclear release authority.",
   waves: [
     { from: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["THULE", "NUUK", "REYKJAVIK"], delay: 0 },
@@ -1280,7 +1280,7 @@ STRATEGY_SCENARIOS["GREENLAND MAXIMUM"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["UGANDA OFFENSIVE"] = {
+SCENARIOS["UGANDA OFFENSIVE"] = {
   narrative: "Kampala offensive sweeps across Tanzanian border with Soviet-supplied armor. Nairobi activates mutual defense pact.",
   waves: [
     { from: ["KAMPALA"], to: ["DAR ES SALAAM", "NAIROBI"], delay: 0 },
@@ -1290,7 +1290,7 @@ STRATEGY_SCENARIOS["UGANDA OFFENSIVE"] = {
   defcon: 2
 };
 
-STRATEGY_SCENARIOS["CASPIAN DEFENSE"] = {
+SCENARIOS["CASPIAN DEFENSE"] = {
   narrative: "Baku petroleum infrastructure targeted by Iranian Revolutionary Guard following Caspian drilling rights dispute.",
   waves: [
     { from: ["TEHRAN", "TABRIZ"], to: ["BAKU", "TBILISI"], delay: 0 },

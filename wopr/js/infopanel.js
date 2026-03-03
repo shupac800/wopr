@@ -65,8 +65,8 @@ class InfoPanel {
     this.pactStatus.className = 'value active';
   }
 
-  // Called when a strategy begins
-  beginStrategy(sequence) {
+  // Called when a scenario begins
+  beginScenario(sequence) {
     this.reset();
 
     // Determine exchange type from missile data

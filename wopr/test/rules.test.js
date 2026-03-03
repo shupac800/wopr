@@ -50,7 +50,7 @@ function buildSandbox() {
   vm.runInContext(THREE_MOCK, ctx);
 
   // Load source files in dependency order
-  const files = ['js/mapdata.js', 'js/scenarios.js', 'js/strategies.js', 'js/missiles.js', 'js/map2d.js'];
+  const files = ['js/mapdata.js', 'js/scenarios.js', 'js/scenarios-engine.js', 'js/missiles.js', 'js/map2d.js'];
   for (const f of files) {
     const src = fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
     // Strip lines that reference DOM/browser APIs not needed for logic tests
@@ -369,12 +369,12 @@ test('2D: cancelled missile does not prevent isIdle', () => {
   assert.strictEqual(sys.isIdle(), true, 'cancelled missile should not block isIdle');
 });
 
-// ── 7. Strategy engine: resolveLaunchOrigin ────────────────────────────
+// ── 7. Scenario engine: resolveLaunchOrigin ────────────────────────────
 
 console.log('\n--- resolveLaunchOrigin (base substitution) ---');
 
 test('cities are substituted with military bases from same region', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   const result = engine.resolveLaunchOrigin('MOSCOW');
   assert.ok(result, 'should resolve to something');
   assert.strictEqual(result.type, 'base', 'should be a military base');
@@ -382,7 +382,7 @@ test('cities are substituted with military bases from same region', () => {
 });
 
 test('bases are returned as-is', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   // Find a known base name
   const base = vm.runInContext(`CITIES.find(c => c.type === 'base')`, ctx);
   const result = engine.resolveLaunchOrigin(base.name);
@@ -391,13 +391,13 @@ test('bases are returned as-is', () => {
 });
 
 test('unknown city returns null', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   const result = engine.resolveLaunchOrigin('ATLANTIS');
   assert.strictEqual(result, null);
 });
 
 test('resetLaunchRotation resets the round-robin index', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   const r1 = engine.resolveLaunchOrigin('MOSCOW');
   const r2 = engine.resolveLaunchOrigin('MOSCOW');
   // After reset, should start from beginning again
@@ -411,7 +411,7 @@ test('resetLaunchRotation resets the round-robin index', () => {
 console.log('\n--- Escalation engine ---');
 
 test('addEscalation appends missiles to existing array', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   const missiles = [
     { origin: { lat: 40, lon: -74, region: 'us' }, target: { lat: 55, lon: 37, region: 'ussr' }, delay: 0 },
   ];
@@ -422,7 +422,7 @@ test('addEscalation appends missiles to existing array', () => {
 });
 
 test('escalation delays are after the initial scenario max delay', () => {
-  const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+  const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
   const initialDelay = 5000;
   const missiles = [
     { origin: { lat: 40, lon: -74, region: 'us' }, target: { lat: 55, lon: 37, region: 'ussr' }, delay: initialDelay },
@@ -444,7 +444,7 @@ test('retaliation wave skips origins near cities targeted in prior waves', () =>
   // resolveLaunchOrigin may substitute Moscow with a nearby base,
   // but the proximity check should still filter it out
   const result = vm.runInContext(`
-    const _eng = new StrategyEngine();
+    const _eng = new ScenarioEngine();
     const scenario = {
       defcon: 1,
       waves: [
@@ -477,7 +477,7 @@ console.log('\n--- Submarine origin integrity ---');
 test('fromSubs waves produce missiles with type "sub", not city or base', () => {
   // Build a scenario that uses fromSubs — use unique var names to avoid collision
   const result = vm.runInContext(`
-    const _subEng1 = new StrategyEngine();
+    const _subEng1 = new ScenarioEngine();
     const _sc1 = {
       defcon: 2,
       waves: [
@@ -502,7 +502,7 @@ test('fromSubs waves produce missiles with type "sub", not city or base', () => 
 
 test('submarine origins are not located at any known city or base', () => {
   const result = vm.runInContext(`
-    const _subEng2 = new StrategyEngine();
+    const _subEng2 = new ScenarioEngine();
     const _sc2 = {
       defcon: 1,
       waves: [
@@ -549,7 +549,7 @@ test('no missile with origin type "sub" is located at a known city or base', () 
     cityPositions.add(`${c.lat},${c.lon}`);
   }
 
-  const scenarios = vm.runInContext(`STRATEGY_SCENARIOS`, ctx);
+  const scenarios = vm.runInContext(`SCENARIOS`, ctx);
   const failures = [];
 
   // Test a sample of scenarios that use fromSubs
@@ -558,7 +558,7 @@ test('no missile with origin type "sub" is located at a known city or base', () 
   ).slice(0, 20); // sample 20
 
   for (const [name, scenario] of subScenarios) {
-    const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+    const engine = vm.runInContext(`new ScenarioEngine()`, ctx);
     const result = engine.buildFromScenario(name, scenario);
     const maxScenarioDelay = Math.max(...scenario.waves.map(w => w.delay || 0));
 

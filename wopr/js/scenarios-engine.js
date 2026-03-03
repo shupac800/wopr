@@ -1,35 +1,35 @@
-// Strategy Engine — loads strategies.json, maps to cities, assigns DEFCON
+// Scenario Engine — loads scenarios.json, maps to cities, assigns DEFCON
 
 function dist2(a, b) {
   const dlat = a.lat - b.lat, dlon = a.lon - b.lon;
   return dlat * dlat + dlon * dlon;
 }
 
-class StrategyEngine {
+class ScenarioEngine {
   constructor() {
-    this.strategies = [];
+    this.scenarios = [];
     this.executionCount = 0;
   }
 
   async load() {
     try {
-      const res = await fetch('data/strategies.json');
+      const res = await fetch('data/scenarios.json');
       const data = await res.json();
-      this.strategies = data.strategies;
+      this.scenarios = data.scenarios;
     } catch (e) {
       // fetch fails on file:// protocol — fall back to embedded data
-      console.warn('fetch failed (file:// protocol?), using embedded strategies');
-      this.strategies = EMBEDDED_STRATEGIES;
+      console.warn('fetch failed (file:// protocol?), using embedded scenarios');
+      this.scenarios = EMBEDDED_SCENARIOS;
     }
-    return this.strategies;
+    return this.scenarios;
   }
 
-  // Parse a strategy name to determine involved regions
-  getRegions(strategyName) {
+  // Parse a scenario name to determine involved regions
+  getRegions(scenarioName) {
     const regions = new Set();
-    const upper = strategyName.toUpperCase();
+    const upper = scenarioName.toUpperCase();
 
-    // Check each keyword against the strategy name
+    // Check each keyword against the scenario name
     for (const [keyword, regionList] of Object.entries(REGION_KEYWORDS)) {
       if (upper.includes(keyword)) {
         regionList.forEach(r => regions.add(r));
@@ -45,9 +45,9 @@ class StrategyEngine {
     return [...regions];
   }
 
-  // Determine DEFCON level from strategy name
-  getDefcon(strategyName) {
-    const upper = strategyName.toUpperCase();
+  // Determine DEFCON level from scenario name
+  getDefcon(scenarioName) {
+    const upper = scenarioName.toUpperCase();
 
     for (const [level, keywords] of Object.entries(ESCALATION_KEYWORDS)) {
       for (const kw of keywords) {
@@ -109,21 +109,21 @@ class StrategyEngine {
     this._usedBases = new Set();
   }
 
-  // Build a launch sequence for a strategy
-  buildLaunchSequence(strategyName) {
+  // Build a launch sequence for a scenario
+  buildLaunchSequence(scenarioName) {
     this.resetLaunchRotation();
     // Check for hand-crafted scenario first
-    if (typeof STRATEGY_SCENARIOS !== 'undefined' && STRATEGY_SCENARIOS[strategyName]) {
-      return this.buildFromScenario(strategyName, STRATEGY_SCENARIOS[strategyName]);
+    if (typeof SCENARIOS !== 'undefined' && SCENARIOS[scenarioName]) {
+      return this.buildFromScenario(scenarioName, SCENARIOS[scenarioName]);
     }
-    return this.buildGenericSequence(strategyName);
+    return this.buildGenericSequence(scenarioName);
   }
 
   // Build launch sequence from a hand-crafted scenario
-  buildFromScenario(strategyName, scenario) {
-    const defcon = scenario.defcon || this.getDefcon(strategyName);
+  buildFromScenario(scenarioName, scenario) {
+    const defcon = scenario.defcon || this.getDefcon(scenarioName);
     const missiles = [];
-    const regions = this.getRegions(strategyName);
+    const regions = this.getRegions(scenarioName);
 
     // Expand regions with nations referenced in fromSubs wave fields
     // so assignSubmarines includes those nations' submarine pools
@@ -252,7 +252,7 @@ class StrategyEngine {
 
     // Fallback: if no missiles resolved, use generic logic
     if (missiles.length === 0) {
-      return this.buildGenericSequence(strategyName);
+      return this.buildGenericSequence(scenarioName);
     }
 
     // ESCALATION — any nuclear use inevitably leads to global annihilation
@@ -271,7 +271,7 @@ class StrategyEngine {
     this.executionCount++;
 
     return {
-      name: strategyName,
+      name: scenarioName,
       defcon: 1, // escalation always reaches DEFCON 1
       missiles,
       regions,
@@ -281,14 +281,14 @@ class StrategyEngine {
   }
 
   // Original generic launch sequence builder
-  buildGenericSequence(strategyName) {
-    const regions = this.getRegions(strategyName);
-    const defcon = this.getDefcon(strategyName);
+  buildGenericSequence(scenarioName) {
+    const regions = this.getRegions(scenarioName);
+    const defcon = this.getDefcon(scenarioName);
     const targetCities = this.getCitiesForRegions(regions);
 
     // Determine origin cities (aggressors)
     let originRegions;
-    const upper = strategyName.toUpperCase();
+    const upper = scenarioName.toUpperCase();
 
     if (upper.includes("USSR") || upper.includes("RUSSIAN") || upper.includes("PACT") || upper.includes("WARSAW")) {
       originRegions = ["ussr"];
@@ -366,7 +366,7 @@ class StrategyEngine {
     this.executionCount++;
 
     return {
-      name: strategyName,
+      name: scenarioName,
       defcon: 1, // escalation always reaches DEFCON 1
       missiles,
       regions,

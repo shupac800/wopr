@@ -1,17 +1,17 @@
-// Terminal UI — typewriter effects, strategy list, boot sequence
+// Terminal UI — typewriter effects, scenario list, boot sequence
 
 class TerminalUI {
   constructor() {
     this.messagesEl = document.getElementById('terminal-messages');
-    this.strategyPanel = document.getElementById('strategy-panel');
-    this.strategyList = document.getElementById('strategy-list');
+    this.scenarioPanel = document.getElementById('scenario-panel');
+    this.scenarioList = document.getElementById('scenario-list');
     this.defconEl = document.getElementById('defcon-indicator');
     this.clockEl = document.getElementById('system-clock');
     this.woprStatus = document.getElementById('wopr-status');
 
     this.selectedIndex = 0;
-    this.strategies = [];
-    this.onStrategySelect = null; // callback
+    this.scenarios = [];
+    this.onScenarioSelect = null; // callback
     this.inputEnabled = false;
     this.typewriterSpeed = 8;
     this._activeTimers = [];  // interval/timeout IDs to kill on abort
@@ -172,18 +172,18 @@ class TerminalUI {
     await this.typewrite('HOW ABOUT GLOBAL THERMONUCLEAR WAR?', 'bright');
     await this.delay(80);
     this.printBlank();
-    await this.typewrite('AVAILABLE STRATEGIES:', 'dim');
+    await this.typewrite('AVAILABLE SCENARIOS:', 'dim');
     await this.delay(30);
   }
 
-  // === Strategy List ===
-  buildStrategyList(strategies) {
-    this.strategies = strategies;
-    this.strategyList.innerHTML = '';
+  // === Scenario List ===
+  buildScenarioList(scenarios) {
+    this.scenarios = scenarios;
+    this.scenarioList.innerHTML = '';
 
-    strategies.forEach((name, i) => {
+    scenarios.forEach((name, i) => {
       const item = document.createElement('div');
-      item.className = 'strategy-item';
+      item.className = 'scenario-item';
       item.innerHTML = `<span class="number">${i + 1}.</span>${name}`;
       item.dataset.index = i;
 
@@ -193,23 +193,23 @@ class TerminalUI {
         this.executeSelected();
       });
 
-      this.strategyList.appendChild(item);
+      this.scenarioList.appendChild(item);
     });
 
-    this.strategyPanel.classList.add('visible');
+    this.scenarioPanel.classList.add('visible');
     this.selectIndex(0);
   }
 
   selectIndex(idx) {
-    if (idx < 0) idx = this.strategies.length - 1;
-    if (idx >= this.strategies.length) idx = 0;
+    if (idx < 0) idx = this.scenarios.length - 1;
+    if (idx >= this.scenarios.length) idx = 0;
 
     // Remove old selection
-    const prev = this.strategyList.querySelector('.selected');
+    const prev = this.scenarioList.querySelector('.selected');
     if (prev) prev.classList.remove('selected');
 
     this.selectedIndex = idx;
-    const items = this.strategyList.querySelectorAll('.strategy-item');
+    const items = this.scenarioList.querySelectorAll('.scenario-item');
     if (items[idx]) {
       items[idx].classList.add('selected');
       // Scroll into view
@@ -218,11 +218,11 @@ class TerminalUI {
   }
 
   executeSelected() {
-    if (this.onStrategySelect) {
+    if (this.onScenarioSelect) {
       // Engage cooldown to ignore rapid double-clicks
       this._selectCooldown = true;
       setTimeout(() => { this._selectCooldown = false; }, 400);
-      this.onStrategySelect(this.strategies[this.selectedIndex], this.selectedIndex);
+      this.onScenarioSelect(this.scenarios[this.selectedIndex], this.selectedIndex);
     }
   }
 
@@ -262,10 +262,10 @@ class TerminalUI {
     }
   }
 
-  // === Strategy Execution Log ===
-  async showExecutionLog(strategyName, defcon, narrative) {
+  // === Scenario Execution Log ===
+  async showExecutionLog(scenarioName, defcon, narrative) {
     this.printBlank();
-    await this.typewrite(`> STRATEGY SELECTED: ${strategyName}`, 'bright');
+    await this.typewrite(`> SCENARIO SELECTED: ${scenarioName}`, 'bright');
     await this.delay(300);
     await this.typewrite(`  DEFCON LEVEL: ${defcon}`, defcon <= 2 ? 'bright' : 'dim');
     await this.delay(200);

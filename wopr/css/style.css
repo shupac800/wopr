@@ -175,8 +175,8 @@ html, body {
   50% { opacity: 0; }
 }
 
-/* === Strategy List === */
-#strategy-panel {
+/* === Scenario List === */
+#scenario-panel {
   display: none;
   flex-direction: column;
   flex: 1;
@@ -184,11 +184,11 @@ html, body {
   border-top: 1px solid var(--green-dark);
 }
 
-#strategy-panel.visible {
+#scenario-panel.visible {
   display: flex;
 }
 
-#strategy-panel-header {
+#scenario-panel-header {
   padding: 8px 15px;
   border-bottom: 1px solid var(--green-dark);
   font-size: 11px;
@@ -196,7 +196,7 @@ html, body {
   color: var(--green-dim);
 }
 
-#strategy-list {
+#scenario-list {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -204,15 +204,15 @@ html, body {
   padding: 5px 0;
 }
 
-#strategy-list::-webkit-scrollbar {
+#scenario-list::-webkit-scrollbar {
   width: 4px;
 }
 
-#strategy-list::-webkit-scrollbar-thumb {
+#scenario-list::-webkit-scrollbar-thumb {
   background: var(--green-dark);
 }
 
-.strategy-item {
+.scenario-item {
   padding: 4px 15px;
   cursor: pointer;
   font-size: 12px;
@@ -224,18 +224,18 @@ html, body {
   text-overflow: ellipsis;
 }
 
-.strategy-item:hover {
+.scenario-item:hover {
   background: rgba(51, 255, 51, 0.05);
   color: var(--green);
 }
 
-.strategy-item.selected {
+.scenario-item.selected {
   background: rgba(51, 255, 51, 0.12);
   color: var(--green);
   text-shadow: 0 0 6px var(--green-glow);
 }
 
-.strategy-item .number {
+.scenario-item .number {
   display: inline-block;
   width: 35px;
   color: var(--green-dark);
@@ -243,7 +243,7 @@ html, body {
   margin-right: 8px;
 }
 
-.strategy-item.selected .number {
+.scenario-item.selected .number {
   color: var(--green-dim);
 }
 
