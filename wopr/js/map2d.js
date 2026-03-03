@@ -60,6 +60,7 @@ class MapRenderer2D {
 
     this._resize();
     window.addEventListener('resize', () => this._resize());
+    this._watchDPR();
 
     // Submarine markers for current scenario
     this._submarines = [];
@@ -152,6 +153,15 @@ class MapRenderer2D {
     this.w = this.canvas.width;
     this.h = this.canvas.height;
     this._buildTintedMap();
+  }
+
+  // Watch for devicePixelRatio changes (browser pinch-zoom)
+  _watchDPR() {
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    mq.addEventListener('change', () => {
+      this._resize();
+      this._watchDPR(); // re-register for the new DPR value
+    }, { once: true });
   }
 
   // Convert lat/lon to canvas pixel coordinates

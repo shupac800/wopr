@@ -301,10 +301,15 @@
     }
 
     // Update globe rotation speed to match current time compression
-    // OrbitControls rotates at (2π/60 * autoRotateSpeed) rad/s
-    // For one full rotation in a simulated 24h: speed = 60 / (86400 / TIME_COMPRESSION)
+    // OrbitControls auto-rotation is frame-rate dependent: it applies a fixed
+    // 2π * autoRotateSpeed / 3600 radians PER FRAME (assumes 60fps).
+    // To make rotation time-correct regardless of frame rate, scale
+    // autoRotateSpeed by actual deltaTime each frame:
+    //   desired rad/frame = 2π * TIME_COMPRESSION / 86400 * delta
+    //   OrbitControls rad/frame = 2π * autoRotateSpeed / 3600
+    //   → autoRotateSpeed = TIME_COMPRESSION * delta / 24
     if (USE_3D_GLOBE && globe.controls) {
-      globe.controls.autoRotateSpeed = 60 / (86400 / TIME_COMPRESSION);
+      globe.controls.autoRotateSpeed = TIME_COMPRESSION * delta / 24;
     }
 
     if (simRunning) {

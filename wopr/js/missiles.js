@@ -192,7 +192,7 @@ class MissileSystem {
     const blastMesh = new THREE.Mesh(blastGeom, blastMat);
 
     // Position on globe surface and orient to face outward
-    const surfacePos = this.globe.latLonToVec3(targetCity.lat, targetCity.lon, 1.003);
+    const surfacePos = this.globe.latLonToVec3(targetCity.lat, targetCity.lon, 1.012);
     blastMesh.position.copy(surfacePos);
     blastMesh.lookAt(0, 0, 0); // face outward from globe center
     blastMesh.scale.setScalar(0.15); // start small but visible
@@ -254,7 +254,7 @@ class MissileSystem {
         this.scene.remove(m.head);
 
         // Create detonation at target
-        const targetPos = this.globe.latLonToVec3(m.target.lat, m.target.lon, 1.01);
+        const targetPos = this.globe.latLonToVec3(m.target.lat, m.target.lon, 1.012);
         this.createDetonation(targetPos, m.target);
 
         // Trail persists — dim it slightly but keep visible until clear()

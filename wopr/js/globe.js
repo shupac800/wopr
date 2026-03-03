@@ -65,8 +65,9 @@ class GlobeRenderer {
     this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
     this.renderer.domElement.addEventListener('mouseleave', () => this.hideTooltip());
 
-    // Resize handler
+    // Resize handler (window resize and browser zoom / DPR change)
     window.addEventListener('resize', () => this.onResize());
+    this._watchDPR();
   }
 
   buildWireframeGlobe() {
@@ -249,10 +250,20 @@ class GlobeRenderer {
     const h = this.container.clientHeight;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(w, h);
     if (this.composer) {
       this.composer.setSize(w, h);
     }
+  }
+
+  // Watch for devicePixelRatio changes (browser pinch-zoom)
+  _watchDPR() {
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    mq.addEventListener('change', () => {
+      this.onResize();
+      this._watchDPR(); // re-register for the new DPR value
+    }, { once: true });
   }
 
   // Pulse city and sub markers

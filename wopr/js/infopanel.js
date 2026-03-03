@@ -111,30 +111,33 @@ class InfoPanel {
   }
 
   logLaunch(originName, targetName, simSec) {
-    const ts = this.formatTimestamp(simSec);
-    const entry = document.createElement('div');
-    entry.className = 'attack-entry launch';
-    entry.textContent = `${ts} LAUNCH ${originName} → ${targetName}`;
-    this.attackLog.appendChild(entry);
     this.warheads++;
     this.updateCounters();
-    this.attackLog.scrollTop = this.attackLog.scrollHeight;
 
     // Degrade forces for the launching side
     this.degradeForces(originName);
+
+    // TESTING: attack assessment messages suspended
+    // const ts = this.formatTimestamp(simSec);
+    // const entry = document.createElement('div');
+    // entry.className = 'attack-entry launch';
+    // entry.textContent = `${ts} LAUNCH ${originName} → ${targetName}`;
+    // this.attackLog.appendChild(entry);
+    // this.attackLog.scrollTop = this.attackLog.scrollHeight;
   }
 
   // Called when a detonation occurs
   logDetonation(targetCity, simSec) {
     if (!targetCity) return;
     const name = targetCity.name;
-    const ts = this.formatTimestamp(simSec);
 
-    const entry = document.createElement('div');
-    entry.className = 'attack-entry hit';
-    entry.textContent = `${ts} IMPACT ${name} — ${targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY TARGET'}`;
-    this.attackLog.appendChild(entry);
-    this.attackLog.scrollTop = this.attackLog.scrollHeight;
+    // TESTING: attack assessment messages suspended
+    // const ts = this.formatTimestamp(simSec);
+    // const entry = document.createElement('div');
+    // entry.className = 'attack-entry hit';
+    // entry.textContent = `${ts} IMPACT ${name} — ${targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY TARGET'}`;
+    // this.attackLog.appendChild(entry);
+    // this.attackLog.scrollTop = this.attackLog.scrollHeight;
 
     if (!this.destroyedCities.has(name)) {
       this.destroyedCities.add(name);

@@ -713,6 +713,133 @@ test('flight time scales correctly when TIME_COMPRESSION changes mid-flight', ()
   );
 });
 
+// ── 12. Blast radius expansion rate ──────────────────────────────────
+
+console.log('\n--- Blast radius expansion ---');
+
+test('blast growth duration scales inversely with TIME_COMPRESSION', () => {
+  const city = vm.runInContext(`CITIES.find(c => c.name === 'MOSCOW')`, ctx);
+  assert.ok(city, 'need Moscow');
+
+  // Measure growth time at 360x
+  function measureGrowthFrames(compression) {
+    vm.runInContext(`TIME_COMPRESSION = ${compression}`, ctx);
+    const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
+    sys.createDetonation(city);
+
+    const dt = 1 / 60;
+    let frames = 0;
+    for (let i = 0; i < 60000; i++) {
+      sys.update(dt);
+      frames++;
+      if (sys.blastMarks[0].grown) break;
+    }
+    return frames;
+  }
+
+  const frames360 = measureGrowthFrames(360);
+  const frames720 = measureGrowthFrames(720);
+
+  // Restore
+  vm.runInContext('TIME_COMPRESSION = 360', ctx);
+
+  // At 720x, blast should grow in half the frames (within 5% tolerance for frame quantization)
+  const ratio = frames360 / frames720;
+  assert.ok(
+    Math.abs(ratio - 2.0) < 0.1,
+    `growth at 720x should be 2x faster than 360x: ratio=${ratio.toFixed(3)} (expected ~2.0), ` +
+    `frames: ${frames360} at 360x, ${frames720} at 720x`
+  );
+});
+
+test('blast wave expansion speed is physically realistic', () => {
+  // The 2D blast system uses baseGrowDuration = 900 real-world seconds
+  // to expand to full radius of 88 miles (141.6 km)
+  const BLAST_RADIUS_KM = 88 * 1.609; // 88 miles in km = 141.6
+  const BASE_GROW_SEC = 900;           // real-world seconds (from map2d.js)
+
+  const avgSpeedMS = (BLAST_RADIUS_KM * 1000) / BASE_GROW_SEC; // m/s
+
+  // Nuclear blast wave speeds at extended range (50-150 km):
+  //   - Near ground zero: supersonic, ~1000+ m/s
+  //   - At 50 km: ~300-400 m/s (decelerating)
+  //   - At 100+ km: ~150-250 m/s (approaching speed of sound)
+  // Average over 0-142 km should be roughly 100-400 m/s
+  assert.ok(
+    avgSpeedMS >= 100 && avgSpeedMS <= 400,
+    `average blast wave speed should be 100-400 m/s, got ${Math.round(avgSpeedMS)} m/s ` +
+    `(${BLAST_RADIUS_KM.toFixed(1)} km in ${BASE_GROW_SEC}s)`
+  );
+
+  // Verify the growth actually completes in the expected time
+  const city = vm.runInContext(`CITIES.find(c => c.name === 'MOSCOW')`, ctx);
+  vm.runInContext('TIME_COMPRESSION = 360', ctx);
+  const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
+  sys.createDetonation(city);
+
+  const dt = 1 / 60;
+  let realSec = 0;
+  for (let i = 0; i < 60000; i++) {
+    sys.update(dt);
+    realSec += dt;
+    if (sys.blastMarks[0].grown) break;
+  }
+
+  // Expected display time = baseGrowDuration / TIME_COMPRESSION = 900 / 360 = 2.5s
+  const expectedRealSec = BASE_GROW_SEC / 360;
+  const tolerance = expectedRealSec * 0.05;
+  assert.ok(
+    Math.abs(realSec - expectedRealSec) < tolerance,
+    `blast should fully expand in ${expectedRealSec.toFixed(2)}s real time at 360x, ` +
+    `got ${realSec.toFixed(2)}s`
+  );
+});
+
+test('blast growth responds to TIME_COMPRESSION change mid-expansion', () => {
+  const city = vm.runInContext(`CITIES.find(c => c.name === 'MOSCOW')`, ctx);
+  assert.ok(city, 'need Moscow');
+
+  // baseGrowDuration = 900 real-world seconds
+  // At 360x: growDuration = 900/360 = 2.5s display time
+  // Growth progress = age * TIME_COMPRESSION / baseGrowDuration
+  // Switch from 360x to 540x (1.5x) at 25% growth (age = 0.625s)
+  // At switch: progress = 0.625 * 360 / 900 = 0.25 (25%)
+  // After switch: completes when age * 540 / 900 >= 1.0 → age >= 900/540 = 1.667s
+  // Remaining age: 1.667 - 0.625 = 1.042s
+  // Total: 0.625 + 1.042 = 1.667s
+
+  vm.runInContext('TIME_COMPRESSION = 360', ctx);
+  const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
+  sys.createDetonation(city);
+
+  const dt = 1 / 60;
+  let realSec = 0;
+  const switchAt = 0.625; // 25% growth at 360x
+  let switched = false;
+
+  for (let i = 0; i < 60000; i++) {
+    sys.update(dt);
+    realSec += dt;
+    if (!switched && realSec >= switchAt) {
+      vm.runInContext('TIME_COMPRESSION = 540', ctx); // 1.5x
+      switched = true;
+    }
+    if (sys.blastMarks[0].grown) break;
+  }
+
+  // Restore
+  vm.runInContext('TIME_COMPRESSION = 360', ctx);
+
+  const expectedRealSec = 1.667;
+  const tolerance = expectedRealSec * 0.05;
+
+  assert.ok(
+    Math.abs(realSec - expectedRealSec) < tolerance,
+    `mid-expansion TIME_COMPRESSION change: expected ~${expectedRealSec.toFixed(2)}s, ` +
+    `got ${realSec.toFixed(2)}s`
+  );
+});
+
 // ════════════════════════════════════════════════════════════════════════
 
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===\n`);
