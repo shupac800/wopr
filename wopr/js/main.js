@@ -41,7 +41,7 @@
     const totalMin = Math.floor(simElapsedSec / 60);
     const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
     const mm = String(totalMin % 60).padStart(2, '0');
-    elapsedTimeEl.textContent = 'ELAPSED: ' + hh + ' : ' + mm;
+    elapsedTimeEl.textContent = 'ELAPSED  ' + hh + ' : ' + mm;
   }
 
   // === Screen flash element ===
@@ -277,9 +277,11 @@
     if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir === 1) {
       timeAdjustDir = 0;
       timeAdjustHeldSec = 0;
+      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
     } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir === -1) {
       timeAdjustDir = 0;
       timeAdjustHeldSec = 0;
+      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
     }
   });
 

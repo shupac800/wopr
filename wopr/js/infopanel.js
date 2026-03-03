@@ -32,13 +32,24 @@ class InfoPanel {
     // Graph state
     this.graphCanvas = document.getElementById('attack-graph');
     this.graphCtx = this.graphCanvas.getContext('2d');
-    this.selectedMetrics = new Set(['warheads', 'targets', 'casualties']);
+    const savedMetrics = localStorage.getItem('wopr_graphMetrics');
+    this.selectedMetrics = savedMetrics
+      ? new Set(JSON.parse(savedMetrics))
+      : new Set(['warheads', 'targets', 'casualties']);
     this.metricColors = { warheads: '#33ff33', targets: '#ffffaa', casualties: '#ff5555' };
     this.timeSeries = []; // [{t, warheads, targets, casualties}, ...]
     this._graphDirty = false;
 
     // Click handlers for metric toggle
     const rows = document.querySelectorAll('#attack-summary-labels .summary-row');
+    // Sync CSS classes with loaded state
+    rows.forEach(row => {
+      if (this.selectedMetrics.has(row.dataset.metric)) {
+        row.classList.add('selected');
+      } else {
+        row.classList.remove('selected');
+      }
+    });
     rows.forEach(row => {
       row.addEventListener('click', () => {
         const metric = row.dataset.metric;
@@ -49,6 +60,7 @@ class InfoPanel {
           this.selectedMetrics.add(metric);
           row.classList.add('selected');
         }
+        localStorage.setItem('wopr_graphMetrics', JSON.stringify([...this.selectedMetrics]));
         this._drawGraph();
       });
     });
