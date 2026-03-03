@@ -280,7 +280,7 @@ class TerminalUI {
     await this.typewrite('  MISSILES AWAY.', 'bright');
   }
 
-  async showAftermath(sequence, simElapsedSec) {
+  async showAftermath(sequence, simElapsedSec, casualties) {
     await this.delay(500);
     this.printBlank();
 
@@ -296,10 +296,8 @@ class TerminalUI {
       await this.typewrite(`               ...AND ${targetNames.length - 5} MORE`, 'dim');
     }
 
-    const targetPop = [...new Set(sequence.missiles.map(m => m.target))];
-    const totalPop = targetPop.reduce((sum, c) => sum + (c.pop || 1), 0);
-    const casualties = Math.round(totalPop * (0.3 + Math.random() * 0.4) * 10) / 10;
-    await this.typewrite(`  ESTIMATED CASUALTIES: ${casualties}M`, 'dim');
+    const displayCas = Math.round((casualties || 0) * 10) / 10;
+    await this.typewrite(`  CASUALTIES: ${displayCas}M`, 'dim');
   }
 
   async showEnding() {

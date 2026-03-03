@@ -189,7 +189,7 @@
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
-    await terminal.showAftermath(sequence, simElapsedSec);
+    await terminal.showAftermath(sequence, simElapsedSec, infoPanel.casualties);
     if (aborted()) return;
 
     // Dramatic "WINNER: NONE"

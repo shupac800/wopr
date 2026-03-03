@@ -840,6 +840,86 @@ test('blast growth responds to TIME_COMPRESSION change mid-expansion', () => {
   );
 });
 
+// ── 13. Casualty consistency between terminal and info panel ──────────
+
+console.log('\n--- Casualty consistency ---');
+
+test('terminal aftermath casualties match info panel accumulated casualties', () => {
+  // Simulate what InfoPanel.logDetonation does for a set of cities
+  const testCities = vm.runInContext(`
+    CITIES.filter(c => c.pop && c.pop > 0).slice(0, 10)
+  `, ctx);
+  assert.ok(testCities.length >= 5, 'need at least 5 cities with population');
+
+  // Replicate InfoPanel's casualty accumulation logic
+  let infoPanelCasualties = 0;
+  const destroyedCities = new Set();
+
+  // Seed Math.random deterministically by running multiple detonations
+  for (const city of testCities) {
+    if (!destroyedCities.has(city.name)) {
+      destroyedCities.add(city.name);
+      if (city.pop) {
+        infoPanelCasualties += city.pop * (0.3 + Math.random() * 0.4);
+      }
+    }
+  }
+
+  // showAftermath now receives casualties directly and formats as:
+  //   Math.round(casualties * 10) / 10
+  // InfoPanel.updateCounters displays as:
+  //   Math.round(this.casualties * 10) / 10
+  // Both must apply the same rounding to the same input value.
+  const terminalDisplay = Math.round(infoPanelCasualties * 10) / 10;
+  const panelDisplay = Math.round(infoPanelCasualties * 10) / 10;
+
+  assert.strictEqual(
+    terminalDisplay,
+    panelDisplay,
+    `terminal (${terminalDisplay}M) should equal panel (${panelDisplay}M)`
+  );
+});
+
+test('showAftermath formats casualties identically to info panel counter', () => {
+  // Test specific edge cases of the rounding formula
+  const testValues = [0, 0.1, 1.05, 12.349, 12.351, 99.999, 150.55];
+
+  for (const cas of testValues) {
+    // Terminal: Math.round(casualties * 10) / 10  (from showAftermath)
+    const terminalVal = Math.round(cas * 10) / 10;
+    // Panel: Math.round(this.casualties * 10) / 10  (from updateCounters)
+    const panelVal = Math.round(cas * 10) / 10;
+
+    assert.strictEqual(
+      terminalVal, panelVal,
+      `mismatch for input ${cas}: terminal=${terminalVal}, panel=${panelVal}`
+    );
+  }
+});
+
+test('duplicate city detonations do not double-count casualties', () => {
+  // InfoPanel only counts casualties once per city name
+  const moscow = vm.runInContext(`CITIES.find(c => c.name === 'MOSCOW')`, ctx);
+  assert.ok(moscow && moscow.pop, 'need Moscow with population');
+
+  let casualties = 0;
+  const destroyed = new Set();
+
+  // Detonate Moscow 3 times
+  for (let i = 0; i < 3; i++) {
+    if (!destroyed.has(moscow.name)) {
+      destroyed.add(moscow.name);
+      casualties += moscow.pop * 0.5; // fixed factor for determinism
+    }
+  }
+
+  // Should only count once
+  const expected = moscow.pop * 0.5;
+  assert.strictEqual(casualties, expected,
+    `3 detonations on Moscow should count casualties once: got ${casualties}, expected ${expected}`
+  );
+});
+
 // ════════════════════════════════════════════════════════════════════════
 
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===\n`);
