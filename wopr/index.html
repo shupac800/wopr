@@ -109,7 +109,8 @@
     const EDGE_GLOW = false;   // true = fresnel rim glow on globe edge
     const SCREEN_FLASH = false; // true = white flash on missile detonation
     const THEATRICAL_TIMING = true;  // true = fixed ~2s flights, false = 360x time compression
-    const TIME_COMPRESSION = 400;
+    let TIME_COMPRESSION = 400;
+    const BASE_TIME_COMPRESSION = TIME_COMPRESSION;
   </script>
 
   <!-- Three.js + addons (only needed for 3D mode, but loaded either way for simplicity) -->

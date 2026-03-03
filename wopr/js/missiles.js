@@ -21,6 +21,7 @@ class MissileSystem {
     this.persistentTrails = []; // trails that persist until clear()
     this.onDetonation = null; // callback for screen flash
     this.onFirstLaunch = null; // callback when first missile starts flying
+    this.onLaunch = null;      // callback(origin, target) for each missile launch
 
     // 88 miles in radians on globe surface (Earth radius ~3959 mi)
     // Globe radius = 1.0, so scale factor = 88 / 3959
@@ -115,7 +116,7 @@ class MissileSystem {
       delay,
       started: false,
       elapsed: 0,
-      speed: Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * 7 / haversineKm(origin, target))),
+      baseSpeed: 5 / Math.max(1, haversineKm(origin, target)), // ~5 km/s effective avg (boost+midcourse+reentry)
       done: false,
       target,
       origin,
@@ -203,7 +204,7 @@ class MissileSystem {
       lat: targetCity.lat,
       lon: targetCity.lon,
       age: 0,
-      growDuration: THEATRICAL_TIMING ? 1.8 : 1.8 * 360 / TIME_COMPRESSION,
+      baseGrowDuration: 648, // real-world seconds for blast wave to reach full radius
       grown: false,
     });
 
@@ -221,7 +222,7 @@ class MissileSystem {
     for (const m of this.activeMissiles) {
       if (m.done) continue;
 
-      m.elapsed += deltaTime * 1000; // to ms
+      m.elapsed += deltaTime * 1000 * TIME_COMPRESSION / BASE_TIME_COMPRESSION;
 
       if (m.elapsed < m.delay) continue;
 
@@ -236,11 +237,13 @@ class MissileSystem {
         }
         m.started = true;
         if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
+        if (this.onLaunch) this.onLaunch(m.origin, m.target);
         m.headMat.opacity = 1.0;
         m.trailMat.opacity = 0.6;
       }
 
-      m.progress += deltaTime * m.speed;
+      const speed = Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * m.baseSpeed));
+      m.progress += deltaTime * speed;
 
       if (m.progress >= 1.0) {
         m.progress = 1.0;
@@ -261,16 +264,24 @@ class MissileSystem {
         continue;
       }
 
-      // Move head along arc and orient triangle to face direction of travel
-      const idx = Math.floor(m.progress * (m.arcPoints.length - 1));
+      // Move head along arc — interpolate between arc points for smooth motion
+      const rawIdx = m.progress * (m.arcPoints.length - 1);
+      const idx = Math.floor(rawIdx);
       const clampIdx = Math.min(idx, m.arcPoints.length - 1);
-      m.head.position.copy(m.arcPoints[clampIdx]);
+      const nextIdx = Math.min(clampIdx + 1, m.arcPoints.length - 1);
+      const frac = rawIdx - idx;
+
+      if (nextIdx !== clampIdx) {
+        m.head.position.lerpVectors(m.arcPoints[clampIdx], m.arcPoints[nextIdx], frac);
+      } else {
+        m.head.position.copy(m.arcPoints[clampIdx]);
+      }
 
       // Compute tangent direction from current to next arc point
-      const nextIdx = Math.min(clampIdx + 1, m.arcPoints.length - 1);
       if (nextIdx !== clampIdx) {
         const tangent = new THREE.Vector3().subVectors(m.arcPoints[nextIdx], m.arcPoints[clampIdx]).normalize();
-        const up = m.arcPoints[clampIdx].clone().normalize(); // radial "up" from globe center
+        const interpPos = m.head.position;
+        const up = interpPos.clone().normalize(); // radial "up" from globe center
         const right = new THREE.Vector3().crossVectors(tangent, up).normalize();
         const correctedUp = new THREE.Vector3().crossVectors(right, tangent).normalize();
         const mat4 = new THREE.Matrix4().makeBasis(right, tangent, correctedUp);
@@ -311,7 +322,8 @@ class MissileSystem {
       if (b.grown) continue;
 
       b.age += deltaTime;
-      const t = Math.min(b.age / b.growDuration, 1.0);
+      const growDuration = b.baseGrowDuration / TIME_COMPRESSION;
+      const t = Math.min(b.age / growDuration, 1.0);
 
       // Cubic ease-out — fast initial expansion, decelerating
       const eased = 1.0 - Math.pow(1.0 - t, 3);

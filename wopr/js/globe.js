@@ -46,7 +46,7 @@ class GlobeRenderer {
     this.controls.minDistance = 1.8;
     this.controls.maxDistance = 6;
     this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = THEATRICAL_TIMING ? 0.3 : 0.25;
+    this.controls.autoRotateSpeed = 60 / (86400 / TIME_COMPRESSION); // one rotation per simulated 24h
 
     // Build globe
     this.buildWireframeGlobe();

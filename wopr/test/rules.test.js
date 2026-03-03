@@ -44,7 +44,7 @@ function buildSandbox() {
   const ctx = vm.createContext(sandbox);
 
   // Global config flags (normally set in index.html)
-  vm.runInContext('const THEATRICAL_TIMING = true; const TIME_COMPRESSION = 360;', ctx);
+  vm.runInContext('const THEATRICAL_TIMING = true; let TIME_COMPRESSION = 360; const BASE_TIME_COMPRESSION = 360;', ctx);
 
   // Load Three.js mock
   vm.runInContext(THREE_MOCK, ctx);
@@ -597,6 +597,120 @@ test('SSBN patrol positions are distinct from all city and base positions', () =
 
   assert.strictEqual(result.length, 0,
     `SSBN positions overlap with cities/bases: ${result.join(', ')}`);
+});
+
+// ── 11. Missile flight time audit ─────────────────────────────────────
+
+console.log('\n--- Missile flight time audit ---');
+
+test('flight times match haversine distance at 5 km/s effective speed', () => {
+  // City pairs with known approximate great-circle distances
+  const pairs = vm.runInContext(`
+    const _pairs = [
+      { a: CITIES.find(c => c.name === 'WASHINGTON DC'),  b: CITIES.find(c => c.name === 'MOSCOW') },
+      { a: CITIES.find(c => c.name === 'LONDON'),         b: CITIES.find(c => c.name === 'MOSCOW') },
+      { a: CITIES.find(c => c.name === 'SEOUL'),           b: CITIES.find(c => c.name === 'TOKYO') },
+      { a: CITIES.find(c => c.name === 'NEW YORK'),        b: CITIES.find(c => c.name === 'LONDON') },
+    ].filter(p => p.a && p.b);
+    _pairs;
+  `, ctx);
+
+  assert.ok(pairs.length >= 3, 'need at least 3 city pairs for audit');
+
+  for (const { a, b } of pairs) {
+    // Compute expected flight time
+    const distKm = vm.runInContext(`haversineKm2D(
+      { lat: ${a.lat}, lon: ${a.lon} },
+      { lat: ${b.lat}, lon: ${b.lon} }
+    )`, ctx);
+    const expectedSimSec = distKm / 5; // 5 km/s effective ICBM speed
+
+    // Create missile system and launch
+    const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
+
+    const log = { launchSimSec: null, detonateSimSec: null };
+    sys.onLaunch = () => { log.launchSimSec = simSec; };
+    sys.onDetonation = () => { log.detonateSimSec = simSec; };
+
+    sys.launchMissile(a, b, 0);
+
+    // Step simulation: 60fps for up to 60 real seconds
+    const dt = 1 / 60;
+    let simSec = 0;
+    for (let i = 0; i < 3600; i++) {
+      sys.update(dt);
+      simSec += dt * 360; // TIME_COMPRESSION in test sandbox is 360
+      if (sys.isIdle()) break;
+    }
+
+    assert.ok(log.launchSimSec !== null, `${a.name}→${b.name}: missile launched`);
+    assert.ok(log.detonateSimSec !== null, `${a.name}→${b.name}: missile detonated`);
+
+    const actualFlightSec = log.detonateSimSec - log.launchSimSec;
+    const tolerance = expectedSimSec * 0.05; // 5% tolerance
+
+    assert.ok(
+      Math.abs(actualFlightSec - expectedSimSec) < tolerance,
+      `${a.name}→${b.name}: expected ${Math.round(expectedSimSec)}s (${Math.round(expectedSimSec/60)}min), ` +
+      `got ${Math.round(actualFlightSec)}s (${Math.round(actualFlightSec/60)}min), ` +
+      `dist=${Math.round(distKm)}km`
+    );
+  }
+});
+
+test('flight time scales correctly when TIME_COMPRESSION changes mid-flight', () => {
+  const pair = vm.runInContext(`({
+    a: CITIES.find(c => c.name === 'WASHINGTON DC'),
+    b: CITIES.find(c => c.name === 'MOSCOW'),
+  })`, ctx);
+  assert.ok(pair.a && pair.b, 'need DC and Moscow');
+
+  const distKm = vm.runInContext(`haversineKm2D(
+    { lat: ${pair.a.lat}, lon: ${pair.a.lon} },
+    { lat: ${pair.b.lat}, lon: ${pair.b.lon} }
+  )`, ctx);
+
+  // Launch at normal compression (360), then double it halfway through
+  const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
+  let detonateRealSec = null;
+  sys.onDetonation = () => { if (detonateRealSec === null) detonateRealSec = realSec; };
+  sys.launchMissile(pair.a, pair.b, 0);
+
+  const dt = 1 / 60;
+  let realSec = 0;
+  let switched = false;
+
+  // Compute expected real-time flight at 360x: distKm / (360 * 5) seconds
+  const fullFlightRealSec = distKm / (360 * 5);
+  const halfRealSec = fullFlightRealSec / 2;
+
+  for (let i = 0; i < 3600; i++) {
+    sys.update(dt);
+    realSec += dt;
+    // Double compression at the halfway point (by real time)
+    if (!switched && realSec >= halfRealSec) {
+      vm.runInContext('TIME_COMPRESSION = 720', ctx);
+      switched = true;
+    }
+    if (detonateRealSec !== null) break;
+  }
+
+  // Restore for other tests
+  vm.runInContext('TIME_COMPRESSION = 360', ctx);
+
+  assert.ok(detonateRealSec !== null, 'missile detonated');
+
+  // With doubled speed for the second half, total real time should be ~75% of original
+  // First half: halfRealSec at 1x speed
+  // Second half: remaining 50% progress at 2x speed = halfRealSec / 2
+  const expectedRealSec = halfRealSec + halfRealSec / 2;
+  const tolerance = expectedRealSec * 0.10; // 10% tolerance (frame-boundary effects)
+
+  assert.ok(
+    Math.abs(detonateRealSec - expectedRealSec) < tolerance,
+    `mid-flight TIME_COMPRESSION change: expected ~${expectedRealSec.toFixed(2)}s real time, ` +
+    `got ${detonateRealSec.toFixed(2)}s`
+  );
 });
 
 // ════════════════════════════════════════════════════════════════════════

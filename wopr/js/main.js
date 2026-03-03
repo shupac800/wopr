@@ -53,7 +53,7 @@
       setTimeout(() => flashEl.classList.remove('flash'), 100);
     }
     if (infoPanel) {
-      infoPanel.logDetonation(targetCity);
+      infoPanel.logDetonation(targetCity, simElapsedSec);
     }
   }
 
@@ -171,6 +171,9 @@
 
     // Launch missiles — start elapsed timer on first actual launch
     missiles.onFirstLaunch = () => startElapsed();
+    missiles.onLaunch = (origin, target) => {
+      infoPanel.logLaunch(origin.name, target.name, simElapsedSec);
+    };
     missiles.launchSequence(sequence);
 
     // Wait for missiles to finish
@@ -186,7 +189,7 @@
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
-    await terminal.showAftermath(sequence);
+    await terminal.showAftermath(sequence, simElapsedSec);
     if (aborted()) return;
 
     // Dramatic "WINNER: NONE"
@@ -253,12 +256,56 @@
     terminal.handleKey(e);
   });
 
+  // === Time compression adjustment (+/- keys) ===
+  let timeAdjustDir = 0;       // -1, 0, or +1
+  let timeAdjustHeldSec = 0;   // how long the key has been held
+  const TIME_ADJUST_BASE = 280; // base rate: 280x per second
+  const TIME_COMPRESSION_MIN = 10;
+  const TIME_COMPRESSION_MAX = 99999;
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === '+' || e.key === '=') && timeAdjustDir !== 1) {
+      timeAdjustDir = 1;
+      timeAdjustHeldSec = 0;
+    } else if ((e.key === '-' || e.key === '_') && timeAdjustDir !== -1) {
+      timeAdjustDir = -1;
+      timeAdjustHeldSec = 0;
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if ((e.key === '+' || e.key === '=') && timeAdjustDir === 1) {
+      timeAdjustDir = 0;
+      timeAdjustHeldSec = 0;
+    } else if ((e.key === '-' || e.key === '_') && timeAdjustDir === -1) {
+      timeAdjustDir = 0;
+      timeAdjustHeldSec = 0;
+    }
+  });
+
   // === Animation Loop ===
   function animate() {
     requestAnimationFrame(animate);
 
     const delta = globe.clock.getDelta();
     const elapsed = globe.clock.getElapsedTime();
+
+    // Adjust time compression if +/- held
+    if (timeAdjustDir !== 0) {
+      timeAdjustHeldSec += delta;
+      // Acceleration: rate multiplier grows with hold duration (1x at 0s, ramps up)
+      const accel = 1 + timeAdjustHeldSec * 1.0;
+      const change = TIME_ADJUST_BASE * accel * delta * timeAdjustDir;
+      TIME_COMPRESSION = Math.round(Math.min(TIME_COMPRESSION_MAX, Math.max(TIME_COMPRESSION_MIN, TIME_COMPRESSION + change)));
+      timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+    }
+
+    // Update globe rotation speed to match current time compression
+    // OrbitControls rotates at (2π/60 * autoRotateSpeed) rad/s
+    // For one full rotation in a simulated 24h: speed = 60 / (86400 / TIME_COMPRESSION)
+    if (USE_3D_GLOBE && globe.controls) {
+      globe.controls.autoRotateSpeed = 60 / (86400 / TIME_COMPRESSION);
+    }
 
     if (simRunning) {
       simElapsedSec += delta * TIME_COMPRESSION;

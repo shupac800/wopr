@@ -280,9 +280,15 @@ class TerminalUI {
     await this.typewrite('  MISSILES AWAY.', 'bright');
   }
 
-  async showAftermath(sequence) {
+  async showAftermath(sequence, simElapsedSec) {
     await this.delay(500);
     this.printBlank();
+
+    const totalMin = Math.floor((simElapsedSec || 0) / 60);
+    const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+    const mm = String(totalMin % 60).padStart(2, '0');
+    await this.typewrite(`  ELAPSED TIME: ${hh}:${mm}`, 'dim');
+
     const targetNames = [...new Set(sequence.missiles.map(m => m.target.name))];
     await this.typewrite(`  TARGETS HIT: ${targetNames.slice(0, 5).join(', ')}`, 'dim');
 

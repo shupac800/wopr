@@ -83,12 +83,7 @@ class InfoPanel {
       this.exchangeType.className = 'value active';
     }
 
-    // Log each launch
-    for (const m of sequence.missiles) {
-      setTimeout(() => {
-        this.logLaunch(m.origin.name, m.target.name);
-      }, m.delay);
-    }
+    // Launches are now logged via onLaunch callback from missile systems
   }
 
   setDefcon(level) {
@@ -108,10 +103,18 @@ class InfoPanel {
     }
   }
 
-  logLaunch(originName, targetName) {
+  formatTimestamp(simSec) {
+    const totalMin = Math.floor(simSec / 60);
+    const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+    const mm = String(totalMin % 60).padStart(2, '0');
+    return hh + ':' + mm;
+  }
+
+  logLaunch(originName, targetName, simSec) {
+    const ts = this.formatTimestamp(simSec);
     const entry = document.createElement('div');
     entry.className = 'attack-entry launch';
-    entry.textContent = `LAUNCH: ${originName} → ${targetName}`;
+    entry.textContent = `${ts} LAUNCH ${originName} → ${targetName}`;
     this.attackLog.appendChild(entry);
     this.warheads++;
     this.updateCounters();
@@ -122,13 +125,14 @@ class InfoPanel {
   }
 
   // Called when a detonation occurs
-  logDetonation(targetCity) {
+  logDetonation(targetCity, simSec) {
     if (!targetCity) return;
     const name = targetCity.name;
+    const ts = this.formatTimestamp(simSec);
 
     const entry = document.createElement('div');
     entry.className = 'attack-entry hit';
-    entry.textContent = `IMPACT: ${name} — ${targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY TARGET'}`;
+    entry.textContent = `${ts} IMPACT ${name} — ${targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY TARGET'}`;
     this.attackLog.appendChild(entry);
     this.attackLog.scrollTop = this.attackLog.scrollHeight;
 

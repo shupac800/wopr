@@ -271,7 +271,8 @@ class MapRenderer2D {
         if (b.grown) {
           r = maxR;
         } else {
-          const t = Math.min(b.age / b.growDuration, 1.0);
+          const growDuration = b.baseGrowDuration / TIME_COMPRESSION;
+          const t = Math.min(b.age / growDuration, 1.0);
           const eased = 1.0 - Math.pow(1.0 - t, 3);
           r = (0.15 + eased * 0.85) * maxR;
         }
@@ -408,6 +409,7 @@ class MissileSystem2D {
     this.blastMarks = [];
     this.onDetonation = null;
     this.onFirstLaunch = null;
+    this.onLaunch = null;
     this.BLAST_RADIUS_DEG = 1.27; // 88 miles in degrees
     this.destroyedSites = [];
   }
@@ -437,7 +439,7 @@ class MissileSystem2D {
       _2dStarted: false,
       started: false,
       elapsed: 0,
-      speed: Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * 7 / haversineKm2D(origin, target))),
+      baseSpeed: 5 / Math.max(1, haversineKm2D(origin, target)), // ~5 km/s effective avg (boost+midcourse+reentry)
       done: false,
     };
     this.activeMissiles.push(missile);
@@ -456,7 +458,7 @@ class MissileSystem2D {
       lat: targetCity.lat,
       lon: targetCity.lon,
       age: 0,
-      growDuration: THEATRICAL_TIMING ? 2.5 : 2.5 * 360 / TIME_COMPRESSION,
+      baseGrowDuration: 900, // real-world seconds for blast wave to reach full radius
       grown: false,
     });
 
@@ -472,7 +474,7 @@ class MissileSystem2D {
     for (const m of this.activeMissiles) {
       if (m.done) continue;
 
-      m.elapsed += deltaTime * 1000;
+      m.elapsed += deltaTime * 1000 * TIME_COMPRESSION / BASE_TIME_COMPRESSION;
       if (m.elapsed < m.delay) continue;
 
       if (!m._2dStarted) {
@@ -484,9 +486,11 @@ class MissileSystem2D {
         m._2dStarted = true;
         m.started = true;
         if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
+        if (this.onLaunch) this.onLaunch(m.origin, m.target);
       }
 
-      m.progress += deltaTime * m.speed;
+      const speed = Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * m.baseSpeed));
+      m.progress += deltaTime * speed;
 
       if (m.progress >= 1.0) {
         m.progress = 1.0;
@@ -508,7 +512,8 @@ class MissileSystem2D {
     for (const b of this.blastMarks) {
       if (b.grown) continue;
       b.age += deltaTime;
-      if (b.age / b.growDuration >= 1.0) b.grown = true;
+      const growDuration = b.baseGrowDuration / TIME_COMPRESSION;
+      if (b.age / growDuration >= 1.0) b.grown = true;
     }
 
     // Cleanup — keep done missiles for persistent trail rendering
