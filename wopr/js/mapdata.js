@@ -365,7 +365,6 @@ const CITIES = [
   { name: "VALPARAISO", lat: -33.0, lon: -71.6, country: "CHILE", region: "chile", pop: 0.3 },
   // === PACIFIC ISLANDS ===
   { name: "GUAM", lat: 13.4, lon: 144.8, country: "US", region: "us", pop: 0.2 },
-  { name: "DIEGO GARCIA", lat: -7.3, lon: 72.4, country: "UK", region: "english", pop: 0.003 },
   // === ARCTIC / OTHER ===
   { name: "NUUK", lat: 64.2, lon: -51.7, country: "GREENLAND", region: "greenland", pop: 0.02 },
   { name: "THULE", lat: 76.5, lon: -68.8, country: "GREENLAND", region: "greenland", pop: 0.001 },

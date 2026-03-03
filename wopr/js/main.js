@@ -16,11 +16,9 @@
   let simElapsedSec = 0;
   let simRunning = false;
 
-  function showElapsed() {
+  function resetElapsed() {
     simElapsedSec = 0;
     simRunning = false;
-    timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
-    elapsedEl.classList.add('visible');
     updateElapsedDisplay();
   }
 
@@ -32,17 +30,64 @@
     simRunning = false;
   }
 
-  function hideElapsed() {
-    simRunning = false;
-    elapsedEl.classList.remove('visible');
-  }
-
   function updateElapsedDisplay() {
     const totalMin = Math.floor(simElapsedSec / 60);
     const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
     const mm = String(totalMin % 60).padStart(2, '0');
     elapsedTimeEl.textContent = 'ELAPSED  ' + hh + ' : ' + mm;
   }
+
+  // Show time factor and elapsed display immediately (before any awaits)
+  timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+  updateElapsedDisplay();
+  elapsedEl.classList.add('visible');
+
+  // === Time compression adjustment (+/- and arrow keys) ===
+  let timeAdjustDir = 0;       // -1, 0, or +1
+  let timeAdjustHeldSec = 0;   // how long the key has been held
+  const TIME_ADJUST_BASE = 280; // base rate: 280x per second
+  const TIME_COMPRESSION_MIN = 10;
+  const TIME_COMPRESSION_MAX = 99999;
+  let animateRunning = false;   // true once animation loop starts
+  let earlyAdjustInterval = null; // drives updates before animate() starts
+
+  function startEarlyAdjust() {
+    if (animateRunning || earlyAdjustInterval) return;
+    earlyAdjustInterval = setInterval(() => {
+      if (animateRunning) { clearInterval(earlyAdjustInterval); earlyAdjustInterval = null; return; }
+      if (timeAdjustDir === 0) return;
+      const delta = 1 / 60;
+      timeAdjustHeldSec += delta;
+      const accel = 1 + timeAdjustHeldSec * 1.0;
+      const change = TIME_ADJUST_BASE * accel * delta * timeAdjustDir;
+      TIME_COMPRESSION = Math.round(Math.min(TIME_COMPRESSION_MAX, Math.max(TIME_COMPRESSION_MIN, TIME_COMPRESSION + change)));
+      timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+    }, 1000 / 60);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir !== 1) {
+      timeAdjustDir = 1;
+      timeAdjustHeldSec = 0;
+      if (!animateRunning) startEarlyAdjust();
+    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir !== -1) {
+      timeAdjustDir = -1;
+      timeAdjustHeldSec = 0;
+      if (!animateRunning) startEarlyAdjust();
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir === 1) {
+      timeAdjustDir = 0;
+      timeAdjustHeldSec = 0;
+      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
+    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir === -1) {
+      timeAdjustDir = 0;
+      timeAdjustHeldSec = 0;
+      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
+    }
+  });
 
   // === Screen flash element ===
   const flashEl = document.getElementById('screen-flash');
@@ -125,7 +170,7 @@
       : engine.getDefcon(scenarioName);
 
     // Show elapsed timer at 00:00 (starts ticking on first missile launch)
-    showElapsed();
+    resetElapsed();
 
     // Update DEFCON to initial level
     terminal.setDefcon(initialDefcon);
@@ -217,7 +262,7 @@
       if (myGen !== runGen) return;
 
       // Clear blasts, subs, and elapsed display from globe
-      hideElapsed();
+      pauseElapsed();
       missiles.clear();
       globe.clearSubmarines();
 
@@ -238,7 +283,7 @@
     if (state === State.EXECUTING) {
       // Abort the current run: bump generation, clear visuals, timers, and terminal effects
       runGen++;
-      hideElapsed();
+      pauseElapsed();
       activeDefconTimers.forEach(t => clearTimeout(t));
       activeDefconTimers = [];
       terminal.abortEffects();
@@ -254,35 +299,6 @@
   // === Keyboard ===
   document.addEventListener('keydown', (e) => {
     terminal.handleKey(e);
-  });
-
-  // === Time compression adjustment (+/- keys) ===
-  let timeAdjustDir = 0;       // -1, 0, or +1
-  let timeAdjustHeldSec = 0;   // how long the key has been held
-  const TIME_ADJUST_BASE = 280; // base rate: 280x per second
-  const TIME_COMPRESSION_MIN = 10;
-  const TIME_COMPRESSION_MAX = 99999;
-
-  document.addEventListener('keydown', (e) => {
-    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir !== 1) {
-      timeAdjustDir = 1;
-      timeAdjustHeldSec = 0;
-    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir !== -1) {
-      timeAdjustDir = -1;
-      timeAdjustHeldSec = 0;
-    }
-  });
-
-  document.addEventListener('keyup', (e) => {
-    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir === 1) {
-      timeAdjustDir = 0;
-      timeAdjustHeldSec = 0;
-      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
-    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir === -1) {
-      timeAdjustDir = 0;
-      timeAdjustHeldSec = 0;
-      localStorage.setItem('wopr_timeFactor', TIME_COMPRESSION);
-    }
   });
 
   // === Animation Loop ===
@@ -325,6 +341,7 @@
     }
   }
 
+  animateRunning = true;
   animate();
 
   // === Helpers ===
