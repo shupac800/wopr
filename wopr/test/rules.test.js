@@ -465,6 +465,135 @@ test('retaliation wave skips origins near cities targeted in prior waves', () =>
     'no retaliation missiles should originate near Moscow (it was targeted in wave 1)');
 });
 
+// ── 10. Submarine origin integrity across all scenarios ────────────────
+
+console.log('\n--- Submarine origin integrity ---');
+
+test('fromSubs waves produce missiles with type "sub", not city or base', () => {
+  // Build a scenario that uses fromSubs — use unique var names to avoid collision
+  const result = vm.runInContext(`
+    const _subEng1 = new StrategyEngine();
+    const _sc1 = {
+      defcon: 2,
+      waves: [
+        { from: ["WASHINGTON DC"], to: ["MOSCOW"], delay: 0 },
+        { fromSubs: ["us"], to: ["LENINGRAD", "MURMANSK"], delay: 3000 },
+        { fromSubs: ["ussr"], to: ["NEW YORK", "NORFOLK"], delay: 6000 },
+      ]
+    };
+    _subEng1.buildFromScenario("TEST SUB ORIGINS", _sc1);
+  `, ctx);
+
+  // Sub wave missiles: delay 3000-3999 and 6000-6999 (before escalation at ~10000+)
+  const subMissiles = result.missiles.filter(m =>
+    (m.delay >= 3000 && m.delay < 4500) || (m.delay >= 6000 && m.delay < 7500)
+  );
+  assert.ok(subMissiles.length > 0, 'should have submarine-launched missiles');
+  for (const m of subMissiles) {
+    assert.strictEqual(m.origin.type, 'sub',
+      `missile to ${m.target.name} should originate from sub, got type="${m.origin.type}" name="${m.origin.name}"`);
+  }
+});
+
+test('submarine origins are not located at any known city or base', () => {
+  const result = vm.runInContext(`
+    const _subEng2 = new StrategyEngine();
+    const _sc2 = {
+      defcon: 1,
+      waves: [
+        { fromSubs: ["us", "uk", "ussr", "france", "china"], to: ["MOSCOW", "NEW YORK", "LONDON", "PARIS", "BEIJING"], delay: 0 },
+      ]
+    };
+    const _r2 = _subEng2.buildFromScenario("TEST ALL SUBS", _sc2);
+    ({ missiles: _r2.missiles, cities: CITIES });
+  `, ctx);
+
+  const cityLocations = result.cities.map(c => ({ lat: c.lat, lon: c.lon, name: c.name }));
+
+  // Only check the first wave's missiles (delay < 3000, before escalation)
+  const firstWaveMissiles = result.missiles.filter(m => m.delay < 3000);
+  assert.ok(firstWaveMissiles.length > 0, 'should have first-wave missiles');
+
+  for (const m of firstWaveMissiles) {
+    assert.strictEqual(m.origin.type, 'sub',
+      `origin should be sub, got "${m.origin.type}" (${m.origin.name})`);
+
+    // Verify this sub position doesn't match any city or base exactly
+    const exactMatch = cityLocations.find(c =>
+      c.lat === m.origin.lat && c.lon === m.origin.lon
+    );
+    assert.strictEqual(exactMatch, undefined,
+      `sub origin ${m.origin.name} (${m.origin.lat}, ${m.origin.lon}) should not be at a city/base location` +
+      (exactMatch ? ` but matches ${exactMatch.name}` : ''));
+  }
+});
+
+test('no missile with origin type "sub" is located at a known city or base', () => {
+  // Build all SSBN patrol positions for reference
+  const patrols = vm.runInContext(`SSBN_PATROLS`, ctx);
+  const subPositions = new Set();
+  for (const nation of Object.keys(patrols)) {
+    for (const s of patrols[nation]) {
+      subPositions.add(`${s.lat},${s.lon}`);
+    }
+  }
+
+  const cityPositions = new Set();
+  const cities = vm.runInContext(`CITIES`, ctx);
+  for (const c of cities) {
+    cityPositions.add(`${c.lat},${c.lon}`);
+  }
+
+  const scenarios = vm.runInContext(`STRATEGY_SCENARIOS`, ctx);
+  const failures = [];
+
+  // Test a sample of scenarios that use fromSubs
+  const subScenarios = Object.entries(scenarios).filter(([, s]) =>
+    s.waves.some(w => w.fromSubs)
+  ).slice(0, 20); // sample 20
+
+  for (const [name, scenario] of subScenarios) {
+    const engine = vm.runInContext(`new StrategyEngine()`, ctx);
+    const result = engine.buildFromScenario(name, scenario);
+    const maxScenarioDelay = Math.max(...scenario.waves.map(w => w.delay || 0));
+
+    // Only check pre-escalation missiles
+    const scenarioMissiles = result.missiles.filter(m => m.delay <= maxScenarioDelay + 3000);
+
+    for (const m of scenarioMissiles) {
+      const originKey = `${m.origin.lat},${m.origin.lon}`;
+
+      if (m.origin.type === 'sub') {
+        // Sub-type origin should be at an SSBN patrol position, NOT a city/base
+        if (cityPositions.has(originKey)) {
+          failures.push(`${name}: sub origin "${m.origin.name}" is at a city/base position`);
+        }
+      }
+    }
+  }
+
+  assert.strictEqual(failures.length, 0,
+    `Found ${failures.length} violations:\n  ${failures.join('\n  ')}`);
+});
+
+test('SSBN patrol positions are distinct from all city and base positions', () => {
+  const result = vm.runInContext(`
+    const _allCityPos = new Set(CITIES.map(c => c.lat + ',' + c.lon));
+    const _subViolations = [];
+    for (const [nation, subs] of Object.entries(SSBN_PATROLS)) {
+      for (const s of subs) {
+        if (_allCityPos.has(s.lat + ',' + s.lon)) {
+          _subViolations.push(s.name + ' (' + nation + ') at ' + s.lat + ',' + s.lon);
+        }
+      }
+    }
+    _subViolations;
+  `, ctx);
+
+  assert.strictEqual(result.length, 0,
+    `SSBN positions overlap with cities/bases: ${result.join(', ')}`);
+});
+
 // ════════════════════════════════════════════════════════════════════════
 
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===\n`);
