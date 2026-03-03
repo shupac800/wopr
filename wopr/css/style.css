@@ -345,6 +345,11 @@ html, body {
   padding: 8px 15px;
   scrollbar-width: thin;
   scrollbar-color: var(--green-dark) transparent;
+  white-space: pre;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--green-dim);
+  letter-spacing: 1px;
 }
 
 #attack-log::-webkit-scrollbar {
@@ -353,21 +358,6 @@ html, body {
 
 #attack-log::-webkit-scrollbar-thumb {
   background: var(--green-dark);
-}
-
-#attack-log .attack-entry {
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--green-dim);
-  letter-spacing: 1px;
-}
-
-#attack-log .attack-entry.hit {
-  color: #ff5555;
-}
-
-#attack-log .attack-entry.launch {
-  color: var(--green);
 }
 
 #attack-summary {

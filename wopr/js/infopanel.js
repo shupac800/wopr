@@ -27,6 +27,7 @@ class InfoPanel {
     this.targets = 0;
     this.casualties = 0;
     this.destroyedCities = new Set();
+    this._scrollDirty = false; // throttle scroll to rAF
 
     // 1983-era baseline numbers
     this.baseForces = {
@@ -45,7 +46,7 @@ class InfoPanel {
     this.targets = 0;
     this.casualties = 0;
     this.destroyedCities.clear();
-    this.attackLog.innerHTML = '';
+    this.attackLog.textContent = '';
     this.updateCounters();
 
     // Reset forces
@@ -113,31 +114,19 @@ class InfoPanel {
   logLaunch(originName, targetName, simSec) {
     this.warheads++;
     this.updateCounters();
-
-    // Degrade forces for the launching side
     this.degradeForces(originName);
-
-    // TESTING: attack assessment messages suspended
-    // const ts = this.formatTimestamp(simSec);
-    // const entry = document.createElement('div');
-    // entry.className = 'attack-entry launch';
-    // entry.textContent = `${ts} LAUNCH ${originName} → ${targetName}`;
-    // this.attackLog.appendChild(entry);
-    // this.attackLog.scrollTop = this.attackLog.scrollHeight;
+    const ts = this.formatTimestamp(simSec);
+    this.attackLog.textContent += ts + ' LAUNCH ' + originName + ' > ' + targetName + '\n';
+    this._scheduleScroll();
   }
 
-  // Called when a detonation occurs
   logDetonation(targetCity, simSec) {
     if (!targetCity) return;
     const name = targetCity.name;
-
-    // TESTING: attack assessment messages suspended
-    // const ts = this.formatTimestamp(simSec);
-    // const entry = document.createElement('div');
-    // entry.className = 'attack-entry hit';
-    // entry.textContent = `${ts} IMPACT ${name} — ${targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY TARGET'}`;
-    // this.attackLog.appendChild(entry);
-    // this.attackLog.scrollTop = this.attackLog.scrollHeight;
+    const ts = this.formatTimestamp(simSec);
+    const pop = targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY';
+    this.attackLog.textContent += ts + ' IMPACT ' + name + ' ' + pop + '\n';
+    this._scheduleScroll();
 
     if (!this.destroyedCities.has(name)) {
       this.destroyedCities.add(name);
@@ -149,6 +138,16 @@ class InfoPanel {
 
     this.updateCounters();
     this.updateForceStatus();
+  }
+
+  _scheduleScroll() {
+    if (!this._scrollDirty) {
+      this._scrollDirty = true;
+      requestAnimationFrame(() => {
+        this.attackLog.scrollTop = this.attackLog.scrollHeight;
+        this._scrollDirty = false;
+      });
+    }
   }
 
   updateCounters() {
