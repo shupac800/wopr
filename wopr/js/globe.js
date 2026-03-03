@@ -26,6 +26,13 @@ class GlobeRenderer {
     // Scene
     this.scene = new THREE.Scene();
 
+    // Rotation group — all globe objects go here so we can rotate
+    // the globe independently of OrbitControls (which only handles
+    // user camera interaction). This prevents drag from affecting
+    // rotation speed.
+    this.rotationGroup = new THREE.Group();
+    this.scene.add(this.rotationGroup);
+
     // Camera
     this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
     this.camera.position.set(0, 0, 3.2);
@@ -45,8 +52,7 @@ class GlobeRenderer {
     this.controls.enablePan = false;
     this.controls.minDistance = 1.8;
     this.controls.maxDistance = 6;
-    this.controls.autoRotate = true;
-    this.controls.autoRotateSpeed = 60 / (86400 / TIME_COMPRESSION); // one rotation per simulated 24h
+    this.controls.autoRotate = false; // rotation handled by rotationGroup
 
     // Build globe
     this.buildWireframeGlobe();
@@ -75,7 +81,7 @@ class GlobeRenderer {
     const occluderGeom = new THREE.SphereGeometry(0.998, 48, 24);
     const occluderMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const occluder = new THREE.Mesh(occluderGeom, occluderMat);
-    this.scene.add(occluder);
+    this.rotationGroup.add(occluder);
 
     // Wireframe sphere (on top of occluder)
     const geometry = new THREE.SphereGeometry(1, 36, 18);
@@ -86,7 +92,7 @@ class GlobeRenderer {
       opacity: 0.08,
     });
     this.globe = new THREE.Mesh(geometry, material);
-    this.scene.add(this.globe);
+    this.rotationGroup.add(this.globe);
 
     // Earth edge — fresnel/rim glow shader sphere (optional)
     if (typeof EDGE_GLOW !== 'undefined' && EDGE_GLOW) {
@@ -122,7 +128,7 @@ class GlobeRenderer {
           }
         `,
       });
-      this.scene.add(new THREE.Mesh(rimGeom, rimMat));
+      this.rotationGroup.add(new THREE.Mesh(rimGeom, rimMat));
     }
 
     // Equator ring — white
@@ -134,7 +140,7 @@ class GlobeRenderer {
     }
     eqGeom.setAttribute('position', new THREE.Float32BufferAttribute(eqPts, 3));
     const eqMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
-    this.scene.add(new THREE.Line(eqGeom, eqMat));
+    this.rotationGroup.add(new THREE.Line(eqGeom, eqMat));
   }
 
   latLonToVec3(lat, lon, radius = 1.005) {
@@ -158,7 +164,7 @@ class GlobeRenderer {
       const points = coords.map(([lat, lon]) => this.latLonToVec3(lat, lon));
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geometry, material);
-      this.scene.add(line);
+      this.rotationGroup.add(line);
     }
   }
 
@@ -177,7 +183,7 @@ class GlobeRenderer {
       const dot = new THREE.Mesh(dotGeom, dotMat);
       dot.position.copy(pos);
       dot.userData = { city, baseOpacity: 0.8 };
-      this.scene.add(dot);
+      this.rotationGroup.add(dot);
       this.cityMarkers.push(dot);
     });
   }
@@ -216,14 +222,14 @@ class GlobeRenderer {
       plus.position.copy(pos);
       plus.lookAt(0, 0, 0);
       plus.userData = { city: { name: sub.name, lat: sub.lat, lon: sub.lon, type: 'sub' } };
-      this.scene.add(plus);
+      this.rotationGroup.add(plus);
       this.subMarkers.push(plus);
     }
   }
 
   clearSubmarines() {
     for (const m of this.subMarkers) {
-      this.scene.remove(m);
+      this.rotationGroup.remove(m);
     }
     this.subMarkers = [];
   }
@@ -290,12 +296,15 @@ class GlobeRenderer {
     let bestDist = 10;
     const camPos = this.camera.position;
     const allMarkers = this.cityMarkers.concat(this.subMarkers);
+    const worldPos = new THREE.Vector3();
     for (const marker of allMarkers) {
+      // Get world position (accounts for rotationGroup rotation)
+      marker.getWorldPosition(worldPos);
       // Skip markers on far side — dot product of (camera→marker) with surface normal
       // If marker faces away from camera, it's on the back of the globe
-      const toCamera = new THREE.Vector3().subVectors(camPos, marker.position);
-      if (toCamera.dot(marker.position) < 0) continue;
-      const pos = marker.position.clone().project(this.camera);
+      const toCamera = new THREE.Vector3().subVectors(camPos, worldPos);
+      if (toCamera.dot(worldPos) < 0) continue;
+      const pos = worldPos.clone().project(this.camera);
       const sx = (pos.x * 0.5 + 0.5) * rect.width;
       const sy = (-pos.y * 0.5 + 0.5) * rect.height;
       const dist = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
@@ -329,11 +338,14 @@ class GlobeRenderer {
   // Hide tooltip if hovered city rotated away from pointer
   checkTooltipValidity() {
     if (!this._hoveredMarker || !this.hoveredCity) return;
+    // Get world position (accounts for rotationGroup rotation)
+    const wp = new THREE.Vector3();
+    this._hoveredMarker.getWorldPosition(wp);
     // Back side of globe — marker faces away from camera
-    const toCamera = new THREE.Vector3().subVectors(this.camera.position, this._hoveredMarker.position);
-    if (toCamera.dot(this._hoveredMarker.position) < 0) { this.hideTooltip(); return; }
+    const toCamera = new THREE.Vector3().subVectors(this.camera.position, wp);
+    if (toCamera.dot(wp) < 0) { this.hideTooltip(); return; }
     const rect = this.renderer.domElement.getBoundingClientRect();
-    const pos = this._hoveredMarker.position.clone().project(this.camera);
+    const pos = wp.clone().project(this.camera);
     const sx = (pos.x * 0.5 + 0.5) * rect.width + rect.left;
     const sy = (-pos.y * 0.5 + 0.5) * rect.height + rect.top;
     const dx = (this._mouseClientX || 0) - sx;

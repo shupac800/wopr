@@ -64,7 +64,7 @@
   if (USE_3D_GLOBE) {
     globe = new GlobeRenderer(globeContainer);
     await globe.coastlinesReady;
-    missiles = new MissileSystem(globe.scene, globe);
+    missiles = new MissileSystem(globe.rotationGroup, globe);
   } else {
     globe = new MapRenderer2D(globeContainer);
     missiles = new MissileSystem2D(globe);
@@ -300,16 +300,13 @@
       timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
     }
 
-    // Update globe rotation speed to match current time compression
-    // OrbitControls auto-rotation is frame-rate dependent: it applies a fixed
-    // 2π * autoRotateSpeed / 3600 radians PER FRAME (assumes 60fps).
-    // To make rotation time-correct regardless of frame rate, scale
-    // autoRotateSpeed by actual deltaTime each frame:
-    //   desired rad/frame = 2π * TIME_COMPRESSION / 86400 * delta
-    //   OrbitControls rad/frame = 2π * autoRotateSpeed / 3600
-    //   → autoRotateSpeed = TIME_COMPRESSION * delta / 24
-    if (USE_3D_GLOBE && globe.controls) {
-      globe.controls.autoRotateSpeed = TIME_COMPRESSION * delta / 24;
+    // Rotate the globe group directly — decoupled from OrbitControls so
+    // user drag never affects rotation speed.
+    // 2π radians = one full rotation = 86400 simulated seconds.
+    // At TIME_COMPRESSION x, one real second = TIME_COMPRESSION sim seconds.
+    // So radians per real second = 2π * TIME_COMPRESSION / 86400.
+    if (USE_3D_GLOBE && globe.rotationGroup) {
+      globe.rotationGroup.rotation.y += (2 * Math.PI * TIME_COMPRESSION / 86400) * delta;
     }
 
     if (simRunning) {
