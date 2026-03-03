@@ -135,27 +135,9 @@ class MissileSystem {
     });
   }
 
-  // Build a flat filled disc in local space (XY plane, centered at origin)
+  // Build a flat filled disc using Three.js CircleGeometry (no index bugs)
   buildBlastDiscGeometry(radius, segments = 48) {
-    const vertices = [0, 0, 0]; // center
-    const indices = [];
-
-    for (let i = 0; i <= segments; i++) {
-      const angle = (i / segments) * Math.PI * 2;
-      vertices.push(
-        Math.cos(angle) * radius,
-        Math.sin(angle) * radius,
-        0
-      );
-      if (i > 0) {
-        indices.push(0, i, i + 1);
-      }
-    }
-
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geom.setIndex(indices);
-    return geom;
+    return new THREE.CircleGeometry(radius, segments);
   }
 
   // Create detonation at a point
@@ -188,11 +170,12 @@ class MissileSystem {
       transparent: true,
       opacity: 0.9,
       side: THREE.DoubleSide,
+      depthWrite: false,
     });
     const blastMesh = new THREE.Mesh(blastGeom, blastMat);
 
     // Position on globe surface and orient to face outward
-    const surfacePos = this.globe.latLonToVec3(targetCity.lat, targetCity.lon, 1.012);
+    const surfacePos = this.globe.latLonToVec3(targetCity.lat, targetCity.lon, 1.015);
     blastMesh.position.copy(surfacePos);
     blastMesh.lookAt(0, 0, 0); // face outward from globe center
     blastMesh.scale.setScalar(0.15); // start small but visible
