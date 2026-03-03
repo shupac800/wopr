@@ -14,6 +14,8 @@ class TerminalUI {
     this.onStrategySelect = null; // callback
     this.inputEnabled = false;
     this.typewriterSpeed = 8;
+    this._activeTimers = [];  // interval/timeout IDs to kill on abort
+    this._selectCooldown = false; // double-click guard
 
     this.startClock();
   }
@@ -62,17 +64,16 @@ class TerminalUI {
 
       const interval = setInterval(() => {
         if (i < text.length) {
-          // Insert character before cursor
-          const char = document.createTextNode(text[i]);
-          line.insertBefore(char, cursor);
+          line.insertBefore(document.createTextNode(text[i]), cursor);
           i++;
           this.scrollToBottom();
         } else {
           clearInterval(interval);
-          line.removeChild(cursor);
+          if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
           resolve();
         }
       }, this.typewriterSpeed);
+      this._activeTimers.push({ id: interval, type: 'interval' });
     });
   }
 
@@ -105,10 +106,11 @@ class TerminalUI {
           this.scrollToBottom();
         } else {
           clearInterval(interval);
-          line.removeChild(cursor);
+          if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
           resolve();
         }
       }, this.typewriterSpeed);
+      this._activeTimers.push({ id: interval, type: 'interval' });
     });
   }
 
@@ -186,7 +188,7 @@ class TerminalUI {
       item.dataset.index = i;
 
       item.addEventListener('click', () => {
-        if (!this.inputEnabled) return;
+        if (!this.inputEnabled || this._selectCooldown) return;
         this.selectIndex(i);
         this.executeSelected();
       });
@@ -217,6 +219,9 @@ class TerminalUI {
 
   executeSelected() {
     if (this.onStrategySelect) {
+      // Engage cooldown to ignore rapid double-clicks
+      this._selectCooldown = true;
+      setTimeout(() => { this._selectCooldown = false; }, 400);
       this.onStrategySelect(this.strategies[this.selectedIndex], this.selectedIndex);
     }
   }
@@ -308,6 +313,21 @@ class TerminalUI {
   }
 
   delay(ms) {
-    return new Promise(r => setTimeout(r, ms));
+    return new Promise(r => {
+      const timer = setTimeout(r, ms);
+      this._activeTimers.push({ id: timer, type: 'timeout' });
+    });
+  }
+
+  // Kill all in-flight typewriter intervals and delay timeouts.
+  // Their promises are intentionally left pending (never resolved),
+  // which freezes the old async chains — they become dead coroutines
+  // that get garbage collected. clearMessages() wipes any partial DOM.
+  abortEffects() {
+    for (const t of this._activeTimers) {
+      if (t.type === 'interval') clearInterval(t.id);
+      else clearTimeout(t.id);
+    }
+    this._activeTimers = [];
   }
 }

@@ -1,6 +1,17 @@
 // 2D Mercator Map Renderer (Canvas-based)
 // Implements the same interface as GlobeRenderer + MissileSystem for main.js
 
+function haversineKm2D(a, b) {
+  const R = 6371;
+  const toRad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * toRad;
+  const dLon = (b.lon - a.lon) * toRad;
+  const sinLat = Math.sin(dLat / 2);
+  const sinLon = Math.sin(dLon / 2);
+  const h = sinLat * sinLat + Math.cos(a.lat * toRad) * Math.cos(b.lat * toRad) * sinLon * sinLon;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 // === Geographic bounds of conts.png ===
 // The image is equirectangular. These define what lat/lon the image edges map to.
 // The image fills the full canvas; latLonToXY uses these same bounds.
@@ -261,7 +272,7 @@ class MapRenderer2D {
           r = maxR;
         } else {
           const t = Math.min(b.age / b.growDuration, 1.0);
-          const eased = 1.0 - Math.pow(1.0 - t, 2);
+          const eased = 1.0 - Math.pow(1.0 - t, 3);
           r = (0.15 + eased * 0.85) * maxR;
         }
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -274,7 +285,8 @@ class MapRenderer2D {
       for (const d of missileSystem.detonations) {
         const [dx, dy] = this.latLonToXY(d.city.lat, d.city.lon);
         const t = d.age / d.maxAge;
-        const flashR = (1 + t * 2.5) * this._blastPixelRadius();
+        const easeOut = 1.0 - Math.pow(1.0 - t, 3);
+        const flashR = (1 + easeOut * 2.5) * this._blastPixelRadius();
         const alpha = Math.max(0, 1.0 - t);
         ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.lineWidth = 2;
@@ -344,10 +356,10 @@ class MapRenderer2D {
     return [x, baseY - arcH];
   }
 
-  // Blast radius in pixels (100 miles on map)
+  // Blast radius in pixels (88 miles on map)
   _blastPixelRadius() {
-    // 100 miles ≈ 1.45 degrees latitude
-    return (1.45 / (MAP_LAT_TOP - MAP_LAT_BOTTOM)) * this.h;
+    // 88 miles ≈ 1.27 degrees latitude
+    return (1.27 / (MAP_LAT_TOP - MAP_LAT_BOTTOM)) * this.h;
   }
 
   _drawCoastline(ctx, coords) {
@@ -395,7 +407,8 @@ class MissileSystem2D {
     this.detonations = [];
     this.blastMarks = [];
     this.onDetonation = null;
-    this.BLAST_RADIUS_DEG = 1.45; // 100 miles in degrees
+    this.onFirstLaunch = null;
+    this.BLAST_RADIUS_DEG = 1.27; // 88 miles in degrees
     this.destroyedSites = [];
   }
 
@@ -424,7 +437,7 @@ class MissileSystem2D {
       _2dStarted: false,
       started: false,
       elapsed: 0,
-      speed: 0.4 + Math.random() * 0.15,
+      speed: Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * 7 / haversineKm2D(origin, target))),
       done: false,
     };
     this.activeMissiles.push(missile);
@@ -443,7 +456,7 @@ class MissileSystem2D {
       lat: targetCity.lat,
       lon: targetCity.lon,
       age: 0,
-      growDuration: 2.5,
+      growDuration: THEATRICAL_TIMING ? 2.5 : 2.5 * 360 / TIME_COMPRESSION,
       grown: false,
     });
 
@@ -470,6 +483,7 @@ class MissileSystem2D {
         }
         m._2dStarted = true;
         m.started = true;
+        if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
       }
 
       m.progress += deltaTime * m.speed;

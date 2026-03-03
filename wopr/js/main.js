@@ -6,6 +6,43 @@
   const State = { BOOT: 0, IDLE: 1, EXECUTING: 2, AFTERMATH: 3, ENDING: 4 };
   let state = State.BOOT;
   let infoPanel = null;
+  let runGen = 0;              // generation counter — incremented to abort current run
+  let activeDefconTimers = []; // DEFCON escalation timers for the current scenario
+
+  // === Elapsed time display ===
+  const elapsedEl = document.getElementById('elapsed-display');
+  const elapsedTimeEl = document.getElementById('elapsed-time');
+  const timeFactorEl = document.getElementById('time-factor');
+  let simElapsedSec = 0;
+  let simRunning = false;
+
+  function showElapsed() {
+    simElapsedSec = 0;
+    simRunning = false;
+    timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+    elapsedEl.classList.add('visible');
+    updateElapsedDisplay();
+  }
+
+  function startElapsed() {
+    simRunning = true;
+  }
+
+  function pauseElapsed() {
+    simRunning = false;
+  }
+
+  function hideElapsed() {
+    simRunning = false;
+    elapsedEl.classList.remove('visible');
+  }
+
+  function updateElapsedDisplay() {
+    const totalMin = Math.floor(simElapsedSec / 60);
+    const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
+    const mm = String(totalMin % 60).padStart(2, '0');
+    elapsedTimeEl.textContent = 'ELAPSED: ' + hh + ' : ' + mm;
+  }
 
   // === Screen flash element ===
   const flashEl = document.getElementById('screen-flash');
@@ -76,6 +113,9 @@
 
   // === Run a single strategy, return when complete ===
   async function runStrategy(strategyName) {
+    const myGen = runGen;
+    const aborted = () => runGen !== myGen;
+
     // Build launch sequence
     const sequence = engine.buildLaunchSequence(strategyName);
 
@@ -83,6 +123,9 @@
     const initialDefcon = (typeof STRATEGY_SCENARIOS !== 'undefined' && STRATEGY_SCENARIOS[strategyName])
       ? (STRATEGY_SCENARIOS[strategyName].defcon || engine.getDefcon(strategyName))
       : engine.getDefcon(strategyName);
+
+    // Show elapsed timer at 00:00 (starts ticking on first missile launch)
+    showElapsed();
 
     // Update DEFCON to initial level
     terminal.setDefcon(initialDefcon);
@@ -99,6 +142,7 @@
 
     // Show log (with narrative if scenario provides one)
     await terminal.showExecutionLog(strategyName, initialDefcon, sequence.narrative);
+    if (aborted()) return;
 
     // Schedule DEFCON ramp-down during escalation
     // Find the max delay to know the total timeline
@@ -108,7 +152,8 @@
     }
 
     // Ramp DEFCON from initial level down to 1 over the course of the scenario
-    const defconTimers = [];
+    activeDefconTimers.forEach(t => clearTimeout(t));
+    activeDefconTimers = [];
     if (initialDefcon > 1) {
       const steps = initialDefcon - 1; // e.g. DEFCON 3 → 2 → 1 = 2 steps
       const stepInterval = maxMissileDelay / (steps + 1);
@@ -120,46 +165,56 @@
           terminal.printDefconChange(d);
           if (d <= 2) terminal.setStatus('GLOBAL ESCALATION');
         }, t);
-        defconTimers.push(timer);
+        activeDefconTimers.push(timer);
       }
     }
 
-    // Launch missiles
+    // Launch missiles — start elapsed timer on first actual launch
+    missiles.onFirstLaunch = () => startElapsed();
     missiles.launchSequence(sequence);
 
     // Wait for missiles to finish
     await waitForMissiles();
+    if (aborted()) return;
+    pauseElapsed();
 
     // Clear any pending DEFCON timers
-    defconTimers.forEach(t => clearTimeout(t));
+    activeDefconTimers.forEach(t => clearTimeout(t));
+    activeDefconTimers = [];
     terminal.setDefcon(1);
     infoPanel.setDefcon(1);
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
     await terminal.showAftermath(sequence);
+    if (aborted()) return;
 
     // Dramatic "WINNER: NONE"
     terminal.printBlank();
     await terminal.typewriteAppend('WINNER: ', 'bright');
+    if (aborted()) return;
     await delay(1500);
+    if (aborted()) return;
     terminal.appendToLastLine('NONE');
     await delay(1000);
   }
 
   // === Run all strategies sequentially from a starting index, looping ===
   async function runSequentialFrom(startIndex) {
+    const myGen = ++runGen;
     state = State.EXECUTING;
-    terminal.disableInput();
+    terminal.enableInput(); // keep input enabled so user can click a new strategy
 
     let idx = startIndex;
-    while (true) {
+    while (myGen === runGen) {
       const strategyName = strategies[idx];
       terminal.selectIndex(idx);
 
       await runStrategy(strategyName);
+      if (myGen !== runGen) return;
 
-      // Clear blasts and subs from globe
+      // Clear blasts, subs, and elapsed display from globe
+      hideElapsed();
       missiles.clear();
       globe.clearSubmarines();
 
@@ -168,6 +223,7 @@
       infoPanel.setDefcon(5);
       terminal.setStatus('NEXT TARGET');
       await delay(800);
+      if (myGen !== runGen) return;
 
       // Advance to next, loop back to 0
       idx = (idx + 1) % strategies.length;
@@ -176,8 +232,20 @@
 
   // === Strategy Selection Handler ===
   terminal.onStrategySelect = async (strategyName, index) => {
-    if (state !== State.IDLE) return;
-    await runSequentialFrom(index);
+    if (state === State.EXECUTING) {
+      // Abort the current run: bump generation, clear visuals, timers, and terminal effects
+      runGen++;
+      hideElapsed();
+      activeDefconTimers.forEach(t => clearTimeout(t));
+      activeDefconTimers = [];
+      terminal.abortEffects();
+      terminal.clearMessages();
+      missiles.clear();
+      globe.clearSubmarines();
+    }
+    if (state === State.IDLE || state === State.EXECUTING) {
+      await runSequentialFrom(index);
+    }
   };
 
   // === Keyboard ===
@@ -192,6 +260,11 @@
     const delta = globe.clock.getDelta();
     const elapsed = globe.clock.getElapsedTime();
 
+    if (simRunning) {
+      simElapsedSec += delta * TIME_COMPRESSION;
+      updateElapsedDisplay();
+    }
+
     missiles.update(delta);
 
     if (USE_3D_GLOBE) {
@@ -205,13 +278,23 @@
 
   // === Helpers ===
   function delay(ms) {
-    return new Promise(r => setTimeout(r, ms));
+    const gen = runGen;
+    return new Promise(r => {
+      const timer = setTimeout(r, ms);
+      // Poll for abort so the old run exits quickly (skip during boot)
+      if (gen > 0) {
+        const poll = setInterval(() => {
+          if (runGen !== gen) { clearTimeout(timer); clearInterval(poll); r(); }
+        }, 50);
+      }
+    });
   }
 
   function waitForMissiles() {
+    const gen = runGen;
     return new Promise(resolve => {
       const check = () => {
-        if (missiles.isIdle()) {
+        if (runGen !== gen || missiles.isIdle()) {
           resolve();
         } else {
           setTimeout(check, 200);

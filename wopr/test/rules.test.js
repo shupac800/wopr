@@ -43,6 +43,9 @@ function buildSandbox() {
   const sandbox = { console, Math, Object, Array, Set, Map, parseInt, setTimeout: ()=>{}, clearTimeout: ()=>{} };
   const ctx = vm.createContext(sandbox);
 
+  // Global config flags (normally set in index.html)
+  vm.runInContext('const THEATRICAL_TIMING = true; const TIME_COMPRESSION = 360;', ctx);
+
   // Load Three.js mock
   vm.runInContext(THREE_MOCK, ctx);
 
@@ -59,7 +62,9 @@ function buildSandbox() {
     } catch (e) {
       // map2d.js has a MapRenderer2D class that needs canvas — skip it, we only need MissileSystem2D
       if (!f.includes('map2d')) throw e;
-      // Extract just MissileSystem2D class
+      // Extract haversineKm2D helper and MissileSystem2D class
+      const helperMatch = src.match(/function haversineKm2D[\s\S]*?\n\}/);
+      if (helperMatch) vm.runInContext(helperMatch[0], ctx);
       const match = src.match(/class MissileSystem2D \{[\s\S]*\}\n\}/);
       if (match) vm.runInContext(match[0], ctx);
     }
@@ -128,7 +133,7 @@ test('3D: location at detonation site is destroyed', () => {
   assert.strictEqual(sys.isDestroyed(55.75, 37.62), true);
 });
 
-test('3D: location 0.5° away from detonation is destroyed (within 1.44° threshold)', () => {
+test('3D: location 0.5° away from detonation is destroyed (within 1.27° threshold)', () => {
   const sys = vm.runInContext(`
     const _s2 = new MissileSystem({ add(){}, remove(){} }, {
       latLonToVec3(lat, lon, r) { return new THREE.Vector3(lon * 0.01, lat * 0.01, r || 1); }
@@ -165,7 +170,7 @@ test('2D: isDestroyed uses BLAST_RADIUS_DEG threshold', () => {
     _m2d.destroyedSites.push({ lat: 40.71, lon: -74.01 }); // NYC
     _m2d;
   `, ctx);
-  // 1.0° away — within 1.45° threshold
+  // 1.0° away — within 1.27° threshold
   assert.strictEqual(sys.isDestroyed(41.71, -74.01), true);
   // 3° away — outside threshold
   assert.strictEqual(sys.isDestroyed(43.71, -74.01), false);
@@ -456,10 +461,10 @@ test('retaliation wave skips origins near cities targeted in prior waves', () =>
     m.delay >= 5000 && m.delay < 9000
   );
 
-  // Any origin near Moscow (within 1.44°) should have been filtered out
+  // Any origin near Moscow (within 1.27°) should have been filtered out
   const nearMoscow = retaliationMissiles.filter(m => {
     const dlat = m.origin.lat - 55.75, dlon = m.origin.lon - 37.62;
-    return dlat * dlat + dlon * dlon < 1.44 * 1.44;
+    return dlat * dlat + dlon * dlon < 1.27 * 1.27;
   });
   assert.strictEqual(nearMoscow.length, 0,
     'no retaliation missiles should originate near Moscow (it was targeted in wave 1)');

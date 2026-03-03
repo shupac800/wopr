@@ -289,6 +289,25 @@ html, body {
   display: block;
 }
 
+/* === Elapsed Time Display === */
+#elapsed-display {
+  position: absolute;
+  bottom: 40px;
+  right: 15px;
+  font-family: var(--font);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--green-dim);
+  text-align: right;
+  z-index: 20;
+  pointer-events: none;
+  display: none;
+}
+
+#elapsed-display.visible {
+  display: block;
+}
+
 /* === Info Panel (Right) === */
 #info-panel {
   width: 420px;

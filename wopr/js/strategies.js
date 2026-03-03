@@ -203,10 +203,10 @@ class StrategyEngine {
       const allOrigins = origins.concat(subOrigins);
 
       // Filter origins for retaliation waves — skip origins near prior target sites
-      // Uses ~1.44° proximity (same as runtime blast radius check)
+      // Uses ~1.27° proximity (same as runtime blast radius check)
       // Subs are never targeted so they always survive for retaliation
       const isNearPriorTarget = (c) => {
-        const thresh = 1.44 * 1.44;
+        const thresh = 1.27 * 1.27;
         return priorTargetLocs.some(t => {
           const dlat = c.lat - t.lat, dlon = c.lon - t.lon;
           return dlat * dlat + dlon * dlon < thresh;

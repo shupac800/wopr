@@ -1,5 +1,16 @@
 // Missile Animations — ballistic arcs, trails, and detonations
 
+function haversineKm(a, b) {
+  const R = 6371;
+  const toRad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * toRad;
+  const dLon = (b.lon - a.lon) * toRad;
+  const sinLat = Math.sin(dLat / 2);
+  const sinLon = Math.sin(dLon / 2);
+  const h = sinLat * sinLat + Math.cos(a.lat * toRad) * Math.cos(b.lat * toRad) * sinLon * sinLon;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 class MissileSystem {
   constructor(scene, globeRenderer) {
     this.scene = scene;
@@ -9,18 +20,19 @@ class MissileSystem {
     this.blastMarks = []; // persistent blast circles on globe
     this.persistentTrails = []; // trails that persist until clear()
     this.onDetonation = null; // callback for screen flash
+    this.onFirstLaunch = null; // callback when first missile starts flying
 
-    // 100 miles in radians on globe surface (Earth radius ~3959 mi)
-    // Globe radius = 1.0, so scale factor = 100 / 3959
-    this.BLAST_RADIUS = 100 / 3959;
+    // 88 miles in radians on globe surface (Earth radius ~3959 mi)
+    // Globe radius = 1.0, so scale factor = 88 / 3959
+    this.BLAST_RADIUS = 88 / 3959;
     this.destroyedSites = []; // lat/lon of detonation sites
   }
 
   // Check if a lat/lon is within blast radius of any detonation
   isDestroyed(lat, lon) {
     // Compare using great-circle distance approximation in degrees
-    // BLAST_RADIUS is in globe-units (~100mi); convert to degrees (~1.44°)
-    const threshDeg = 1.44;
+    // BLAST_RADIUS is in globe-units (~88mi); convert to degrees (~1.27°)
+    const threshDeg = 1.27;
     const threshSq = threshDeg * threshDeg;
     for (const site of this.destroyedSites) {
       const dlat = lat - site.lat;
@@ -103,7 +115,7 @@ class MissileSystem {
       delay,
       started: false,
       elapsed: 0,
-      speed: 0.4 + Math.random() * 0.15, // vary speed slightly
+      speed: Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * 7 / haversineKm(origin, target))),
       done: false,
       target,
       origin,
@@ -164,7 +176,7 @@ class MissileSystem {
       ring, ringMat,
       position,
       age: 0,
-      maxAge: 1.5,
+      maxAge: 1.0,
       city: targetCity,
     });
 
@@ -191,7 +203,7 @@ class MissileSystem {
       lat: targetCity.lat,
       lon: targetCity.lon,
       age: 0,
-      growDuration: 2.5, // seconds to reach full size
+      growDuration: THEATRICAL_TIMING ? 1.8 : 1.8 * 360 / TIME_COMPRESSION,
       grown: false,
     });
 
@@ -223,6 +235,7 @@ class MissileSystem {
           continue;
         }
         m.started = true;
+        if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
         m.headMat.opacity = 1.0;
         m.trailMat.opacity = 0.6;
       }
@@ -287,7 +300,9 @@ class MissileSystem {
       }
 
       const t = d.age / d.maxAge;
-      d.ring.scale.set(1 + t * 2.5, 1 + t * 2.5, 1);
+      const easeOut = 1.0 - Math.pow(1.0 - t, 3);
+      const s = 1 + easeOut * 2.5;
+      d.ring.scale.set(s, s, 1);
       d.ringMat.opacity = Math.max(0, 1.0 - t);
     }
 
@@ -298,8 +313,8 @@ class MissileSystem {
       b.age += deltaTime;
       const t = Math.min(b.age / b.growDuration, 1.0);
 
-      // Ease-out curve for gradual slowdown
-      const eased = 1.0 - Math.pow(1.0 - t, 2);
+      // Cubic ease-out — fast initial expansion, decelerating
+      const eased = 1.0 - Math.pow(1.0 - t, 3);
       b.line.scale.setScalar(0.15 + eased * 0.85);
       b.mat.opacity = 0.9;
 
