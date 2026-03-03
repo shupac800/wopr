@@ -59,9 +59,12 @@
         <div id="attack-panel-header">ATTACK ASSESSMENT</div>
         <div id="attack-log"></div>
         <div id="attack-summary">
-          WARHEADS DEPLOYED: <span id="warheads-deployed">0</span><br>
-          TARGETS DESTROYED: <span id="targets-destroyed">0</span><br>
-          CASUALTIES: <span id="est-casualties">0</span>M
+          <div id="attack-summary-labels">
+            <div class="summary-row selected" data-metric="warheads">WARHEADS DEPLOYED: <span id="warheads-deployed">0</span></div>
+            <div class="summary-row selected" data-metric="targets">TARGETS DESTROYED: <span id="targets-destroyed">0</span></div>
+            <div class="summary-row selected" data-metric="casualties">CASUALTIES: <span id="est-casualties">0</span>M</div>
+          </div>
+          <canvas id="attack-graph"></canvas>
         </div>
       </div>
 

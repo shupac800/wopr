@@ -29,6 +29,30 @@ class InfoPanel {
     this.destroyedCities = new Set();
     this._scrollDirty = false; // throttle scroll to rAF
 
+    // Graph state
+    this.graphCanvas = document.getElementById('attack-graph');
+    this.graphCtx = this.graphCanvas.getContext('2d');
+    this.selectedMetrics = new Set(['warheads', 'targets', 'casualties']);
+    this.metricColors = { warheads: '#33ff33', targets: '#ffffaa', casualties: '#ff5555' };
+    this.timeSeries = []; // [{t, warheads, targets, casualties}, ...]
+    this._graphDirty = false;
+
+    // Click handlers for metric toggle
+    const rows = document.querySelectorAll('#attack-summary-labels .summary-row');
+    rows.forEach(row => {
+      row.addEventListener('click', () => {
+        const metric = row.dataset.metric;
+        if (this.selectedMetrics.has(metric)) {
+          this.selectedMetrics.delete(metric);
+          row.classList.remove('selected');
+        } else {
+          this.selectedMetrics.add(metric);
+          row.classList.add('selected');
+        }
+        this._drawGraph();
+      });
+    });
+
     // 1983-era baseline numbers
     this.baseForces = {
       nato: { icbm: 1054, slbm: 640, bombers: 297, total: 11000 },
@@ -46,7 +70,9 @@ class InfoPanel {
     this.targets = 0;
     this.casualties = 0;
     this.destroyedCities.clear();
-    this.attackLog.textContent = '';
+    this.attackLog.innerHTML = '';
+    this.timeSeries = [];
+    this._drawGraph();
     this.updateCounters();
 
     // Reset forces
@@ -84,6 +110,9 @@ class InfoPanel {
       this.exchangeType.className = 'value active';
     }
 
+    // Record initial zero point for graph
+    this._recordDataPoint(0);
+
     // Launches are now logged via onLaunch callback from missile systems
   }
 
@@ -115,8 +144,10 @@ class InfoPanel {
     this.warheads++;
     this.updateCounters();
     this.degradeForces(originName);
+    this._recordDataPoint(simSec);
     const ts = this.formatTimestamp(simSec);
-    this.attackLog.textContent += ts + ' LAUNCH ' + originName + ' > ' + targetName + '\n';
+    this.attackLog.insertAdjacentHTML('beforeend',
+      '<span class="ts">' + ts + '</span> LAUNCH ' + originName + ' &gt; ' + targetName + '\n');
     this._scheduleScroll();
   }
 
@@ -125,7 +156,8 @@ class InfoPanel {
     const name = targetCity.name;
     const ts = this.formatTimestamp(simSec);
     const pop = targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY';
-    this.attackLog.textContent += ts + ' IMPACT ' + name + ' ' + pop + '\n';
+    this.attackLog.insertAdjacentHTML('beforeend',
+      '<span class="ts">' + ts + '</span> IMPACT ' + name + ' ' + pop + '\n');
     this._scheduleScroll();
 
     if (!this.destroyedCities.has(name)) {
@@ -138,6 +170,7 @@ class InfoPanel {
 
     this.updateCounters();
     this.updateForceStatus();
+    this._recordDataPoint(simSec);
   }
 
   _scheduleScroll() {
@@ -147,6 +180,79 @@ class InfoPanel {
         this.attackLog.scrollTop = this.attackLog.scrollHeight;
         this._scrollDirty = false;
       });
+    }
+  }
+
+  _recordDataPoint(simSec) {
+    this.timeSeries.push({
+      t: simSec,
+      warheads: this.warheads,
+      targets: this.targets,
+      casualties: this.casualties,
+    });
+    this._scheduleGraph();
+  }
+
+  _scheduleGraph() {
+    if (!this._graphDirty) {
+      this._graphDirty = true;
+      requestAnimationFrame(() => {
+        this._drawGraph();
+        this._graphDirty = false;
+      });
+    }
+  }
+
+  _drawGraph() {
+    const canvas = this.graphCanvas;
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    const ctx = this.graphCtx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    ctx.clearRect(0, 0, w, h);
+
+    const data = this.timeSeries;
+    if (data.length < 2) return;
+    if (data[data.length - 1].t < 600) return; // wait until 0:10 elapsed
+
+    const tMin = data[0].t;
+    const tMax = data[data.length - 1].t;
+    const tRange = tMax - tMin || 1;
+    const pad = 2;
+    // Hour tick marks along the bottom
+    const hourSec = 3600;
+    const firstTick = Math.ceil(tMin / hourSec) * hourSec;
+    ctx.fillStyle = '#33ff33';
+    for (let t = firstTick; t <= tMax; t += hourSec) {
+      const x = pad + ((t - tMin) / tRange) * (w - pad * 2);
+      ctx.fillRect(Math.round(x), h - pad + 1, 1, 1);
+    }
+
+    const metrics = ['warheads', 'targets', 'casualties'];
+
+    for (const key of metrics) {
+      if (!this.selectedMetrics.has(key)) continue;
+
+      let maxVal = 0;
+      for (const d of data) {
+        if (d[key] > maxVal) maxVal = d[key];
+      }
+      if (maxVal === 0) continue;
+
+      ctx.beginPath();
+      ctx.strokeStyle = this.metricColors[key];
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < data.length; i++) {
+        const x = pad + ((data[i].t - tMin) / tRange) * (w - pad * 2);
+        const y = (h - pad) - (data[i][key] / maxVal) * (h - pad * 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
     }
   }
 

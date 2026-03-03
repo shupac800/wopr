@@ -360,13 +360,54 @@ html, body {
   background: var(--green-dark);
 }
 
+#attack-log .ts {
+  color: #8c8c1a;
+}
+
 #attack-summary {
-  padding: 8px 15px;
+  display: flex;
   border-top: 1px solid var(--green-dark);
   font-size: 11px;
   letter-spacing: 1px;
   color: var(--green-dim);
   line-height: 1.6;
+}
+
+#attack-summary-labels {
+  flex: 0 0 auto;
+  padding: 8px 10px 8px 15px;
+}
+
+#attack-summary-labels .summary-row {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#attack-summary-labels .summary-row:hover {
+  color: var(--green);
+}
+
+#attack-summary-labels .summary-row.selected[data-metric="warheads"] {
+  color: #33ff33;
+  text-shadow: 0 0 6px rgba(51, 255, 51, 0.5);
+}
+
+#attack-summary-labels .summary-row.selected[data-metric="targets"] {
+  color: #ffffaa;
+  text-shadow: 0 0 6px rgba(255, 255, 170, 0.4);
+}
+
+#attack-summary-labels .summary-row.selected[data-metric="casualties"] {
+  color: #ff5555;
+  text-shadow: 0 0 6px rgba(255, 85, 85, 0.4);
+}
+
+#attack-graph {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  align-self: center;
+  margin: 4px 10px 4px 0;
 }
 
 /* Bottom half — Strategic Forces */

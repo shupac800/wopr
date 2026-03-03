@@ -264,20 +264,20 @@
   const TIME_COMPRESSION_MAX = 99999;
 
   document.addEventListener('keydown', (e) => {
-    if ((e.key === '+' || e.key === '=') && timeAdjustDir !== 1) {
+    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir !== 1) {
       timeAdjustDir = 1;
       timeAdjustHeldSec = 0;
-    } else if ((e.key === '-' || e.key === '_') && timeAdjustDir !== -1) {
+    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir !== -1) {
       timeAdjustDir = -1;
       timeAdjustHeldSec = 0;
     }
   });
 
   document.addEventListener('keyup', (e) => {
-    if ((e.key === '+' || e.key === '=') && timeAdjustDir === 1) {
+    if ((e.key === '+' || e.key === '=' || e.key === 'ArrowRight') && timeAdjustDir === 1) {
       timeAdjustDir = 0;
       timeAdjustHeldSec = 0;
-    } else if ((e.key === '-' || e.key === '_') && timeAdjustDir === -1) {
+    } else if ((e.key === '-' || e.key === '_' || e.key === 'ArrowLeft') && timeAdjustDir === -1) {
       timeAdjustDir = 0;
       timeAdjustHeldSec = 0;
     }
