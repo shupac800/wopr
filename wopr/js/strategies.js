@@ -1,5 +1,10 @@
 // Strategy Engine — loads strategies.json, maps to cities, assigns DEFCON
 
+function dist2(a, b) {
+  const dlat = a.lat - b.lat, dlon = a.lon - b.lon;
+  return dlat * dlat + dlon * dlon;
+}
+
 class StrategyEngine {
   constructor() {
     this.strategies = [];
@@ -87,12 +92,12 @@ class StrategyEngine {
 
     const regionBases = this._basesCache[exact.region];
     if (regionBases && regionBases.length > 0) {
-      // Pick from the pool using a rotating index per region
-      if (!this._baseIdx) this._baseIdx = {};
-      if (!(exact.region in this._baseIdx)) this._baseIdx[exact.region] = 0;
-      const base = regionBases[this._baseIdx[exact.region] % regionBases.length];
-      this._baseIdx[exact.region]++;
-      return base;
+      // Pick closest unused base to the requested city
+      if (!this._usedBases) this._usedBases = new Set();
+      const sorted = regionBases.slice().sort((a, b) => dist2(a, exact) - dist2(b, exact));
+      const pick = sorted.find(b => !this._usedBases.has(b.name)) || sorted[0];
+      this._usedBases.add(pick.name);
+      return pick;
     }
 
     // No bases in this region — fall back to the city
@@ -101,7 +106,7 @@ class StrategyEngine {
 
   // Reset the base rotation index (call between scenarios for variety)
   resetLaunchRotation() {
-    this._baseIdx = {};
+    this._usedBases = new Set();
   }
 
   // Build a launch sequence for a strategy
@@ -119,7 +124,19 @@ class StrategyEngine {
     const defcon = scenario.defcon || this.getDefcon(strategyName);
     const missiles = [];
     const regions = this.getRegions(strategyName);
-    const submarines = assignSubmarines(regions, defcon);
+
+    // Expand regions with nations referenced in fromSubs wave fields
+    // so assignSubmarines includes those nations' submarine pools
+    const expandedRegions = [...regions];
+    for (const wave of scenario.waves) {
+      if (wave.fromSubs) {
+        const nations = Array.isArray(wave.fromSubs) ? wave.fromSubs : [wave.fromSubs];
+        for (const n of nations) {
+          if (!expandedRegions.includes(n)) expandedRegions.push(n);
+        }
+      }
+    }
+    const submarines = assignSubmarines(expandedRegions, defcon);
 
     // Index subs by nation for quick lookup
     const subsByNation = {};
@@ -128,17 +145,22 @@ class StrategyEngine {
       subsByNation[s.nation].push(s);
     }
 
-    // Track which subs have been used as origins (round-robin per nation)
-    const subUsageIdx = {};
+    // Track which subs have been used as origins (proximity-based per nation)
+    const usedSubs = new Set();
 
-    // Pick next available sub for a given nation
-    const pickSub = (nation) => {
-      const pool = subsByNation[nation];
+    // Pick closest unused sub to a centroid for a given nation
+    // If filter is provided, prefer subs whose name contains that string
+    const pickSub = (nation, filter, centroid) => {
+      let pool = subsByNation[nation];
       if (!pool || pool.length === 0) return null;
-      if (!(nation in subUsageIdx)) subUsageIdx[nation] = 0;
-      const sub = pool[subUsageIdx[nation] % pool.length];
-      subUsageIdx[nation]++;
-      return sub;
+      if (filter) {
+        const filtered = pool.filter(s => s.name.includes(filter));
+        if (filtered.length > 0) pool = filtered;
+      }
+      const sorted = pool.slice().sort((a, b) => dist2(a, centroid) - dist2(b, centroid));
+      const pick = sorted.find(s => !usedSubs.has(s.name)) || sorted[0];
+      usedSubs.add(pick.name);
+      return pick;
     };
 
     // Collect all target locations from prior waves (for retaliation filtering)
@@ -157,11 +179,16 @@ class StrategyEngine {
       // Resolve submarine origins — fromSubs: ["us", "uk"] or fromSubs: "ussr"
       let subOrigins = [];
       if (wave.fromSubs) {
+        // Compute target centroid for proximity-based sub selection
+        const centroid = { lat: 0, lon: 0 };
+        for (const t of targets) { centroid.lat += t.lat; centroid.lon += t.lon; }
+        centroid.lat /= targets.length; centroid.lon /= targets.length;
+
         const nations = Array.isArray(wave.fromSubs) ? wave.fromSubs : [wave.fromSubs];
         for (const nation of nations) {
-          // Pick enough subs to cover targets (round-robin)
+          // Pick enough subs to cover targets (proximity-based)
           for (let i = 0; i < Math.ceil(targets.length / Math.max(nations.length, 1)); i++) {
-            const sub = pickSub(nation);
+            const sub = pickSub(nation, wave.subFilter, centroid);
             if (sub) {
               subOrigins.push({
                 name: sub.name, lat: sub.lat, lon: sub.lon,
@@ -191,10 +218,22 @@ class StrategyEngine {
 
       if (activeOrigins.length === 0) continue;
 
-      // Build missiles for this wave, staggering within the wave
+      // Build missiles for this wave — pair each target with closest origin
+      const originLoad = new Map(); // track assignments per origin for load spreading
       let missileIdx = 0;
       for (const target of targets) {
-        const origin = activeOrigins[missileIdx % activeOrigins.length];
+        // Sort origins by proximity to target, break ties by fewest assignments
+        const sorted = activeOrigins.slice().sort((a, b) => {
+          const dd = dist2(a, target) - dist2(b, target);
+          if (dd !== 0) return dd;
+          return (originLoad.get(a) || 0) - (originLoad.get(b) || 0);
+        });
+        // Prefer the origin with fewest assignments among the closest
+        const minDist = dist2(sorted[0], target);
+        const closest = sorted.filter(o => dist2(o, target) <= minDist * 1.5 || dist2(o, target) - minDist < 1);
+        closest.sort((a, b) => (originLoad.get(a) || 0) - (originLoad.get(b) || 0));
+        const origin = closest[0];
+        originLoad.set(origin, (originLoad.get(origin) || 0) + 1);
         if (origin.lat !== target.lat || origin.lon !== target.lon) {
           missiles.push({
             origin,
@@ -286,8 +325,11 @@ class StrategyEngine {
     );
 
     for (let i = 0; i < numMissiles; i++) {
-      const origin = originCities[i % originCities.length];
       const target = targetCities[i % targetCities.length];
+      // Pick closest origin to this target
+      const origin = target
+        ? originCities.slice().sort((a, b) => dist2(a, target) - dist2(b, target))[0]
+        : originCities[i % originCities.length];
       if (origin && target && (origin.lat !== target.lat || origin.lon !== target.lon)) {
         missiles.push({
           origin,
