@@ -159,7 +159,7 @@ class InfoPanel {
     this._recordDataPoint(simSec);
     const ts = this.formatTimestamp(simSec);
     this.attackLog.insertAdjacentHTML('beforeend',
-      '<span class="ts">' + ts + '</span> LAUNCH ' + originName + ' &gt; ' + targetName + '\n');
+      '<span class="ts">' + ts + '</span> <span class="launch">LAUNCH ' + originName + ' &gt; ' + targetName + '</span>\n');
     this._scheduleScroll();
   }
 
@@ -169,7 +169,7 @@ class InfoPanel {
     const ts = this.formatTimestamp(simSec);
     const pop = targetCity.pop ? targetCity.pop + 'M POP' : 'MILITARY';
     this.attackLog.insertAdjacentHTML('beforeend',
-      '<span class="ts">' + ts + '</span> IMPACT ' + name + ' ' + pop + '\n');
+      '<span class="ts">' + ts + '</span> <span class="impact">IMPACT ' + name + ' ' + pop + '</span>\n');
     this._scheduleScroll();
 
     if (!this.destroyedCities.has(name)) {

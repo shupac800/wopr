@@ -37,7 +37,8 @@ class GlobeRenderer {
     this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
     // Tilt 25° toward viewer so north pole is visible
     const tilt = 25 * Math.PI / 180;
-    this.camera.position.set(0, 3.2 * Math.sin(tilt), 3.2 * Math.cos(tilt));
+    const camDist = 2.91; // ~110% zoom vs original 3.2
+    this.camera.position.set(0, camDist * Math.sin(tilt), camDist * Math.cos(tilt));
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });

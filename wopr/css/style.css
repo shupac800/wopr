@@ -308,6 +308,19 @@ html, body {
   display: block;
 }
 
+/* === Scenario Name Display === */
+#scenario-name {
+  position: absolute;
+  bottom: 40px;
+  left: 15px;
+  font-family: var(--font);
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--green-dim);
+  z-index: 20;
+  pointer-events: none;
+}
+
 /* === Info Panel (Right) === */
 #info-panel {
   width: 420px;
@@ -362,6 +375,14 @@ html, body {
 
 #attack-log .ts {
   color: #8c8c1a;
+}
+
+#attack-log .launch {
+  color: var(--green-dim);
+}
+
+#attack-log .impact {
+  color: #ff5555;
 }
 
 #attack-summary {

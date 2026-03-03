@@ -156,10 +156,15 @@
   state = State.IDLE;
   terminal.enableInput();
 
+  // === Scenario name display (lower-left of center panel) ===
+  const scenarioNameEl = document.getElementById('scenario-name');
+
   // === Run a single scenario, return when complete ===
   async function runScenario(scenarioName) {
     const myGen = runGen;
     const aborted = () => runGen !== myGen;
+
+    scenarioNameEl.textContent = scenarioName;
 
     // Build launch sequence
     const sequence = engine.buildLaunchSequence(scenarioName);
