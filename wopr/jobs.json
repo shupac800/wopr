@@ -1,0 +1,676 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "0a02591c-a639-4d9c-a4bc-723ff9d58dbe",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Hourly weather - Fairview TN",
+      "enabled": true,
+      "createdAtMs": 1772392722456,
+      "updatedAtMs": 1772496031887,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 0,6,12,18 * * *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Fetch the current weather for Fairview, Tennessee using the weather skill. Then send a concise weather report to David via Telegram (target=8697062578, channel=telegram) using the message tool. Important: David is in the US Central Time zone (America/Chicago). When displaying the time in the report, convert the current UTC time to Central Time (CT) correctly — do not just label UTC time as CT."
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772517600000,
+        "lastRunAtMs": 1772496000080,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 31807,
+        "lastDelivered": false,
+        "lastDeliveryStatus": "not-delivered",
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "d35dbb37-6e17-45ef-a77c-a86e65858897",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Daily 6 AM briefing",
+      "enabled": true,
+      "createdAtMs": 1772393097592,
+      "updatedAtMs": 1772401576559,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "It's 6 AM for David in Fairview, TN (America/Chicago). Do the following:\n1. Check the cron job list (cron tool, action=list) and identify:\n   a. Any one-time (kind='at') reminders firing TODAY (between midnight and 11:59 PM Central)\n   b. Any one-time (kind='at') reminders firing TOMORROW\n   c. Any recurring jobs that are due to fire today or tomorrow (check nextRunAtMs)\n   Exclude the weather job and this briefing job from the list.\n2. Fetch weather from https://wttr.in/Fairview,TN?format=j1 for current conditions and moon data (moon_phase, moon_illumination, moonrise, moonset).\n3. Calculate the lunar day (day in the ~29.53-day cycle). Use known new moon Jan 29, 2025 as reference.\n4. Calculate the moon's approximate zodiac constellation using its ecliptic longitude (simplified algorithm: L = (218.316 + 13.176396*d) % 360, M_moon = (134.963 + 13.064993*d) % 360, lon = L + 6.289*sin(M_moon_radians), where d = days since J2000.0 = JD - 2451545.0).\n5. Send David a friendly morning briefing via Telegram (target=8697062578, channel=telegram) that includes:\n   - Good morning greeting with today's date\n   - Weather summary\n   - Moon section: phase name + emoji, lunar day (e.g. 'Day 12 of 29'), illumination %, constellation\n   - TODAY section: all reminders/events scheduled for today (if none, say so)\n   - TOMORROW section: all reminders/events scheduled for tomorrow (if none, say so)\nKeep it concise and friendly. David is in US Central Time."
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772539200000
+      }
+    },
+    {
+      "id": "3731a69c-008c-4037-b4d7-f3282fdd7762",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Meeting reminder - 1hr warning - Jamie Kyne",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772393119808,
+      "updatedAtMs": 1772393119808,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-03T18:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⏰ Heads up! Your meeting with Jamie Kyne is in 1 hour — at 1:00 PM today.'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772560800000
+      }
+    },
+    {
+      "id": "d16a0f41-406d-45f6-875e-9157a02ff889",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Meeting reminder - Jamie Kyne 1 PM",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772393122242,
+      "updatedAtMs": 1772393122242,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-03T19:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '📅 Your meeting with Jamie Kyne is NOW — 1:00 PM!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772564400000
+      }
+    },
+    {
+      "id": "51e1483e-6fb8-4af5-8bbf-631af59b10c2",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - Massage Envy 1hr warning",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772393181348,
+      "updatedAtMs": 1772393181348,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-04T22:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⏰ Heads up! Massage Envy is in 1 hour — at 5:00 PM today.'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772661600000
+      }
+    },
+    {
+      "id": "48b6dbcb-7808-467c-a2c5-fe9caacacade",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - Massage Envy 5 PM",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772393184590,
+      "updatedAtMs": 1772393184590,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-04T23:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '📅 Massage Envy — that’s NOW! 5:00 PM. Enjoy! 💆'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772665200000
+      }
+    },
+    {
+      "id": "bd1183c7-2bb3-46ed-b8b2-078b67539fdc",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - t/c Pelusi (time TBD)",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772393228646,
+      "updatedAtMs": 1772393228646,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-16T11:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '📅 Reminder: t/c Pelusi is today (March 16) — but no time was set. Do you know what time? Let me know if you want me to set an updated reminder.'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1773658800000
+      }
+    },
+    {
+      "id": "8a78013a-7897-4452-bd5f-35255ea534b1",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - Pay BofA 0892 credit card",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772394634579,
+      "updatedAtMs": 1772394634579,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-05T15:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💳 Reminder: Pay your BofA credit card (ending 0892)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772722800000
+      }
+    },
+    {
+      "id": "3c7b2c71-53a7-4c08-bca6-12f630831af6",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - Schwab to BofA transfer",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772394698037,
+      "updatedAtMs": 1772394698037,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-03T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💸 Reminder: Your Schwab → BofA transfer is scheduled for today (March 3). Don’t forget to check that it goes through!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772546400000
+      }
+    },
+    {
+      "id": "b13e3b0a-ff8b-406d-963d-9172e4765e67",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Monthly reminder - Pay AMEX",
+      "enabled": true,
+      "createdAtMs": 1772394768263,
+      "updatedAtMs": 1772394768263,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 27 * *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💳 Reminder: Pay your AMEX bill!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774620000000
+      }
+    },
+    {
+      "id": "c886a621-cbae-4498-a3ef-95261b36ee2f",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Monthly reminder - Pay BofA 4833",
+      "enabled": true,
+      "createdAtMs": 1772394770866,
+      "updatedAtMs": 1772394770866,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 1 * *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💳 Reminder: Pay your BofA credit card (ending 4833)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1775052000000
+      }
+    },
+    {
+      "id": "48549535-8adf-4d7e-8e7e-2fee823cca0c",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 25",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395458961,
+      "updatedAtMs": 1772395458961,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-25T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues reminder: California & Tennessee bar dues are due in 5 days (March 30)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774447200000
+      }
+    },
+    {
+      "id": "30d66bc4-5789-4fc0-a991-d0e34bb79688",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 26",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395462271,
+      "updatedAtMs": 1772395462271,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-26T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues reminder: California & Tennessee bar dues are due in 4 days (March 30)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774533600000
+      }
+    },
+    {
+      "id": "18f9080f-056a-47e7-a8c4-17f78e5da607",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 27",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395464929,
+      "updatedAtMs": 1772395464929,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-27T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues reminder: California & Tennessee bar dues are due in 3 days (March 30)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774620000000
+      }
+    },
+    {
+      "id": "e3afb4c8-d4bb-4e76-b5ed-9d8a20278f0e",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 28",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395468837,
+      "updatedAtMs": 1772395468837,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-28T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues reminder: California & Tennessee bar dues are due in 2 days (March 30)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774706400000
+      }
+    },
+    {
+      "id": "5b414086-9f7a-4129-b5a8-0649cc1c11cf",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 29",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395471340,
+      "updatedAtMs": 1772395471340,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-29T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues reminder: California & Tennessee bar dues are due TOMORROW (March 30)!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774792800000
+      }
+    },
+    {
+      "id": "3b5af7cc-8dbb-4c11-8aac-66159b417201",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Bar dues reminder - Mar 30 DUE TODAY",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772395474154,
+      "updatedAtMs": 1772395474154,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-03-30T14:00:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '⚖️ Bar dues DUE TODAY: Pay your California & Tennessee bar dues!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1774879200000
+      }
+    },
+    {
+      "id": "4da432fc-f343-4905-acc0-2e18b5d75f7a",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Weekly reminder - Zepbound shot",
+      "enabled": true,
+      "createdAtMs": 1772407410522,
+      "updatedAtMs": 1772488807336,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 16 * * 1",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💉 Time for your Zepbound shot!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1773090000000,
+        "lastRunAtMs": 1772488800129,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 7207,
+        "lastDelivered": false,
+        "lastDeliveryStatus": "not-delivered",
+        "consecutiveErrors": 0
+      }
+    },
+    {
+      "id": "59511116-a5ca-4939-9d79-2ee4e5dda07d",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Every-other-day reminder - Omeprazole",
+      "enabled": true,
+      "createdAtMs": 1772407477593,
+      "updatedAtMs": 1772407477593,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 172800000,
+        "anchorMs": 1772454600000
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '💊 Time to take your Omeprazole!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772627400000
+      }
+    },
+    {
+      "id": "821c5de2-2cf6-42d8-997e-d5f759bf24e6",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Weekly - Player's Inn",
+      "enabled": true,
+      "createdAtMs": 1772407483133,
+      "updatedAtMs": 1772407483133,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 19 * * 3",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '🎲 Player’s Inn tonight at 7 PM!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772672400000
+      }
+    },
+    {
+      "id": "bafd7f26-d68a-4dfb-9ddf-5ea1ac292f40",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Weekday 7 AM - NVDA pre-market",
+      "enabled": true,
+      "createdAtMs": 1772407537067,
+      "updatedAtMs": 1772407537067,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 7 * * 1-5",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Fetch the most recent NVDA stock price/pre-market data available. Try fetching from https://query1.finance.yahoo.com/v8/finance/chart/NVDA?interval=1m&range=1d to get the latest price. Then send David a message via Telegram (target=8697062578, channel=telegram) with the most recent NVDA price you can find, labeled clearly as pre-market if it's before market open, or after-hours if applicable. Include the price, change, and % change from previous close. Keep it brief."
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772542800000
+      }
+    },
+    {
+      "id": "12e4f7c0-ce46-47e3-91dd-b24d7adeb146",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Onyx's Birthday - July 28",
+      "enabled": true,
+      "createdAtMs": 1772409187843,
+      "updatedAtMs": 1772409187843,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 28 7 *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a message via Telegram (target=8697062578, channel=telegram): '🐾 Happy Birthday Onyx! 🎂 Your pit bull is celebrating today!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1785243600000
+      }
+    },
+    {
+      "id": "0c6460b1-6a68-4437-acb0-99a95e256890",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Leo's Gotcha Day - April 26",
+      "enabled": true,
+      "createdAtMs": 1772409336435,
+      "updatedAtMs": 1772409336435,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 26 4 *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a message via Telegram (target=8697062578, channel=telegram): '🐾 Happy Gotcha Day, Leo! 🎂 Two years ago today you brought your beagle-pit self home. Good boy.'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1777208400000
+      }
+    },
+    {
+      "id": "aabc4405-095d-446c-9e28-02de7a0d6259",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "Reminder - Rush Tribute Project concert",
+      "enabled": true,
+      "deleteAfterRun": true,
+      "createdAtMs": 1772409583491,
+      "updatedAtMs": 1772409583491,
+      "schedule": {
+        "kind": "at",
+        "at": "2026-04-22T22:30:00.000Z"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Send David a reminder via Telegram (target=8697062578, channel=telegram): '🎸 Tonight’s the night! The Rush Tribute Project, 7:30 PM at Lillian Wells Hall, Fort Lauderdale. Have a blast!'"
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1776897000000
+      }
+    },
+    {
+      "id": "c99ea4d2-8fc5-4e7a-a915-8655ac497eca",
+      "agentId": "main",
+      "sessionKey": "agent:main:telegram:direct:8697062578",
+      "name": "quentin.shupac.com monitor",
+      "enabled": true,
+      "createdAtMs": 1772496182399,
+      "updatedAtMs": 1772501402879,
+      "schedule": {
+        "kind": "cron",
+        "expr": "*/15 * * * *",
+        "tz": "America/Chicago"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Run: curl -Is https://quentin.shupac.com 2>/dev/null | head -1 | grep 'HTTP' | awk '{print $2}' | { read code; if [ \"$code\" = \"200\" ]; then echo \"✅ quentin.shupac.com is UP (HTTP 200)\"; else echo \"❌ quentin.shupac.com is DOWN (status: $code)\"; fi } | xargs -I {} /home/ubuntu/.nvm/versions/node/v22.22.0/bin/openclaw message --action=send --to=8697062578 --channel=telegram --message=\"{}\""
+      },
+      "delivery": {
+        "mode": "none"
+      },
+      "state": {
+        "nextRunAtMs": 1772502300000,
+        "lastRunAtMs": 1772501400029,
+        "lastRunStatus": "ok",
+        "lastStatus": "ok",
+        "lastDurationMs": 2850,
+        "lastDelivered": false,
+        "lastDeliveryStatus": "not-delivered",
+        "consecutiveErrors": 0
+      }
+    }
+  ]
+}ubuntu@ip-172-26-0-162:~$

@@ -367,7 +367,6 @@ const CITIES = [
   { name: "GUAM", lat: 13.4, lon: 144.8, country: "US", region: "us", pop: 0.2 },
   // === ARCTIC / OTHER ===
   { name: "NUUK", lat: 64.2, lon: -51.7, country: "GREENLAND", region: "greenland", pop: 0.02 },
-  { name: "THULE", lat: 76.5, lon: -68.8, country: "GREENLAND", region: "greenland", pop: 0.001 },
   // === ADDITIONAL CAPITALS & CITIES ===
   { name: "BELFAST", lat: 54.6, lon: -5.9, country: "UK", region: "english", pop: 0.3 },
   { name: "CARDIFF", lat: 51.5, lon: -3.2, country: "UK", region: "english", pop: 0.4 },

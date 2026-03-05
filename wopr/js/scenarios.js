@@ -408,7 +408,7 @@ SCENARIOS["PACT MEDIUM"] = {
 SCENARIOS["ARCTIC MINIMAL"] = {
   narrative: "Single Soviet submarine launches on anomalous trajectory over the Pole. NORAD classifies as limited probe.",
   waves: [
-    { fromSubs: ["ussr"], to: ["THULE", "REYKJAVIK", "ANCHORAGE"], delay: 0 }
+    { fromSubs: ["ussr"], to: ["THULE AB", "REYKJAVIK", "ANCHORAGE"], delay: 0 }
   ],
   defcon: 5
 };
@@ -529,7 +529,7 @@ SCENARIOS["GABON REBELLION"] = {
 SCENARIOS["NORTHERN MAXIMUM"] = {
   narrative: "Full northern theater engagement as Soviet Arctic forces surge south. NORAD and SACEUR respond in kind.",
   waves: [
-    { from: ["MURMANSK", "ARCHANGELSK", "MOSCOW"], fromSubs: ["ussr"], to: ["OSLO", "COPENHAGEN", "REYKJAVIK", "THULE"], delay: 0 },
+    { from: ["MURMANSK", "ARCHANGELSK", "MOSCOW"], fromSubs: ["ussr"], to: ["OSLO", "COPENHAGEN", "REYKJAVIK", "THULE AB"], delay: 0 },
     { from: ["OSLO", "COPENHAGEN", "LONDON"], fromSubs: ["us", "uk"], to: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], delay: 3000, retaliation: true },
     { from: ["WASHINGTON DC", "OMAHA", "ANCHORAGE"], to: ["MOSCOW", "LENINGRAD", "MINSK", "SVERDLOVSK"], delay: 7000 },
     { from: ["MOSCOW", "SVERDLOVSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["WASHINGTON DC", "NEW YORK", "CHICAGO", "BOSTON"], delay: 11000, retaliation: true }
@@ -724,7 +724,7 @@ SCENARIOS["NICARAGUAN THRUST"] = {
 SCENARIOS["GREENLAND DOMESTIC"] = {
   narrative: "Internal unrest at Thule Air Base triggers emergency evacuation. NORAD monitors for Soviet exploitation.",
   waves: [
-    { from: ["THULE"], to: ["NUUK"], delay: 0 }
+    { from: ["THULE AB"], to: ["NUUK"], delay: 0 }
   ],
   defcon: 5
 };
@@ -1233,7 +1233,7 @@ SCENARIOS["BULGARIAN CLANDESTINE"] = {
 SCENARIOS["GREENLAND INCURSION"] = {
   narrative: "Soviet airborne forces seize Thule Air Base communications relay. NORAD declares Arctic ADIZ breached.",
   waves: [
-    { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["THULE", "NUUK"], delay: 0 },
+    { from: ["MURMANSK", "ARCHANGELSK"], fromSubs: ["ussr"], to: ["THULE AB", "NUUK"], delay: 0 },
     { from: ["NUUK", "OTTAWA"], to: ["MURMANSK", "ARCHANGELSK"], delay: 4000, retaliation: true },
     { fromSubs: ["us"], to: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], delay: 7000, retaliation: true }
   ],
@@ -1272,7 +1272,7 @@ SCENARIOS["TAIWAN CONFRONTATION"] = {
 SCENARIOS["GREENLAND MAXIMUM"] = {
   narrative: "Soviet occupation of Greenland triggers full NATO Article 5 response. Denmark invokes nuclear release authority.",
   waves: [
-    { from: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["THULE", "NUUK", "REYKJAVIK"], delay: 0 },
+    { from: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], fromSubs: ["ussr"], to: ["THULE AB", "NUUK", "REYKJAVIK"], delay: 0 },
     { from: ["NUUK", "REYKJAVIK", "OSLO"], to: ["MURMANSK", "ARCHANGELSK", "LENINGRAD"], delay: 3000, retaliation: true },
     { from: ["MOSCOW", "MINSK"], to: ["COPENHAGEN", "OSLO", "LONDON", "OTTAWA"], delay: 6000 },
     { from: ["WASHINGTON DC", "OMAHA"], fromSubs: ["us", "uk"], to: ["MOSCOW", "MURMANSK", "SVERDLOVSK"], delay: 8000 }
