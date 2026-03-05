@@ -96,7 +96,8 @@ class MissileSystem {
     triShape.computeVertexNormals();
     const edges = new THREE.EdgesGeometry(triShape);
     const headMat = new THREE.LineBasicMaterial({
-      color: 0xff3333,
+      color: 0xff0000,
+      linewidth: 2,
       transparent: true,
       opacity: 0.0,
       depthWrite: false,
