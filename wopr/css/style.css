@@ -600,3 +600,213 @@ html, body {
   line-height: 2.5;
   max-width: 700px;
 }
+
+/* ============================================================
+   MOBILE LAYOUT — swipeable three-panel carousel
+   ============================================================ */
+
+/* Page dots (above status bar) */
+#page-dots {
+  display: none; /* shown only in mobile layout */
+  position: fixed;
+  bottom: 34px;
+  left: 0;
+  width: 100%;
+  justify-content: center;
+  gap: 12px;
+  z-index: 110;
+  pointer-events: auto;
+}
+
+.page-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green-dark);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.page-dot.active {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green-glow);
+}
+
+/* Swipe hints */
+#swipe-hints {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 120;
+  transition: opacity 0.5s;
+}
+
+#swipe-hints.fade {
+  opacity: 0;
+}
+
+.swipe-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--green-dim);
+  text-shadow: 0 0 6px var(--green-glow);
+  padding: 8px 10px;
+  animation: hint-pulse 1.5s ease-in-out infinite alternate;
+}
+
+.swipe-hint.left {
+  left: 6px;
+}
+
+.swipe-hint.right {
+  right: 6px;
+}
+
+@keyframes hint-pulse {
+  from { opacity: 0.4; }
+  to   { opacity: 1.0; }
+}
+
+/* === Mobile-only layout overrides === */
+@media (max-width: 768px) {
+  /* The html class is set by mobile.js; double-gating with media query
+     ensures desktop is never affected even if JS glitches. */
+
+  .mobile-layout #app {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 300vw;
+    height: calc(100% - 30px); /* leave room for status bar */
+    overflow: visible;
+    will-change: transform;
+  }
+
+  .mobile-layout #terminal-panel {
+    width: 100vw;
+    min-width: 100vw;
+    height: 100%;
+    border-right: none;
+    padding-bottom: 16px; /* space for dots */
+  }
+
+  .mobile-layout #globe-container {
+    width: 100vw;
+    min-width: 100vw;
+    flex: none;
+    height: 100%;
+  }
+
+  .mobile-layout #info-panel {
+    width: 100vw;
+    min-width: 100vw;
+    height: 100%;
+    border-left: none;
+    padding-bottom: 16px;
+  }
+
+  /* Slightly smaller fonts for mobile */
+  .mobile-layout #terminal-header {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .mobile-layout #terminal-header .subtitle {
+    font-size: 9px;
+  }
+
+  .mobile-layout #terminal-messages {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .mobile-layout .scenario-item {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  .mobile-layout #attack-log {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+
+  .mobile-layout #attack-panel-header,
+  .mobile-layout #forces-panel-header {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .mobile-layout .forces-section .section-title {
+    font-size: 10px;
+  }
+
+  .mobile-layout .forces-row {
+    font-size: 10px;
+  }
+
+  .mobile-layout #forces-readout {
+    padding: 8px 10px;
+  }
+
+  .mobile-layout #attack-summary {
+    font-size: 10px;
+  }
+
+  .mobile-layout #attack-summary-labels {
+    padding: 6px 8px 6px 10px;
+  }
+
+  /* Elapsed / scenario overlays: tighter positioning */
+  .mobile-layout #elapsed-display {
+    bottom: 30px;
+    right: 10px;
+    font-size: 11px;
+  }
+
+  .mobile-layout #scenario-name {
+    bottom: 30px;
+    left: 10px;
+    font-size: 11px;
+  }
+
+  /* Status bar stays fixed at bottom */
+  .mobile-layout #status-bar {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 0 8px;
+  }
+
+  /* Page dots visible */
+  .mobile-layout #page-dots {
+    display: flex;
+  }
+
+  /* Ending overlay text smaller on mobile */
+  .mobile-layout #ending-overlay .ending-text {
+    font-size: 16px;
+    letter-spacing: 2px;
+    max-width: 90vw;
+  }
+
+  /* Boot screen text */
+  .mobile-layout #boot-screen .boot-text {
+    font-size: 14px;
+  }
+
+  /* Prevent body overflow from the 300vw #app */
+  .mobile-layout body,
+  .mobile-layout {
+    overflow: hidden;
+  }
+
+  /* Scenario header: touch-friendly hint */
+  .mobile-layout #scenario-panel-header {
+    font-size: 10px;
+  }
+}
