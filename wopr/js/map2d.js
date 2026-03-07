@@ -303,20 +303,6 @@ class MapRenderer2D {
         ctx.fill();
       }
 
-      // Draw detonation flashes
-      for (const d of missileSystem.detonations) {
-        const [dx, dy] = this.latLonToXY(d.city.lat, d.city.lon);
-        const t = d.age / d.maxAge;
-        const easeOut = 1.0 - Math.pow(1.0 - t, 3);
-        const flashR = (1 + easeOut * 2.5) * this._blastPixelRadius();
-        const alpha = Math.max(0, 1.0 - t);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(dx, dy, flashR, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-
       // Draw missile trails and heads
       for (const m of missileSystem.activeMissiles) {
         if (!m.started && !m._2dStarted) continue;
