@@ -49,6 +49,13 @@
 
     <!-- 3D Globe (Center) -->
     <div id="globe-container">
+      <div id="view-toggle">
+        <span class="view-label" id="view-label-2d">2D</span>
+        <div class="toggle-track" id="view-toggle-track">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="view-label active" id="view-label-3d">3D</span>
+      </div>
       <div id="elapsed-display"><div id="time-factor"></div><div id="elapsed-time">ELAPSED: 00 : 00</div></div>
       <div id="scenario-name"></div>
     </div>
@@ -109,7 +116,7 @@
 
   <!-- Global config -->
   <script>
-    const USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
+    let USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
     const EDGE_GLOW = false;   // true = fresnel rim glow on globe edge
     const SCREEN_FLASH = false; // true = white flash on missile detonation
     const THEATRICAL_TIMING = true;  // true = fixed ~2s flights, false = 360x time compression

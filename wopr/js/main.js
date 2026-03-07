@@ -102,19 +102,79 @@
     }
   }
 
-  // === Initialize Renderer (3D or 2D) ===
+  // === Initialize Both Renderers (3D and 2D) ===
   const globeContainer = document.getElementById('globe-container');
   let globe, missiles;
 
+  // 3D renderer
+  const globe3d = new GlobeRenderer(globeContainer);
+  await globe3d.coastlinesReady;
+  const missiles3d = new MissileSystem(globe3d.rotationGroup, globe3d);
+
+  // 2D renderer (canvas hidden initially if starting in 3D)
+  const globe2d = new MapRenderer2D(globeContainer);
+  const missiles2d = new MissileSystem2D(globe2d);
+
   if (USE_3D_GLOBE) {
-    globe = new GlobeRenderer(globeContainer);
-    await globe.coastlinesReady;
-    missiles = new MissileSystem(globe.rotationGroup, globe);
+    globe = globe3d;
+    missiles = missiles3d;
+    globe2d.canvas.style.display = 'none';
   } else {
-    globe = new MapRenderer2D(globeContainer);
-    missiles = new MissileSystem2D(globe);
+    globe = globe2d;
+    missiles = missiles2d;
+    globe3d.renderer.domElement.style.display = 'none';
   }
-  missiles.onDetonation = screenFlash;
+  missiles3d.onDetonation = screenFlash;
+  missiles2d.onDetonation = screenFlash;
+
+  // === 2D/3D Toggle ===
+  const viewToggle = document.getElementById('view-toggle');
+  const toggleTrack = document.getElementById('view-toggle-track');
+  const label2d = document.getElementById('view-label-2d');
+  const label3d = document.getElementById('view-label-3d');
+
+  function setRendererMode(use3d) {
+    USE_3D_GLOBE = use3d;
+
+    // Clear missiles from both systems
+    missiles3d.clear();
+    missiles2d.clear();
+    globe3d.clearSubmarines();
+    globe2d.clearSubmarines();
+
+    if (use3d) {
+      globe = globe3d;
+      missiles = missiles3d;
+      globe3d.renderer.domElement.style.display = 'block';
+      globe2d.canvas.style.display = 'none';
+      toggleTrack.classList.remove('mode-2d');
+      label3d.classList.add('active');
+      label2d.classList.remove('active');
+      globe3d.onResize();
+    } else {
+      globe = globe2d;
+      missiles = missiles2d;
+      globe2d.canvas.style.display = 'block';
+      globe3d.renderer.domElement.style.display = 'none';
+      toggleTrack.classList.add('mode-2d');
+      label2d.classList.add('active');
+      label3d.classList.remove('active');
+      globe2d._resize();
+    }
+
+    missiles.onDetonation = screenFlash;
+    localStorage.setItem('wopr_viewMode', use3d ? '3d' : '2d');
+  }
+
+  // Restore saved preference
+  const savedMode = localStorage.getItem('wopr_viewMode');
+  if (savedMode === '2d') {
+    setRendererMode(false);
+  }
+
+  viewToggle.addEventListener('click', () => {
+    setRendererMode(!USE_3D_GLOBE);
+  });
 
   // === Initialize Terminal ===
   const terminal = new TerminalUI();
@@ -307,29 +367,27 @@
   });
 
   // === Animation Loop ===
+  // Use a dedicated clock so renderer swaps don't affect delta timing
+  const animClock = new THREE.Clock();
+
   function animate() {
     requestAnimationFrame(animate);
 
-    const delta = globe.clock.getDelta();
-    const elapsed = globe.clock.getElapsedTime();
+    const delta = animClock.getDelta();
+    const elapsed = animClock.getElapsedTime();
 
     // Adjust time compression if +/- held
     if (timeAdjustDir !== 0) {
       timeAdjustHeldSec += delta;
-      // Acceleration: rate multiplier grows with hold duration (1x at 0s, ramps up)
       const accel = 1 + timeAdjustHeldSec * 1.0;
       const change = TIME_ADJUST_BASE * accel * delta * timeAdjustDir;
       TIME_COMPRESSION = Math.round(Math.min(TIME_COMPRESSION_MAX, Math.max(TIME_COMPRESSION_MIN, TIME_COMPRESSION + change)));
       timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
     }
 
-    // Rotate the globe group directly — decoupled from OrbitControls so
-    // user drag never affects rotation speed.
-    // 2π radians = one full rotation = 86400 simulated seconds.
-    // At TIME_COMPRESSION x, one real second = TIME_COMPRESSION sim seconds.
-    // So radians per real second = 2π * TIME_COMPRESSION / 86400.
-    if (USE_3D_GLOBE && globe.rotationGroup) {
-      globe.rotationGroup.rotation.y += (2 * Math.PI * TIME_COMPRESSION / 86400) * delta;
+    // Rotate 3D globe group (always, even when viewing 2D, so it stays in sync)
+    if (globe3d.rotationGroup) {
+      globe3d.rotationGroup.rotation.y += (2 * Math.PI * TIME_COMPRESSION / 86400) * delta;
     }
 
     if (simRunning) {
@@ -340,9 +398,9 @@
     missiles.update(delta);
 
     if (USE_3D_GLOBE) {
-      globe.render(elapsed);
+      globe3d.render(elapsed);
     } else {
-      globe.render(elapsed, missiles);
+      globe2d.render(elapsed, missiles2d);
     }
   }
 
