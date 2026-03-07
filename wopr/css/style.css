@@ -518,30 +518,6 @@ html, body {
   display: none;
 }
 
-#defcon-indicator {
-  color: var(--green);
-  text-shadow: 0 0 8px var(--green-glow);
-}
-
-#defcon-indicator.defcon-1,
-#defcon-indicator.defcon-2 {
-  color: #ff3333;
-  text-shadow: 0 0 10px rgba(255, 51, 51, 0.8);
-  animation: pulse-red 0.5s ease-in-out infinite alternate;
-}
-
-@keyframes pulse-red {
-  from { opacity: 0.7; }
-  to { opacity: 1.0; }
-}
-
-#system-clock {
-  color: var(--green-dim);
-}
-
-#wopr-status {
-  color: var(--green-dim);
-}
 
 /* === Boot Screen === */
 #boot-screen {

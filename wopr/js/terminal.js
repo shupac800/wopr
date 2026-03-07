@@ -5,7 +5,6 @@ class TerminalUI {
     this.messagesEl = document.getElementById('terminal-messages');
     this.scenarioPanel = document.getElementById('scenario-panel');
     this.scenarioList = document.getElementById('scenario-list');
-    this.defconEl = document.getElementById('defcon-indicator');
     this.clockEl = document.getElementById('system-clock');
     this.woprStatus = document.getElementById('wopr-status');
 
@@ -30,20 +29,6 @@ class TerminalUI {
     };
     update();
     setInterval(update, 1000);
-  }
-
-  setDefcon(level) {
-    this.defconEl.textContent = `DEFCON ${level}`;
-    this.defconEl.className = '';
-    if (level <= 2) {
-      this.defconEl.classList.add(`defcon-${level}`);
-    }
-  }
-
-  // Print a DEFCON change notification to the terminal message area
-  printDefconChange(level) {
-    const cls = level <= 2 ? 'bright' : 'dim';
-    this.print(`  ** DEFCON ${level} **`, cls);
   }
 
   setStatus(text) {
@@ -263,12 +248,10 @@ class TerminalUI {
   }
 
   // === Scenario Execution Log ===
-  async showExecutionLog(scenarioName, defcon, narrative) {
+  async showExecutionLog(scenarioName, narrative) {
     this.printBlank();
     await this.typewrite(`> SCENARIO SELECTED: ${scenarioName}`, 'bright');
     await this.delay(300);
-    await this.typewrite(`  DEFCON LEVEL: ${defcon}`, defcon <= 2 ? 'bright' : 'dim');
-    await this.delay(200);
     if (narrative) {
       await this.typewrite(`  ${narrative}`, 'dim');
       await this.delay(300);

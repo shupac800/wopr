@@ -19,7 +19,6 @@ class InfoPanel {
     this.pactTotal = document.getElementById('pact-total');
     this.pactStatus = document.getElementById('pact-status');
 
-    this.forcesDefcon = document.getElementById('forces-defcon');
     this.threatLevel = document.getElementById('threat-level');
     this.exchangeType = document.getElementById('exchange-type');
 
@@ -126,23 +125,6 @@ class InfoPanel {
     this._recordDataPoint(0);
 
     // Launches are now logged via onLaunch callback from missile systems
-  }
-
-  setDefcon(level) {
-    this.forcesDefcon.textContent = level;
-    if (level <= 2) {
-      this.forcesDefcon.className = 'value warning';
-      this.threatLevel.textContent = level === 1 ? 'MAXIMUM' : 'SEVERE';
-      this.threatLevel.className = 'value warning';
-    } else if (level <= 3) {
-      this.forcesDefcon.className = 'value active';
-      this.threatLevel.textContent = 'ELEVATED';
-      this.threatLevel.className = 'value active';
-    } else {
-      this.forcesDefcon.className = 'value';
-      this.threatLevel.textContent = 'NOMINAL';
-      this.threatLevel.className = 'value';
-    }
   }
 
   formatTimestamp(simSec) {

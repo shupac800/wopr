@@ -7,7 +7,6 @@
   let state = State.BOOT;
   let infoPanel = null;
   let runGen = 0;              // generation counter — incremented to abort current run
-  let activeDefconTimers = []; // DEFCON escalation timers for the current scenario
 
   // === Elapsed time display ===
   const elapsedEl = document.getElementById('elapsed-display');
@@ -185,7 +184,6 @@
 
   // === Initialize Terminal ===
   const terminal = new TerminalUI();
-  terminal.setDefcon(5);
   terminal.setStatus('WOPR ONLINE');
 
   // === Initialize Info Panel (right side) ===
@@ -244,10 +242,6 @@
     // Show elapsed timer at 00:00 (starts ticking on first missile launch)
     resetElapsed();
 
-    // Update DEFCON to initial level
-    terminal.setDefcon(initialDefcon);
-    infoPanel.setDefcon(initialDefcon);
-
     terminal.setStatus('EXECUTING SCENARIO');
 
     // Prepare right panel
@@ -259,33 +253,8 @@
     }
 
     // Show log (with narrative if scenario provides one)
-    await terminal.showExecutionLog(scenarioName, initialDefcon, sequence.narrative);
+    await terminal.showExecutionLog(scenarioName, sequence.narrative);
     if (aborted()) return;
-
-    // Schedule DEFCON ramp-down during escalation
-    // Find the max delay to know the total timeline
-    let maxMissileDelay = 0;
-    for (const m of sequence.missiles) {
-      if (m.delay > maxMissileDelay) maxMissileDelay = m.delay;
-    }
-
-    // Ramp DEFCON from initial level down to 1 over the course of the scenario
-    activeDefconTimers.forEach(t => clearTimeout(t));
-    activeDefconTimers = [];
-    if (initialDefcon > 1) {
-      const steps = initialDefcon - 1; // e.g. DEFCON 3 → 2 → 1 = 2 steps
-      const stepInterval = maxMissileDelay / (steps + 1);
-      for (let d = initialDefcon - 1; d >= 1; d--) {
-        const t = (initialDefcon - d) * stepInterval;
-        const timer = setTimeout(() => {
-          terminal.setDefcon(d);
-          infoPanel.setDefcon(d);
-          terminal.printDefconChange(d);
-          if (d <= 2) terminal.setStatus('GLOBAL ESCALATION');
-        }, t);
-        activeDefconTimers.push(timer);
-      }
-    }
 
     // Launch missiles — start elapsed timer on first actual launch
     missiles.onFirstLaunch = () => startElapsed();
@@ -298,12 +267,6 @@
     await waitForMissiles();
     if (aborted()) return;
     pauseElapsed();
-
-    // Clear any pending DEFCON timers
-    activeDefconTimers.forEach(t => clearTimeout(t));
-    activeDefconTimers = [];
-    terminal.setDefcon(1);
-    infoPanel.setDefcon(1);
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
@@ -340,8 +303,6 @@
       globe.clearSubmarines();
 
       // Brief pause before next scenario
-      terminal.setDefcon(5);
-      infoPanel.setDefcon(5);
       terminal.setStatus('NEXT TARGET');
       await delay(800);
       if (myGen !== runGen) return;
@@ -357,8 +318,6 @@
       // Abort the current run: bump generation, clear visuals, timers, and terminal effects
       runGen++;
       pauseElapsed();
-      activeDefconTimers.forEach(t => clearTimeout(t));
-      activeDefconTimers = [];
       terminal.abortEffects();
       terminal.clearMessages();
       missiles.clear();
