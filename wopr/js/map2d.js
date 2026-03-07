@@ -115,14 +115,7 @@ class MapRenderer2D {
     off.height = this.h;
     const ctx = off.getContext('2d');
 
-    // Layer 1: filled land masses (very dark blue-green)
-    ctx.fillStyle = 'rgba(6, 24, 18, 0.7)';
-    for (const [name, coords] of Object.entries(CONTINENT_OUTLINES)) {
-      this._tracePath(ctx, coords);
-      ctx.fill();
-    }
-
-    // Layer 2: glow — thick blurred coastline outlines
+    // Layer 1: glow — thick blurred coastline outlines
     ctx.strokeStyle = 'rgba(68, 136, 255, 0.15)';
     ctx.lineWidth = 3.5;
     ctx.lineJoin = 'round';
