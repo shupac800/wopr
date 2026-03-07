@@ -610,6 +610,91 @@ html, body {
   max-width: 700px;
 }
 
+/* === DEFCON Display (center panel, upper right) === */
+#defcon-display {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 20;
+  text-align: center;
+  pointer-events: none;
+}
+
+.defcon-title {
+  font-family: var(--font);
+  font-size: 8px;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 3px;
+}
+
+.defcon-boxes {
+  display: flex;
+  gap: 3px;
+}
+
+.defcon-box {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid;
+  transition: opacity 0.3s, text-shadow 0.3s, box-shadow 0.3s;
+  opacity: 0.15;
+}
+
+/* Color per level — border and text match when dim */
+.defcon-box.dc5 { color: #33ccff; border-color: #33ccff; }
+.defcon-box.dc4 { color: #33ff33; border-color: #33ff33; }
+.defcon-box.dc3 { color: #ffff33; border-color: #ffff33; }
+.defcon-box.dc2 { color: #ff3366; border-color: #ff3366; }
+.defcon-box.dc1 { color: #ffffff; border-color: #ffffff; }
+
+/* Lit state — bright with glow */
+.defcon-box.lit {
+  opacity: 1;
+}
+
+.defcon-box.dc5.lit {
+  background: rgba(51, 204, 255, 0.15);
+  text-shadow: 0 0 8px rgba(51, 204, 255, 0.9);
+  box-shadow: 0 0 6px rgba(51, 204, 255, 0.4), inset 0 0 6px rgba(51, 204, 255, 0.15);
+}
+
+.defcon-box.dc4.lit {
+  background: rgba(51, 255, 51, 0.15);
+  text-shadow: 0 0 8px rgba(51, 255, 51, 0.9);
+  box-shadow: 0 0 6px rgba(51, 255, 51, 0.4), inset 0 0 6px rgba(51, 255, 51, 0.15);
+}
+
+.defcon-box.dc3.lit {
+  background: rgba(255, 255, 51, 0.15);
+  text-shadow: 0 0 8px rgba(255, 255, 51, 0.9);
+  box-shadow: 0 0 6px rgba(255, 255, 51, 0.4), inset 0 0 6px rgba(255, 255, 51, 0.15);
+}
+
+.defcon-box.dc2.lit {
+  background: rgba(255, 51, 102, 0.15);
+  text-shadow: 0 0 8px rgba(255, 51, 102, 0.9);
+  box-shadow: 0 0 6px rgba(255, 51, 102, 0.4), inset 0 0 6px rgba(255, 51, 102, 0.15);
+}
+
+.defcon-box.dc1.lit {
+  background: rgba(255, 255, 255, 0.15);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.5), inset 0 0 6px rgba(255, 255, 255, 0.15);
+  animation: defcon1-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes defcon1-pulse {
+  from { opacity: 0.8; }
+  to   { opacity: 1.0; }
+}
+
 /* === 2D/3D View Toggle === */
 #view-toggle {
   position: absolute;
@@ -881,5 +966,21 @@ html, body {
     top: 8px;
     left: 8px;
     padding: 4px;
+  }
+
+  /* DEFCON display: smaller on mobile */
+  .mobile-layout #defcon-display {
+    top: 6px;
+    right: 8px;
+  }
+
+  .mobile-layout .defcon-box {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .mobile-layout .defcon-title {
+    font-size: 7px;
   }
 }

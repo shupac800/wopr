@@ -183,9 +183,18 @@
     setRendererMode(!USE_3D_GLOBE);
   });
 
+  // === DEFCON Display (center panel) ===
+  const defconBoxes = document.querySelectorAll('.defcon-box');
+  function setDefconDisplay(level) {
+    defconBoxes.forEach(box => {
+      box.classList.toggle('lit', parseInt(box.dataset.level) === level);
+    });
+  }
+
   // === Initialize Terminal ===
   const terminal = new TerminalUI();
   terminal.setDefcon(5);
+  setDefconDisplay(5);
   terminal.setStatus('WOPR ONLINE');
 
   // === Initialize Info Panel (right side) ===
@@ -247,6 +256,7 @@
     // Update DEFCON to initial level
     terminal.setDefcon(initialDefcon);
     infoPanel.setDefcon(initialDefcon);
+    setDefconDisplay(initialDefcon);
     terminal.setStatus('EXECUTING SCENARIO');
 
     // Prepare right panel
@@ -279,6 +289,7 @@
         const timer = setTimeout(() => {
           terminal.setDefcon(d);
           infoPanel.setDefcon(d);
+          setDefconDisplay(d);
           terminal.printDefconChange(d);
           if (d <= 2) terminal.setStatus('GLOBAL ESCALATION');
         }, t);
@@ -303,6 +314,7 @@
     activeDefconTimers = [];
     terminal.setDefcon(1);
     infoPanel.setDefcon(1);
+    setDefconDisplay(1);
 
     // Show aftermath
     terminal.setStatus('ASSESSING DAMAGE');
@@ -341,6 +353,7 @@
       // Brief pause before next scenario
       terminal.setDefcon(5);
       infoPanel.setDefcon(5);
+      setDefconDisplay(5);
       terminal.setStatus('NEXT TARGET');
       await delay(800);
       if (myGen !== runGen) return;
