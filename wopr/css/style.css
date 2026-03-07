@@ -294,8 +294,8 @@ html, body {
 /* === Elapsed Time Display === */
 #elapsed-display {
   position: absolute;
-  bottom: 50px;
-  right: 15px;
+  bottom: 8px;
+  right: 10px;
   font-family: var(--font);
   font-size: 13px;
   letter-spacing: 2px;
@@ -313,8 +313,8 @@ html, body {
 /* === Scenario Name Display === */
 #scenario-name {
   position: absolute;
-  bottom: 50px;
-  left: 15px;
+  bottom: 8px;
+  left: 10px;
   font-family: var(--font);
   font-size: 13px;
   letter-spacing: 2px;
