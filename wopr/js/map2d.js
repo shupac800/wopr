@@ -1,4 +1,5 @@
-// 2D Mercator Map Renderer (Canvas-based)
+// 2D Equirectangular Map Renderer (Canvas-based)
+// Renders coastlines from the same CONTINENT_OUTLINES vector data used by the 3D globe.
 // Implements the same interface as GlobeRenderer + MissileSystem for main.js
 
 function haversineKm2D(a, b) {
@@ -12,19 +13,9 @@ function haversineKm2D(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-// === Geographic bounds of conts.png ===
-// The image is equirectangular. These define what lat/lon the image edges map to.
-// The image fills the full canvas; latLonToXY uses these same bounds.
-// This guarantees dots always align with the image by construction.
-// Calibrated from user click data (least-squares fit):
-//   London (51.5°N, 0.1°W) at x=46.1% y=37.3%
-//   Moscow (55.8°N, 37.6°E) at x=54.9% y=35.5%
-//   Washington (38.9°N, 77.0°W) at x=26.5% y=45.0%
-//   Equator at y=62.0%
-const MAP_LON_LEFT  = -186.0;
-const MAP_LON_RIGHT =  217.5;
-const MAP_LAT_TOP   =  129.2;
-const MAP_LAT_BOTTOM = -79.2;
+// Visible latitude range — clips polar extremes for a cleaner map
+const MAP_LAT_MAX = 84;
+const MAP_LAT_MIN = -70;
 
 class MapRenderer2D {
   constructor(container) {
@@ -48,15 +39,8 @@ class MapRenderer2D {
       return performance.now() / 1000 - this._startTime;
     };
 
-    // Load continent outline image and pre-tint it blue
-    this._mapImage = null;
-    this._tintedMap = null;
-    const img = new Image();
-    img.onload = () => {
-      this._mapImage = img;
-      this._buildTintedMap();
-    };
-    img.src = 'data/conts.png';
+    // Offscreen coastline cache (rebuilt on resize)
+    this._coastlineCache = null;
 
     this._resize();
     window.addEventListener('resize', () => this._resize());
@@ -77,7 +61,6 @@ class MapRenderer2D {
     const mx = (event.clientX - rect.left) / rect.width * this.w;
     const my = (event.clientY - rect.top) / rect.height * this.h;
 
-    // Find closest city within 10px screen distance
     const threshold = 10 * window.devicePixelRatio;
     let closest = null;
     let bestDist = threshold;
@@ -93,7 +76,6 @@ class MapRenderer2D {
       }
     }
 
-    // Also check submarine markers
     for (const sub of this._submarines) {
       const [sx, sy] = this.latLonToXY(sub.lat, sub.lon);
       const dx = mx - sx;
@@ -123,28 +105,68 @@ class MapRenderer2D {
     }
   }
 
-  // Pre-render a blue-tinted version of the map image
-  // Uses composite ops only (no getImageData) to avoid CORS issues on file://
-  // White lines × blue = blue lines, black × blue = black
-  _buildTintedMap() {
-    if (!this._mapImage) return;
-    const iw = this._mapImage.width;
-    const ih = this._mapImage.height;
+  // Pre-render coastlines from CONTINENT_OUTLINES to an offscreen canvas.
+  // Three layers: dark land fill, soft glow, sharp coastline outlines.
+  _buildCoastlineCache() {
+    if (!CONTINENT_OUTLINES || Object.keys(CONTINENT_OUTLINES).length === 0) return;
 
     const off = document.createElement('canvas');
-    off.width = iw;
-    off.height = ih;
-    const octx = off.getContext('2d');
+    off.width = this.w;
+    off.height = this.h;
+    const ctx = off.getContext('2d');
 
-    // Draw original white-on-black image
-    octx.drawImage(this._mapImage, 0, 0);
+    // Layer 1: filled land masses (very dark blue-green)
+    ctx.fillStyle = 'rgba(6, 24, 18, 0.7)';
+    for (const [name, coords] of Object.entries(CONTINENT_OUTLINES)) {
+      this._tracePath(ctx, coords);
+      ctx.fill();
+    }
 
-    // Multiply with blue: white→blue, black stays black
-    octx.globalCompositeOperation = 'multiply';
-    octx.fillStyle = '#4488ff';
-    octx.fillRect(0, 0, iw, ih);
+    // Layer 2: glow — thick blurred coastline outlines
+    ctx.strokeStyle = 'rgba(68, 136, 255, 0.15)';
+    ctx.lineWidth = 3.5;
+    ctx.lineJoin = 'round';
+    for (const [name, coords] of Object.entries(CONTINENT_OUTLINES)) {
+      this._tracePath(ctx, coords);
+      ctx.stroke();
+    }
 
-    this._tintedMap = off;
+    // Layer 3: sharp coastline outlines
+    ctx.strokeStyle = 'rgba(68, 136, 255, 0.8)';
+    ctx.lineWidth = 1.0;
+    ctx.lineJoin = 'round';
+    for (const [name, coords] of Object.entries(CONTINENT_OUTLINES)) {
+      this._tracePath(ctx, coords);
+      ctx.stroke();
+    }
+
+    this._coastlineCache = off;
+  }
+
+  // Trace a coastline polygon path, breaking at date-line crossings
+  _tracePath(ctx, coords) {
+    if (coords.length < 2) return;
+    ctx.beginPath();
+    let moved = false;
+    for (let i = 0; i < coords.length; i++) {
+      const [lat, lon] = coords[i];
+      const [x, y] = this.latLonToXY(lat, lon);
+
+      // Break at date-line crossings (large x jump)
+      if (i > 0) {
+        const [, prevLon] = coords[i - 1];
+        if (Math.abs(lon - prevLon) > 180) {
+          moved = false;
+        }
+      }
+
+      if (!moved) {
+        ctx.moveTo(x, y);
+        moved = true;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
   }
 
   _resize() {
@@ -152,36 +174,28 @@ class MapRenderer2D {
     this.canvas.height = this.container.clientHeight * window.devicePixelRatio;
     this.w = this.canvas.width;
     this.h = this.canvas.height;
-    this._buildTintedMap();
+    this._buildCoastlineCache();
   }
 
-  // Watch for devicePixelRatio changes (browser pinch-zoom)
   _watchDPR() {
     const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
     mq.addEventListener('change', () => {
       this._resize();
-      this._watchDPR(); // re-register for the new DPR value
+      this._watchDPR();
     }, { once: true });
   }
 
-  // Convert lat/lon to canvas pixel coordinates
-  // Calibrated at consistent window size:
-  //   London (51.5°N, 0.1°W) → x=46.1% y=37.1%
-  //   Miami  (25.8°N, 80.2°W) → x=25.9% y=53.5%
-  //   Equator → y=64.9%
+  // Equirectangular projection: lat/lon → canvas pixel coordinates
   latLonToXY(lat, lon) {
     while (lon < -180) lon += 360;
     while (lon > 180) lon -= 360;
 
-    const xFrac = 0.002522 * lon + 0.4613;
-    const x = xFrac * this.w;
-
-    const yFrac = -0.00003811 * lat * lat - 0.003435 * lat + 0.6490;
-    const y = yFrac * this.h;
+    const x = ((lon + 180) / 360) * this.w;
+    const y = ((MAP_LAT_MAX - lat) / (MAP_LAT_MAX - MAP_LAT_MIN)) * this.h;
     return [x, y];
   }
 
-  // Dummy to satisfy missile system interface (returns object with lat/lon for compatibility)
+  // Dummy to satisfy missile system interface
   latLonToVec3(lat, lon) {
     const [x, y] = this.latLonToXY(lat, lon);
     return { x, y, z: 0, lat, lon, copy: function() {} };
@@ -214,7 +228,7 @@ class MapRenderer2D {
       ctx.lineTo(x, h);
       ctx.stroke();
     }
-    for (let lat = -60; lat <= 60; lat += 30) {
+    for (let lat = -60; lat <= 80; lat += 30) {
       const [, y] = this.latLonToXY(lat, 0);
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -231,12 +245,9 @@ class MapRenderer2D {
     ctx.lineTo(w, eqY);
     ctx.stroke();
 
-    // Draw continent outlines from image — fills the entire canvas
-    // latLonToXY uses the same bounds, so everything aligns by construction
-    if (this._tintedMap) {
-      ctx.globalCompositeOperation = 'lighten';
-      ctx.drawImage(this._tintedMap, 0, 0, w, h);
-      ctx.globalCompositeOperation = 'source-over';
+    // Blit pre-rendered coastlines
+    if (this._coastlineCache) {
+      ctx.drawImage(this._coastlineCache, 0, 0);
     }
 
     // Draw city markers
@@ -258,11 +269,11 @@ class MapRenderer2D {
     for (const sub of this._submarines) {
       const [sx, sy] = this.latLonToXY(sub.lat, sub.lon);
       if (sub.nation === 'us') {
-        ctx.strokeStyle = `rgba(255, 51, 51, ${dotAlpha})`;       // red
+        ctx.strokeStyle = `rgba(255, 51, 51, ${dotAlpha})`;
       } else if (sub.nation === 'ussr') {
-        ctx.strokeStyle = `rgba(255, 136, 51, ${dotAlpha})`;      // orange
+        ctx.strokeStyle = `rgba(255, 136, 51, ${dotAlpha})`;
       } else {
-        ctx.strokeStyle = `rgba(255, 255, 51, ${dotAlpha})`;      // yellow
+        ctx.strokeStyle = `rgba(255, 255, 51, ${dotAlpha})`;
       }
       ctx.beginPath();
       ctx.moveTo(sx - subSize, sy);
@@ -335,7 +346,6 @@ class MapRenderer2D {
           // Missile head — red triangle pointing in direction of travel
           if (!m.done) {
             const [hx, hy] = this._arcPoint(ox, oy, tx, ty, prog);
-            // Compute tangent by sampling a tiny step ahead
             const dt = 0.01;
             const [hx2, hy2] = this._arcPoint(ox, oy, tx, ty, Math.min(prog + dt, 1.0));
             const angle = Math.atan2(hy2 - hy, hx2 - hx);
@@ -343,11 +353,8 @@ class MapRenderer2D {
             ctx.strokeStyle = '#ff3333';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            // Tip: forward along angle
             ctx.moveTo(hx + Math.cos(angle) * size, hy + Math.sin(angle) * size);
-            // Base left
             ctx.lineTo(hx + Math.cos(angle + 2.356) * size * 0.7, hy + Math.sin(angle + 2.356) * size * 0.7);
-            // Base right
             ctx.lineTo(hx + Math.cos(angle - 2.356) * size * 0.7, hy + Math.sin(angle - 2.356) * size * 0.7);
             ctx.closePath();
             ctx.stroke();
@@ -361,48 +368,14 @@ class MapRenderer2D {
   _arcPoint(x1, y1, x2, y2, t) {
     const x = x1 + (x2 - x1) * t;
     const baseY = y1 + (y2 - y1) * t;
-    // Arc height proportional to distance
     const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     const arcH = Math.sin(t * Math.PI) * dist * 0.2;
     return [x, baseY - arcH];
   }
 
-  // Blast radius in pixels (88 miles on map)
+  // Blast radius in pixels (88 miles ≈ 1.27° latitude)
   _blastPixelRadius() {
-    // 88 miles ≈ 1.27 degrees latitude
-    return (1.27 / (MAP_LAT_TOP - MAP_LAT_BOTTOM)) * this.h;
-  }
-
-  _drawCoastline(ctx, coords) {
-    if (coords.length < 2) return;
-
-    // Split into segments that don't cross the date line (after offset)
-    ctx.beginPath();
-    let moved = false;
-    for (let i = 0; i < coords.length; i++) {
-      const [lat, lon] = coords[i];
-      const [x, y] = this.latLonToXY(lat, lon);
-
-      // Check for wrap-around (large x jump)
-      if (i > 0) {
-        const [prevLat, prevLon] = coords[i - 1];
-        const [px] = this.latLonToXY(prevLat, prevLon);
-        if (Math.abs(x - px) > this.w * 0.5) {
-          // Date line crossing — break the line
-          ctx.stroke();
-          ctx.beginPath();
-          moved = false;
-        }
-      }
-
-      if (!moved) {
-        ctx.moveTo(x, y);
-        moved = true;
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-    ctx.stroke();
+    return (1.27 / (MAP_LAT_MAX - MAP_LAT_MIN)) * this.h;
   }
 }
 
@@ -449,7 +422,7 @@ class MissileSystem2D {
       _2dStarted: false,
       started: false,
       elapsed: 0,
-      baseSpeed: 5 / Math.max(1, haversineKm2D(origin, target)), // ~5 km/s effective avg (boost+midcourse+reentry)
+      baseSpeed: 5 / Math.max(1, haversineKm2D(origin, target)),
       done: false,
     };
     this.activeMissiles.push(missile);
@@ -468,7 +441,7 @@ class MissileSystem2D {
       lat: targetCity.lat,
       lon: targetCity.lon,
       age: 0,
-      baseGrowDuration: 900, // real-world seconds for blast wave to reach full radius
+      baseGrowDuration: 900,
       grown: false,
     });
 
@@ -480,7 +453,6 @@ class MissileSystem2D {
   }
 
   update(deltaTime) {
-    // Update missiles
     for (const m of this.activeMissiles) {
       if (m.done) continue;
 
@@ -488,7 +460,6 @@ class MissileSystem2D {
       if (m.elapsed < m.delay) continue;
 
       if (!m._2dStarted) {
-        // Check if origin has been destroyed — missile can't launch from a crater
         if (m.origin.type !== 'sub' && this.isDestroyed(m.origin.lat, m.origin.lon)) {
           m.done = true;
           continue;
@@ -510,15 +481,11 @@ class MissileSystem2D {
       }
     }
 
-    // (trails persist until clear() is called)
-
-    // Update detonation flashes
     for (const d of this.detonations) {
       d.age += deltaTime;
       if (d.age > d.maxAge) d.done = true;
     }
 
-    // Update blast marks
     for (const b of this.blastMarks) {
       if (b.grown) continue;
       b.age += deltaTime;
@@ -526,8 +493,6 @@ class MissileSystem2D {
       if (b.age / growDuration >= 1.0) b.grown = true;
     }
 
-    // Cleanup — keep done missiles for persistent trail rendering
-    // (removed from list only on clear())
     this.detonations = this.detonations.filter(d => !d.done);
   }
 
