@@ -294,7 +294,7 @@ html, body {
 /* === Elapsed Time Display === */
 #elapsed-display {
   position: absolute;
-  bottom: 40px;
+  bottom: 50px;
   right: 15px;
   font-family: var(--font);
   font-size: 13px;
@@ -313,7 +313,7 @@ html, body {
 /* === Scenario Name Display === */
 #scenario-name {
   position: absolute;
-  bottom: 40px;
+  bottom: 50px;
   left: 15px;
   font-family: var(--font);
   font-size: 13px;
@@ -513,22 +513,9 @@ html, body {
   text-shadow: 0 0 4px rgba(255, 85, 85, 0.6);
 }
 
-/* === Status Bar === */
+/* === Status Bar (hidden) === */
 #status-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 15px;
-  background: rgba(0, 0, 0, 0.9);
-  border-top: 1px solid var(--green-dark);
-  z-index: 100;
-  font-size: 11px;
-  letter-spacing: 2px;
+  display: none;
 }
 
 #defcon-indicator {
@@ -611,11 +598,12 @@ html, body {
   max-width: 700px;
 }
 
-/* === DEFCON Display (center panel, upper right) === */
+/* === DEFCON Display (center panel, bottom center) === */
 #defcon-display {
   position: absolute;
-  top: 8px;
-  right: 12px;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 20;
   text-align: center;
   pointer-events: none;
@@ -761,7 +749,7 @@ html, body {
 #page-dots {
   display: none; /* shown only in mobile layout */
   position: fixed;
-  bottom: 34px;
+  bottom: 6px;
   left: 0;
   width: 100%;
   justify-content: center;
@@ -835,7 +823,7 @@ html, body {
     display: flex;
     flex-wrap: nowrap;
     width: 300vw;
-    height: calc(100% - 30px); /* leave room for status bar */
+    height: 100%;
     overflow: visible;
     will-change: transform;
   }
@@ -927,13 +915,6 @@ html, body {
     font-size: 11px;
   }
 
-  /* Status bar stays fixed at bottom */
-  .mobile-layout #status-bar {
-    font-size: 9px;
-    letter-spacing: 1px;
-    padding: 0 8px;
-  }
-
   /* Page dots visible */
   .mobile-layout #page-dots {
     display: flex;
@@ -971,8 +952,7 @@ html, body {
 
   /* DEFCON display: smaller on mobile */
   .mobile-layout #defcon-display {
-    top: 6px;
-    right: 8px;
+    bottom: 8px;
   }
 
   .mobile-layout .defcon-box {
