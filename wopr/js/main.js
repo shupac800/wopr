@@ -136,6 +136,9 @@
   function setRendererMode(use3d) {
     USE_3D_GLOBE = use3d;
 
+    // Toggle panel width class FIRST so CSS transition starts immediately
+    document.documentElement.classList.toggle('mode-2d', !use3d);
+
     // Clear missiles from both systems
     missiles3d.clear();
     missiles2d.clear();
@@ -150,9 +153,6 @@
       toggleTrack.classList.remove('mode-2d');
       label3d.classList.add('active');
       label2d.classList.remove('active');
-      globe3d.onResize();
-      // Re-measure after panel width transition completes
-      setTimeout(() => globe3d.onResize(), 350);
     } else {
       globe = globe2d;
       missiles = missiles2d;
@@ -161,14 +161,16 @@
       toggleTrack.classList.add('mode-2d');
       label2d.classList.add('active');
       label3d.classList.remove('active');
-      globe2d._resize();
-      // Re-measure after panel width transition completes
-      setTimeout(() => globe2d._resize(), 350);
     }
 
     missiles.onDetonation = screenFlash;
-    document.documentElement.classList.toggle('mode-2d', !use3d);
     localStorage.setItem('wopr_viewMode', use3d ? '3d' : '2d');
+
+    // Re-measure after panel width transition completes (300ms CSS transition)
+    setTimeout(() => {
+      if (use3d) globe3d.onResize();
+      else globe2d._resize();
+    }, 350);
   }
 
   // Restore saved preference
