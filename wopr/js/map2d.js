@@ -244,9 +244,9 @@ class MapRenderer2D {
     }
 
     // Draw city markers
-    const pulse = 0.5 + 0.5 * Math.sin(time * 2);
-    const dotAlpha = 0.4 + pulse * 0.5;
     for (const city of CITIES) {
+      const pulse = 0.5 + 0.5 * Math.sin(time * 2 + city.pulsePhase);
+      const dotAlpha = 0.4 + pulse * 0.5;
       const [cx, cy] = this.latLonToXY(city.lat, city.lon);
       ctx.fillStyle = city.type === 'base'
         ? `rgba(255, 51, 51, ${dotAlpha})`
@@ -259,14 +259,17 @@ class MapRenderer2D {
     // Draw submarine markers (colored plus signs)
     const subSize = 4;
     ctx.lineWidth = 1.5;
-    for (const sub of this._submarines) {
+    for (let si = 0; si < this._submarines.length; si++) {
+      const sub = this._submarines[si];
+      const subPulse = 0.5 + 0.5 * Math.sin(time * 3 + si * 0.7);
+      const subAlpha = 0.5 + subPulse * 0.4;
       const [sx, sy] = this.latLonToXY(sub.lat, sub.lon);
       if (sub.nation === 'us') {
-        ctx.strokeStyle = `rgba(255, 51, 51, ${dotAlpha})`;
+        ctx.strokeStyle = `rgba(255, 51, 51, ${subAlpha})`;
       } else if (sub.nation === 'ussr') {
-        ctx.strokeStyle = `rgba(255, 136, 51, ${dotAlpha})`;
+        ctx.strokeStyle = `rgba(255, 136, 51, ${subAlpha})`;
       } else {
-        ctx.strokeStyle = `rgba(255, 255, 51, ${dotAlpha})`;
+        ctx.strokeStyle = `rgba(255, 255, 51, ${subAlpha})`;
       }
       ctx.beginPath();
       ctx.moveTo(sx - subSize, sy);

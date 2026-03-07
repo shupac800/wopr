@@ -10,8 +10,9 @@
 
   // === Elapsed time display ===
   const elapsedEl = document.getElementById('elapsed-display');
-  const elapsedTimeEl = document.getElementById('elapsed-time');
-  const timeFactorEl = document.getElementById('time-factor');
+  const elapsedValueEl = document.getElementById('elapsed-value');
+  const tfLabelEl = document.getElementById('time-factor-label');
+  const tfValueEl = document.getElementById('time-factor-value');
   let simElapsedSec = 0;
   let simRunning = false;
 
@@ -33,11 +34,11 @@
     const totalMin = Math.floor(simElapsedSec / 60);
     const hh = String(Math.floor(totalMin / 60)).padStart(2, '0');
     const mm = String(totalMin % 60).padStart(2, '0');
-    elapsedTimeEl.textContent = 'ELAPSED  ' + hh + ' : ' + mm;
+    elapsedValueEl.textContent = hh + ' : ' + mm;
   }
 
   // Show time factor and elapsed display immediately (before any awaits)
-  timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+  tfLabelEl.textContent = 'TIME FACTOR'; tfValueEl.textContent = TIME_COMPRESSION + 'x';
   updateElapsedDisplay();
   elapsedEl.classList.add('visible');
 
@@ -60,7 +61,7 @@
       const accel = 1 + timeAdjustHeldSec * 1.0;
       const change = TIME_ADJUST_BASE * accel * delta * timeAdjustDir;
       TIME_COMPRESSION = Math.round(Math.min(TIME_COMPRESSION_MAX, Math.max(TIME_COMPRESSION_MIN, TIME_COMPRESSION + change)));
-      timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+      tfLabelEl.textContent = 'TIME FACTOR'; tfValueEl.textContent = TIME_COMPRESSION + 'x';
     }, 1000 / 60);
   }
 
@@ -349,7 +350,7 @@
       const accel = 1 + timeAdjustHeldSec * 1.0;
       const change = TIME_ADJUST_BASE * accel * delta * timeAdjustDir;
       TIME_COMPRESSION = Math.round(Math.min(TIME_COMPRESSION_MAX, Math.max(TIME_COMPRESSION_MIN, TIME_COMPRESSION + change)));
-      timeFactorEl.textContent = 'TIME FACTOR ' + TIME_COMPRESSION + 'x';
+      tfLabelEl.textContent = 'TIME FACTOR'; tfValueEl.textContent = TIME_COMPRESSION + 'x';
     }
 
     // Rotate 3D globe group (always, even when viewing 2D, so it stays in sync)

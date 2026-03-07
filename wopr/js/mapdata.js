@@ -553,6 +553,12 @@ for (const base of MILITARY_BASES) {
   CITIES.push(base);
 }
 
+// Assign pulse phase offsets so dots twinkle independently
+// Uses i * 0.5 matching the original globe twinkle pattern
+CITIES.forEach((c, i) => {
+  c.pulsePhase = i * 0.5;
+});
+
 // SSBN patrol positions — plausible 1983-era ocean locations
 // Each position is a potential submarine location; scenarios pick a subset
 // Subs are NEVER targets — they launch missiles but cannot be struck

@@ -278,7 +278,8 @@ class GlobeRenderer {
   // Pulse city and sub markers
   updateMarkers(time) {
     this.cityMarkers.forEach((marker, i) => {
-      const pulse = 0.5 + 0.5 * Math.sin(time * 2 + i * 0.5);
+      const phase = CITIES[i] ? CITIES[i].pulsePhase : i * 0.5;
+      const pulse = 0.5 + 0.5 * Math.sin(time * 2 + phase);
       marker.material.opacity = 0.4 + pulse * 0.5;
     });
     this.subMarkers.forEach((marker, i) => {
