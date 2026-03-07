@@ -151,6 +151,8 @@
       label3d.classList.add('active');
       label2d.classList.remove('active');
       globe3d.onResize();
+      // Re-measure after panel width transition completes
+      setTimeout(() => globe3d.onResize(), 350);
     } else {
       globe = globe2d;
       missiles = missiles2d;
@@ -160,9 +162,12 @@
       label2d.classList.add('active');
       label3d.classList.remove('active');
       globe2d._resize();
+      // Re-measure after panel width transition completes
+      setTimeout(() => globe2d._resize(), 350);
     }
 
     missiles.onDetonation = screenFlash;
+    document.documentElement.classList.toggle('mode-2d', !use3d);
     localStorage.setItem('wopr_viewMode', use3d ? '3d' : '2d');
   }
 

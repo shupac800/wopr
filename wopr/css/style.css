@@ -110,6 +110,7 @@ html, body {
   z-index: 10;
   background: rgba(0, 0, 0, 0.85);
   position: relative;
+  transition: width 0.3s ease-out, min-width 0.3s ease-out;
 }
 
 #terminal-header {
@@ -332,6 +333,14 @@ html, body {
   z-index: 10;
   background: rgba(0, 0, 0, 0.85);
   position: relative;
+  transition: width 0.3s ease-out, min-width 0.3s ease-out;
+}
+
+/* Narrower side panels in 2D mode to maximize map width */
+.mode-2d #terminal-panel,
+.mode-2d #info-panel {
+  width: 280px;
+  min-width: 280px;
 }
 
 /* Top half — Attack Assessment */
