@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>WOPR — War Operation Plan Response</title>
+  <link rel="stylesheet" href="css/style.css?v=3019cc9">
+</head>
+<body>
+
+  <!-- Boot Screen -->
+  <div id="boot-screen">
+    <div class="boot-text">
+      WOPR<br>
+      WAR OPERATION PLAN RESPONSE
+    </div>
+  </div>
+
+  <!-- CRT Overlay -->
+  <div id="crt-overlay"></div>
+
+  <!-- Screen Flash (for detonations) -->
+  <div id="screen-flash"></div>
+
+  <!-- Ending Overlay -->
+  <div id="ending-overlay">
+    <div class="ending-text"></div>
+  </div>
+
+  <!-- City Tooltip -->
+  <div id="city-tooltip"></div>
+
+  <!-- Main App -->
+  <div id="app">
+    <!-- Terminal Panel (Left) -->
+    <div id="terminal-panel">
+      <div id="terminal-header">
+        WOPR COMMAND TERMINAL
+        <div class="subtitle">NORTH AMERICAN AEROSPACE DEFENSE COMMAND</div>
+      </div>
+
+      <div id="terminal-messages"></div>
+
+      <div id="scenario-panel">
+        <div id="scenario-panel-header">SELECT SCENARIO ↑↓ ENTER</div>
+        <div id="scenario-list"></div>
+      </div>
+    </div>
+
+    <!-- 3D Globe (Center) -->
+    <div id="globe-container">
+      <div id="view-toggle">
+        <span class="view-label" id="view-label-2d">2D</span>
+        <div class="toggle-track" id="view-toggle-track">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="view-label active" id="view-label-3d">3D</span>
+      </div>
+      <div id="elapsed-display"><span id="time-factor-label"></span><span id="time-factor-value"></span><span id="tf-arrows"><span id="tf-btn-down" class="tf-btn">&#x25C0;</span><span id="tf-btn-up" class="tf-btn">&#x25B6;</span></span><span id="elapsed-label">ELAPSED</span><span id="elapsed-value">00 : 00</span></div>
+      <div id="scenario-name"></div>
+    </div>
+
+    <!-- Info Panel (Right) -->
+    <div id="info-panel">
+      <!-- Top: Attack Assessment -->
+      <div id="attack-panel">
+        <div id="attack-panel-header">ATTACK ASSESSMENT</div>
+        <div id="attack-log"></div>
+        <div id="attack-summary">
+          <div id="attack-summary-labels">
+            <div class="summary-row selected" data-metric="warheads">WARHEADS DEPLOYED: <span id="warheads-deployed">0</span></div>
+            <div class="summary-row selected" data-metric="targets">TARGETS DESTROYED: <span id="targets-destroyed">0</span></div>
+            <div class="summary-row selected" data-metric="casualties">CASUALTIES: <span id="est-casualties">0</span>M</div>
+          </div>
+          <canvas id="attack-graph"></canvas>
+        </div>
+      </div>
+
+      <!-- Bottom: Strategic Forces -->
+      <div id="forces-panel">
+        <div id="forces-panel-header">STRATEGIC FORCES</div>
+        <div id="forces-readout">
+          <div class="forces-section">
+            <div class="section-title">NATO / UNITED STATES</div>
+            <div class="forces-row"><span class="label">ICBM SILOS</span><span class="value" id="nato-icbm">1,054</span></div>
+            <div class="forces-row"><span class="label">SLBM (SUBMARINE)</span><span class="value" id="nato-slbm">640</span></div>
+            <div class="forces-row"><span class="label">STRATEGIC BOMBERS</span><span class="value" id="nato-bombers">297</span></div>
+            <div class="forces-row"><span class="label">TOTAL WARHEADS</span><span class="value" id="nato-total">11,000</span></div>
+            <div class="forces-row"><span class="label">FORCE STATUS</span><span class="value active" id="nato-status">READY</span></div>
+          </div>
+          <div class="forces-section">
+            <div class="section-title">WARSAW PACT / USSR</div>
+            <div class="forces-row"><span class="label">ICBM SILOS</span><span class="value" id="pact-icbm">1,398</span></div>
+            <div class="forces-row"><span class="label">SLBM (SUBMARINE)</span><span class="value" id="pact-slbm">980</span></div>
+            <div class="forces-row"><span class="label">STRATEGIC BOMBERS</span><span class="value" id="pact-bombers">150</span></div>
+            <div class="forces-row"><span class="label">TOTAL WARHEADS</span><span class="value" id="pact-total">10,000</span></div>
+            <div class="forces-row"><span class="label">FORCE STATUS</span><span class="value active" id="pact-status">READY</span></div>
+          </div>
+          <div class="forces-section">
+            <div class="section-title">SITUATION</div>
+            <div class="forces-row"><span class="label">THREAT LEVEL</span><span class="value" id="threat-level">NOMINAL</span></div>
+            <div class="forces-row"><span class="label">EXCHANGE TYPE</span><span class="value" id="exchange-type">---</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="status-bar">
+    <div id="wopr-status">INITIALIZING</div>
+    <div id="system-clock">00:00:00 ZULU</div>
+  </div>
+
+  <!-- Global config -->
+  <script>
+    let USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
+    const EDGE_GLOW = false;   // true = fresnel rim glow on globe edge
+    const SCREEN_FLASH = false; // true = white flash on missile detonation
+    const THEATRICAL_TIMING = true;  // true = fixed ~2s flights, false = 360x time compression
+    let TIME_COMPRESSION = parseInt(localStorage.getItem('wopr_timeFactor')) || 400;
+    const BASE_TIME_COMPRESSION = 400;
+  </script>
+
+  <!-- Three.js + addons (only needed for 3D mode, but loaded either way for simplicity) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/postprocessing/ShaderPass.js"></script>
+
+  <!-- TopoJSON client (for Natural Earth data) -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+
+  <!-- App Scripts -->
+  <script src="js/coastlines.js?v=3019cc9"></script>
+  <script src="js/mapdata.js?v=3019cc9"></script>
+  <script src="js/scenarios.js?v=3019cc9"></script>
+  <script src="js/globe.js?v=3019cc9"></script>
+  <script src="js/missiles.js?v=3019cc9"></script>
+  <script src="js/map2d.js?v=3019cc9"></script>
+  <script src="js/scenarios-engine.js?v=3019cc9"></script>
+  <script src="js/infopanel.js?v=3019cc9"></script>
+  <script src="js/terminal.js?v=3019cc9"></script>
+  <script src="js/main.js?v=3019cc9"></script>
+  <script src="js/mobile.js?v=3019cc9"></script>
+</body>
+</html>

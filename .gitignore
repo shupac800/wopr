@@ -1,6 +1,4 @@
-# Ignore everything in home directory
-/*
-
-# Except the wopr project and this file
-!/.gitignore
-!/wopr/
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
