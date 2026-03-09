@@ -29,6 +29,7 @@ class MapRenderer2D {
     this.clock = { getDelta: null, getElapsedTime: null };
     this._lastTime = performance.now() / 1000;
     this._startTime = this._lastTime;
+    this.showEquator = false;
     this.clock.getDelta = () => {
       const now = performance.now() / 1000;
       const dt = now - this._lastTime;
@@ -229,14 +230,16 @@ class MapRenderer2D {
       ctx.stroke();
     }
 
-    // Equator — white
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 1;
-    const [, eqY] = this.latLonToXY(0, 0);
-    ctx.beginPath();
-    ctx.moveTo(0, eqY);
-    ctx.lineTo(w, eqY);
-    ctx.stroke();
+    // Equator — white (toggled with E key)
+    if (this.showEquator) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      const [, eqY] = this.latLonToXY(0, 0);
+      ctx.beginPath();
+      ctx.moveTo(0, eqY);
+      ctx.lineTo(w, eqY);
+      ctx.stroke();
+    }
 
     // Blit pre-rendered coastlines
     if (this._coastlineCache) {

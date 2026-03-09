@@ -379,6 +379,12 @@
 
   // === Keyboard ===
   document.addEventListener('keydown', (e) => {
+    // Toggle equator display
+    if (e.key === 'e' || e.key === 'E') {
+      globe3d.equatorLine.visible = !globe3d.equatorLine.visible;
+      globe2d.showEquator = globe3d.equatorLine.visible;
+      return;
+    }
     terminal.handleKey(e);
   });
 

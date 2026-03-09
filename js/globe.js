@@ -35,8 +35,8 @@ class GlobeRenderer {
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-    // Tilt 25° toward viewer so north pole is visible
-    const tilt = 25 * Math.PI / 180;
+    // Tilt 33° toward viewer so north pole is visible
+    const tilt = 33 * Math.PI / 180;
     const camDist = 2.91; // ~110% zoom vs original 3.2
     this.camera.position.set(0, camDist * Math.sin(tilt), camDist * Math.cos(tilt));
 
@@ -134,7 +134,7 @@ class GlobeRenderer {
       this.rotationGroup.add(new THREE.Mesh(rimGeom, rimMat));
     }
 
-    // Equator ring — white
+    // Equator ring — white (hidden by default, toggled with E key)
     const eqGeom = new THREE.BufferGeometry();
     const eqPts = [];
     for (let i = 0; i <= 360; i += 1) {
@@ -143,7 +143,9 @@ class GlobeRenderer {
     }
     eqGeom.setAttribute('position', new THREE.Float32BufferAttribute(eqPts, 3));
     const eqMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
-    this.rotationGroup.add(new THREE.Line(eqGeom, eqMat));
+    this.equatorLine = new THREE.Line(eqGeom, eqMat);
+    this.equatorLine.visible = false;
+    this.rotationGroup.add(this.equatorLine);
   }
 
   latLonToVec3(lat, lon, radius = 1.005) {

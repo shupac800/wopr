@@ -13,7 +13,9 @@ class ScenarioEngine {
 
   async load() {
     try {
-      const res = await fetch('data/scenarios.json');
+      // Cache-bust using the same ?v= hash as the script tags (or timestamp fallback)
+      const scriptHash = (document.querySelector('script[src*="scenarios-engine"]')?.src.match(/\?v=([^&]+)/) || [])[1] || Date.now();
+      const res = await fetch('data/scenarios.json?v=' + scriptHash);
       const data = await res.json();
       this.scenarios = data.scenarios;
     } catch (e) {
