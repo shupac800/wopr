@@ -43,8 +43,9 @@ class MissileSystem {
     return false;
   }
 
-  // Create a ballistic arc between two lat/lon points
-  createArc(origin, target, numPoints = 80) {
+  // Create a flight path between two lat/lon points
+  // deliveryType: 'icbm' = high ballistic arc, 'bomber' = surface-hugging
+  createArc(origin, target, numPoints = 80, deliveryType = 'bomber') {
     const start = this.globe.latLonToVec3(origin.lat, origin.lon, 1.01);
     const end = this.globe.latLonToVec3(target.lat, target.lon, 1.01);
 
@@ -56,47 +57,51 @@ class MissileSystem {
       const point = new THREE.Vector3().lerpVectors(start, end, t);
       point.normalize();
 
-      // Arc height — peaks at midpoint
-      const arcHeight = Math.sin(t * Math.PI) * 0.3 * start.distanceTo(end);
-      const radius = 1.01 + arcHeight;
-      point.multiplyScalar(radius);
+      if (deliveryType === 'bomber') {
+        // Surface-hugging — just above the globe
+        point.multiplyScalar(1.015);
+      } else {
+        // Ballistic arc — peaks at midpoint
+        const arcHeight = Math.sin(t * Math.PI) * 0.3 * start.distanceTo(end);
+        point.multiplyScalar(1.01 + arcHeight);
+      }
 
       points.push(point);
     }
     return points;
   }
 
-  // Launch a single missile
-  launchMissile(origin, target, delay = 0) {
-    const arcPoints = this.createArc(origin, target);
+  // Launch a single missile or bomber sortie
+  launchMissile(origin, target, delay = 0, deliveryType = 'bomber') {
+    const isBomber = deliveryType === 'bomber';
+    const arcPoints = this.createArc(origin, target, 80, deliveryType);
 
     // Trail line (full arc, initially invisible)
     const trailGeom = new THREE.BufferGeometry().setFromPoints(arcPoints);
-    trailGeom.setDrawRange(0, 0); // draw nothing until missile starts flying
+    trailGeom.setDrawRange(0, 0);
     const trailMat = new THREE.LineBasicMaterial({
-      color: 0xffffff,
+      color: isBomber ? 0xffaa33 : 0xffffff,
       transparent: true,
       opacity: 0.0,
-      depthWrite: false, // prevent invisible trails from occluding scene objects
+      depthWrite: false,
     });
     const trail = new THREE.Line(trailGeom, trailMat);
     this.scene.add(trail);
 
-    // Missile head — red equilateral triangle (cone viewed from side)
-    const triSize = 0.027;
+    // Head — triangle: amber for bombers, red for ICBMs
+    const triSize = isBomber ? 0.032 : 0.027;
     const triShape = new THREE.BufferGeometry();
     const h3 = triSize * Math.sqrt(3) / 2;
-    // Triangle in local XY: point at +Y (forward), base at -Y
     triShape.setAttribute('position', new THREE.Float32BufferAttribute([
-      0, h3 * 0.667, 0,              // tip (forward)
-      -triSize / 2, -h3 * 0.333, 0,  // base left
-      triSize / 2, -h3 * 0.333, 0,   // base right
+      0, h3 * 0.667, 0,
+      -triSize / 2, -h3 * 0.333, 0,
+      triSize / 2, -h3 * 0.333, 0,
     ], 3));
     triShape.setIndex([0, 1, 2]);
     triShape.computeVertexNormals();
     const edges = new THREE.EdgesGeometry(triShape);
     const headMat = new THREE.LineBasicMaterial({
-      color: 0xff0000,
+      color: isBomber ? 0xffaa33 : 0xff0000,
       linewidth: 2,
       transparent: true,
       opacity: 0.0,
@@ -117,11 +122,12 @@ class MissileSystem {
       delay,
       started: false,
       elapsed: 0,
-      baseSpeed: 5 / Math.max(1, haversineKm(origin, target)), // ~5 km/s effective avg (boost+midcourse+reentry)
+      // Bombers: ~0.25 km/s (~900 km/h), ICBMs: ~5 km/s
+      baseSpeed: (isBomber ? 0.25 : 5) / Math.max(1, haversineKm(origin, target)),
       done: false,
       target,
       origin,
-      // For partial trail drawing
+      deliveryType,
       drawnCount: 0,
     };
 
@@ -132,7 +138,7 @@ class MissileSystem {
   // Launch a full scenario sequence
   launchSequence(sequence) {
     sequence.missiles.forEach(m => {
-      this.launchMissile(m.origin, m.target, m.delay);
+      this.launchMissile(m.origin, m.target, m.delay, m.deliveryType || (CURRENT_ERA === '1957' ? 'bomber' : 'icbm'));
     });
   }
 
@@ -221,9 +227,9 @@ class MissileSystem {
         }
         m.started = true;
         if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
-        if (this.onLaunch) this.onLaunch(m.origin, m.target);
+        if (this.onLaunch) this.onLaunch(m.origin, m.target, m.deliveryType);
         m.headMat.opacity = 1.0;
-        m.trailMat.opacity = 0.6;
+        m.trailMat.opacity = m.deliveryType === 'bomber' ? 0.45 : 0.6;
       }
 
       const speed = Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * m.baseSpeed));
@@ -242,7 +248,7 @@ class MissileSystem {
         this.createDetonation(targetPos, m.target);
 
         // Trail persists — dim it slightly but keep visible until clear()
-        m.trailMat.opacity = 0.55;
+        m.trailMat.opacity = m.deliveryType === 'bomber' ? 0.3 : 0.55;
         this.persistentTrails.push(m.trail);
         m.cleaned = true;
         continue;

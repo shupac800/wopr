@@ -44,7 +44,7 @@ function buildSandbox() {
   const ctx = vm.createContext(sandbox);
 
   // Global config flags (normally set in index.html)
-  vm.runInContext('const THEATRICAL_TIMING = true; let TIME_COMPRESSION = 360; const BASE_TIME_COMPRESSION = 360;', ctx);
+  vm.runInContext('let CURRENT_ERA = "1957"; const THEATRICAL_TIMING = true; let TIME_COMPRESSION = 360; const BASE_TIME_COMPRESSION = 360;', ctx);
 
   // Load Three.js mock
   vm.runInContext(THREE_MOCK, ctx);
@@ -224,11 +224,11 @@ test('2D: missile from intact origin launches normally', () => {
 test('2D: first missile detonates, second missile from same city is cancelled', () => {
   const sys = vm.runInContext(`
     const _m_chain = new MissileSystem2D({});
-    // Missile 1: hits Moscow at t=0
+    // Missile 1: ICBM hits Moscow at t=0 (fast enough to detonate before missile 2 launches)
     _m_chain.launchMissile(
       { lat: 40.71, lon: -74.01, type: 'city', region: 'us' },
       { lat: 55.75, lon: 37.62, type: 'city', region: 'ussr' },
-      0
+      0, 'icbm'
     );
     // Missile 2: launches FROM Moscow at t=5000ms (should be cancelled)
     _m_chain.launchMissile(
@@ -442,7 +442,8 @@ test('retaliation wave skips origins near cities targeted in prior waves', () =>
   // Create a mini scenario where Moscow is targeted in wave 1,
   // then Moscow tries to retaliate in wave 2 (retaliation: true)
   // resolveLaunchOrigin may substitute Moscow with a nearby base,
-  // but the proximity check should still filter it out
+  // but the proximity check should still filter it out.
+  // Use a tight delay window (5000-5500) to avoid overlap with escalation phases.
   const result = vm.runInContext(`
     const _eng = new ScenarioEngine();
     const scenario = {
@@ -456,9 +457,9 @@ test('retaliation wave skips origins near cities targeted in prior waves', () =>
   `, ctx);
 
   // Moscow lat/lon: ~55.75, ~37.62
-  // Find missiles in the retaliation wave (delay >= 5000, before escalation adds more)
+  // Find missiles in the retaliation wave only (delay 5000-5500, before escalation)
   const retaliationMissiles = result.missiles.filter(m =>
-    m.delay >= 5000 && m.delay < 9000
+    m.delay >= 5000 && m.delay < 5500
   );
 
   // Any origin near Moscow (within 1.27°) should have been filtered out
@@ -625,14 +626,14 @@ test('flight times match haversine distance at 5 km/s effective speed', () => {
     )`, ctx);
     const expectedSimSec = distKm / 5; // 5 km/s effective ICBM speed
 
-    // Create missile system and launch
+    // Create missile system and launch (ICBM for speed test)
     const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
 
     const log = { launchSimSec: null, detonateSimSec: null };
     sys.onLaunch = () => { log.launchSimSec = simSec; };
     sys.onDetonation = () => { log.detonateSimSec = simSec; };
 
-    sys.launchMissile(a, b, 0);
+    sys.launchMissile(a, b, 0, 'icbm');
 
     // Step simulation: 60fps for up to 60 real seconds
     const dt = 1 / 60;
@@ -670,11 +671,11 @@ test('flight time scales correctly when TIME_COMPRESSION changes mid-flight', ()
     { lat: ${pair.b.lat}, lon: ${pair.b.lon} }
   )`, ctx);
 
-  // Launch at normal compression (360), then double it halfway through
+  // Launch ICBM at normal compression (360), then double it halfway through
   const sys = vm.runInContext(`new MissileSystem2D({})`, ctx);
   let detonateRealSec = null;
   sys.onDetonation = () => { if (detonateRealSec === null) detonateRealSec = realSec; };
-  sys.launchMissile(pair.a, pair.b, 0);
+  sys.launchMissile(pair.a, pair.b, 0, 'icbm');
 
   const dt = 1 / 60;
   let realSec = 0;
@@ -918,6 +919,72 @@ test('duplicate city detonations do not double-count casualties', () => {
   assert.strictEqual(casualties, expected,
     `3 detonations on Moscow should count casualties once: got ${casualties}, expected ${expected}`
   );
+});
+
+// ── 14. 1957 scenario validation ─────────────────────────────────────
+
+console.log('\n--- 1957 scenario validation ---');
+
+test('exactly 10 scenarios in embedded fallback', () => {
+  const embedded = vm.runInContext('EMBEDDED_SCENARIOS', ctx);
+  assert.strictEqual(embedded.length, 10, `expected 10 scenarios, got ${embedded.length}`);
+});
+
+test('all 10 scenarios have hand-crafted definitions', () => {
+  const embedded = vm.runInContext('EMBEDDED_SCENARIOS', ctx);
+  const scenarios = vm.runInContext('SCENARIOS', ctx);
+  for (const name of embedded) {
+    assert.ok(scenarios[name], `missing hand-crafted definition for "${name}"`);
+    assert.ok(scenarios[name].narrative, `missing narrative for "${name}"`);
+    assert.ok(scenarios[name].waves.length > 0, `no waves for "${name}"`);
+  }
+});
+
+test('all scenario targets resolve to known cities', () => {
+  const scenarios = vm.runInContext('SCENARIOS', ctx);
+  const engine = vm.runInContext('new ScenarioEngine()', ctx);
+  const failures = [];
+  for (const [name, scenario] of Object.entries(scenarios)) {
+    for (const wave of scenario.waves) {
+      for (const target of (wave.to || [])) {
+        const resolved = engine.resolveCity(target);
+        if (!resolved) failures.push(`${name}: unknown target "${target}"`);
+      }
+      for (const origin of (wave.from || [])) {
+        const resolved = engine.resolveCity(origin);
+        if (!resolved) failures.push(`${name}: unknown origin "${origin}"`);
+      }
+    }
+  }
+  assert.strictEqual(failures.length, 0,
+    `Unresolved cities:\n  ${failures.join('\n  ')}`);
+});
+
+test('1957 force baseline has zero ICBMs and SLBMs for NATO', () => {
+  // Verify the infopanel baseline matches 1957 (bombers only)
+  const src = fs.readFileSync(path.join(__dirname, '..', 'js/infopanel.js'), 'utf8');
+  assert.ok(src.includes('icbm: 0'), 'NATO should have 0 ICBMs in 1957');
+  assert.ok(src.includes('slbm: 0'), 'NATO should have 0 SLBMs in 1957');
+  assert.ok(src.includes('bombers: 1655'), 'NATO should have ~1655 bombers in 1957');
+});
+
+test('no ICBM silo bases exist in 1957 military installations', () => {
+  const bases = vm.runInContext('CITIES.filter(c => c.type === "base")', ctx);
+  const icbmBases = bases.filter(b =>
+    b.name.includes('SS-') || b.name.includes('MINUTEMAN') || b.name.includes('TITAN')
+  );
+  assert.strictEqual(icbmBases.length, 0,
+    `ICBM bases should not exist in 1957: ${icbmBases.map(b => b.name).join(', ')}`);
+});
+
+test('buildLaunchSequence works for all 10 scenarios', () => {
+  const embedded = vm.runInContext('EMBEDDED_SCENARIOS', ctx);
+  for (const name of embedded) {
+    const engine = vm.runInContext('new ScenarioEngine()', ctx);
+    const result = engine.buildLaunchSequence(name);
+    assert.ok(result.missiles.length > 0, `"${name}" should produce missiles`);
+    assert.ok(result.narrative, `"${name}" should have a narrative`);
+  }
 });
 
 // ════════════════════════════════════════════════════════════════════════

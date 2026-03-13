@@ -216,9 +216,21 @@
     setRendererMode(!USE_3D_GLOBE);
   });
 
+  // === Era Toggle (1957 / 1983) ===
+  const eraToggle = document.getElementById('era-toggle');
+  const eraTrack = document.getElementById('era-toggle-track');
+  const eraLabel57 = document.getElementById('era-label-57');
+  const eraLabel83 = document.getElementById('era-label-83');
+
+  function updateEraStatus() {
+    if (typeof terminal !== 'undefined' && terminal) {
+      terminal.setStatus(CURRENT_ERA === '1957' ? 'SAC ONLINE — 1957' : 'NORAD ONLINE — 1983');
+    }
+  }
+
   // === Initialize Terminal ===
   const terminal = new TerminalUI();
-  terminal.setStatus('WOPR ONLINE');
+  updateEraStatus();
 
   // === Initialize Info Panel (right side) ===
   infoPanel = new InfoPanel();
@@ -248,12 +260,66 @@
   await terminal.runBootSequence();
 
   // Load scenarios
-  const scenarios = await engine.load();
+  let scenarios = await engine.load();
   terminal.buildScenarioList(scenarios);
 
   // Enter IDLE
   state = State.IDLE;
   terminal.enableInput();
+
+  // === Era Toggle Handler ===
+  // Restore saved era preference
+  const savedEra = localStorage.getItem('wopr_era');
+  if (savedEra === '1983') {
+    CURRENT_ERA = '1983';
+    switchEra('1983');
+    infoPanel.setEra('1983');
+    updateEraStatus();
+    eraTrack.classList.add('era-1983');
+    eraLabel83.classList.add('active');
+    eraLabel57.classList.remove('active');
+    scenarios = EMBEDDED_SCENARIOS;
+    engine.scenarios = scenarios;
+    terminal.buildScenarioList(scenarios);
+  }
+
+  eraToggle.addEventListener('click', async () => {
+    const newEra = CURRENT_ERA === '1957' ? '1983' : '1957';
+
+    // Abort any running scenario
+    if (state === State.EXECUTING) {
+      runGen++;
+      pauseElapsed();
+      terminal.abortEffects();
+      terminal.clearMessages();
+      missiles.clear();
+      globe.clearSubmarines();
+      globe3d.cancelRotation();
+    }
+
+    // Switch all data
+    switchEra(newEra);
+    infoPanel.setEra(newEra);
+    updateEraStatus();
+    localStorage.setItem('wopr_era', newEra);
+
+    // Update toggle UI
+    if (newEra === '1983') {
+      eraTrack.classList.add('era-1983');
+      eraLabel83.classList.add('active');
+      eraLabel57.classList.remove('active');
+    } else {
+      eraTrack.classList.remove('era-1983');
+      eraLabel57.classList.add('active');
+      eraLabel83.classList.remove('active');
+    }
+
+    // Reload scenario list
+    scenarios = await engine.load();
+    terminal.buildScenarioList(scenarios);
+    terminal.enableInput();
+    state = State.IDLE;
+  });
 
   // === Scenario name display (lower-left of center panel) ===
   const scenarioNameEl = document.getElementById('scenario-name');
@@ -306,8 +372,8 @@
 
     // Launch missiles — start elapsed timer on first actual launch
     missiles.onFirstLaunch = () => startElapsed();
-    missiles.onLaunch = (origin, target) => {
-      infoPanel.logLaunch(origin.name, target.name, simElapsedSec);
+    missiles.onLaunch = (origin, target, deliveryType) => {
+      infoPanel.logLaunch(origin.name, target.name, simElapsedSec, deliveryType);
     };
     missiles.launchSequence(sequence);
 

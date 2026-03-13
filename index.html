@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>WOPR — War Operation Plan Response</title>
-  <link rel="stylesheet" href="css/style.css?v=2c4f895">
+  <link rel="stylesheet" href="css/style.css?v=era-toggle">
 </head>
 <body>
 
@@ -55,6 +55,13 @@
           <div class="toggle-thumb"></div>
         </div>
         <span class="view-label active" id="view-label-3d">3D</span>
+      </div>
+      <div id="era-toggle">
+        <span class="era-label active" id="era-label-57">1957</span>
+        <div class="era-track" id="era-toggle-track">
+          <div class="era-thumb"></div>
+        </div>
+        <span class="era-label" id="era-label-83">1983</span>
       </div>
       <div id="elapsed-display"><span id="time-factor-label"></span><span id="time-factor-value"></span><span id="tf-arrows"><span id="tf-btn-down" class="tf-btn">&#x25C0;</span><span id="tf-btn-up" class="tf-btn">&#x25B6;</span></span><span id="elapsed-label">ELAPSED</span><span id="elapsed-value">00 : 00</span></div>
       <div id="scenario-name"></div>
@@ -114,6 +121,7 @@
 
   <!-- Global config -->
   <script>
+    let CURRENT_ERA = '1957'; // '1957' or '1983'
     let USE_3D_GLOBE = true; // true = 3D Three.js globe, false = 2D Mercator map
     const EDGE_GLOW = false;   // true = fresnel rim glow on globe edge
     const SCREEN_FLASH = false; // true = white flash on missile detonation
@@ -136,16 +144,17 @@
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
 
   <!-- App Scripts -->
-  <script src="js/coastlines.js?v=2c4f895"></script>
-  <script src="js/mapdata.js?v=2c4f895"></script>
-  <script src="js/scenarios.js?v=2c4f895"></script>
-  <script src="js/globe.js?v=2c4f895"></script>
-  <script src="js/missiles.js?v=2c4f895"></script>
-  <script src="js/map2d.js?v=2c4f895"></script>
-  <script src="js/scenarios-engine.js?v=2c4f895"></script>
-  <script src="js/infopanel.js?v=2c4f895"></script>
-  <script src="js/terminal.js?v=2c4f895"></script>
-  <script src="js/main.js?v=2c4f895"></script>
-  <script src="js/mobile.js?v=2c4f895"></script>
+  <script src="js/coastlines.js?v=era-toggle"></script>
+  <script src="js/mapdata.js?v=era-toggle"></script>
+  <script src="js/scenarios.js?v=era-toggle"></script>
+  <script src="js/scenarios-1983.js?v=era-toggle"></script>
+  <script src="js/globe.js?v=era-toggle"></script>
+  <script src="js/missiles.js?v=era-toggle"></script>
+  <script src="js/map2d.js?v=era-toggle"></script>
+  <script src="js/scenarios-engine.js?v=era-toggle"></script>
+  <script src="js/infopanel.js?v=era-toggle"></script>
+  <script src="js/terminal.js?v=era-toggle"></script>
+  <script src="js/main.js?v=era-toggle"></script>
+  <script src="js/mobile.js?v=era-toggle"></script>
 </body>
 </html>

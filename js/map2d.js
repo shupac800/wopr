@@ -306,36 +306,48 @@ class MapRenderer2D {
       for (const m of missileSystem.activeMissiles) {
         if (!m.started && !m._2dStarted) continue;
 
+        const isBomber = m.deliveryType === 'bomber';
         const [ox, oy] = this.latLonToXY(m.origin.lat, m.origin.lon);
         const [tx, ty] = this.latLonToXY(m.target.lat, m.target.lon);
 
-        // Trail — curved arc
+        // Trail
         if (m._2dStarted || m.started) {
           const prog = m.progress;
-          const trailAlpha = m.done ? 0.55 : 0.6;
+          const trailAlpha = m.done
+            ? (isBomber ? 0.3 : 0.55)
+            : (isBomber ? 0.45 : 0.6);
+
           if (trailAlpha > 0) {
-            ctx.strokeStyle = `rgba(255, 255, 255, ${trailAlpha})`;
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = isBomber
+              ? `rgba(255, 170, 51, ${trailAlpha})`
+              : `rgba(255, 255, 255, ${trailAlpha})`;
+            ctx.lineWidth = isBomber ? 1.2 : 1.5;
             ctx.beginPath();
-            const steps = 40;
+            const steps = isBomber ? 60 : 40; // more steps for smooth great circle
             const drawSteps = m.done ? steps : Math.floor(prog * steps);
             for (let i = 0; i <= drawSteps; i++) {
               const t = i / steps;
-              const [px, py] = this._arcPoint(ox, oy, tx, ty, t);
+              const [px, py] = isBomber
+                ? this._greatCirclePoint(m.origin.lat, m.origin.lon, m.target.lat, m.target.lon, t)
+                : this._arcPoint(ox, oy, tx, ty, t);
               if (i === 0) ctx.moveTo(px, py);
               else ctx.lineTo(px, py);
             }
             ctx.stroke();
           }
 
-          // Missile head — red triangle pointing in direction of travel
+          // Head — triangle pointing in direction of travel
           if (!m.done) {
-            const [hx, hy] = this._arcPoint(ox, oy, tx, ty, prog);
             const dt = 0.01;
-            const [hx2, hy2] = this._arcPoint(ox, oy, tx, ty, Math.min(prog + dt, 1.0));
+            const [hx, hy] = isBomber
+              ? this._greatCirclePoint(m.origin.lat, m.origin.lon, m.target.lat, m.target.lon, prog)
+              : this._arcPoint(ox, oy, tx, ty, prog);
+            const [hx2, hy2] = isBomber
+              ? this._greatCirclePoint(m.origin.lat, m.origin.lon, m.target.lat, m.target.lon, Math.min(prog + dt, 1.0))
+              : this._arcPoint(ox, oy, tx, ty, Math.min(prog + dt, 1.0));
             const angle = Math.atan2(hy2 - hy, hx2 - hx);
-            const size = 7.5;
-            ctx.strokeStyle = '#ff3333';
+            const size = isBomber ? 8.5 : 7.5;
+            ctx.strokeStyle = isBomber ? '#ffaa33' : '#ff3333';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(hx + Math.cos(angle) * size, hy + Math.sin(angle) * size);
@@ -349,13 +361,53 @@ class MapRenderer2D {
     }
   }
 
-  // Compute a point along a parabolic arc between two screen points
+  // Compute a point along a parabolic arc between two screen points (ICBMs)
   _arcPoint(x1, y1, x2, y2, t) {
     const x = x1 + (x2 - x1) * t;
     const baseY = y1 + (y2 - y1) * t;
     const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     const arcH = Math.sin(t * Math.PI) * dist * 0.2;
     return [x, baseY - arcH];
+  }
+
+  // Compute a point along a great circle route between two lat/lon points (bombers)
+  // Returns [screenX, screenY] — the projected Mercator position
+  // On a 2D Mercator map, great circles appear as curves bowing toward the poles
+  _greatCirclePoint(lat1, lon1, lat2, lon2, t) {
+    const toRad = Math.PI / 180;
+    const toDeg = 180 / Math.PI;
+    const phi1 = lat1 * toRad, lam1 = lon1 * toRad;
+    const phi2 = lat2 * toRad, lam2 = lon2 * toRad;
+
+    // Spherical interpolation (slerp on unit sphere)
+    const dLon = lam2 - lam1;
+    const cosP1 = Math.cos(phi1), sinP1 = Math.sin(phi1);
+    const cosP2 = Math.cos(phi2), sinP2 = Math.sin(phi2);
+    const cosDLon = Math.cos(dLon), sinDLon = Math.sin(dLon);
+
+    // Angular distance
+    const d = Math.acos(
+      Math.min(1, Math.max(-1, sinP1 * sinP2 + cosP1 * cosP2 * cosDLon))
+    );
+
+    if (d < 1e-6) {
+      // Points are nearly identical
+      return this.latLonToXY(lat1, lon1);
+    }
+
+    const sinD = Math.sin(d);
+    const A = Math.sin((1 - t) * d) / sinD;
+    const B = Math.sin(t * d) / sinD;
+
+    // Cartesian on unit sphere
+    const x3d = A * cosP1 * Math.cos(lam1) + B * cosP2 * Math.cos(lam2);
+    const y3d = A * cosP1 * Math.sin(lam1) + B * cosP2 * Math.sin(lam2);
+    const z3d = A * sinP1 + B * sinP2;
+
+    const lat = Math.atan2(z3d, Math.sqrt(x3d * x3d + y3d * y3d)) * toDeg;
+    const lon = Math.atan2(y3d, x3d) * toDeg;
+
+    return this.latLonToXY(lat, lon);
   }
 
   // Blast radius in pixels (88 miles ≈ 1.27° latitude)
@@ -394,11 +446,12 @@ class MissileSystem2D {
 
   launchSequence(sequence) {
     sequence.missiles.forEach(m => {
-      this.launchMissile(m.origin, m.target, m.delay);
+      this.launchMissile(m.origin, m.target, m.delay, m.deliveryType || (CURRENT_ERA === '1957' ? 'bomber' : 'icbm'));
     });
   }
 
-  launchMissile(origin, target, delay = 0) {
+  launchMissile(origin, target, delay = 0, deliveryType = 'bomber') {
+    const isBomber = deliveryType === 'bomber';
     const missile = {
       origin,
       target,
@@ -407,8 +460,10 @@ class MissileSystem2D {
       _2dStarted: false,
       started: false,
       elapsed: 0,
-      baseSpeed: 5 / Math.max(1, haversineKm2D(origin, target)),
+      // Bombers: ~0.25 km/s (~900 km/h), ICBMs: ~5 km/s
+      baseSpeed: (isBomber ? 0.25 : 5) / Math.max(1, haversineKm2D(origin, target)),
       done: false,
+      deliveryType,
     };
     this.activeMissiles.push(missile);
     return missile;
@@ -452,7 +507,7 @@ class MissileSystem2D {
         m._2dStarted = true;
         m.started = true;
         if (this.onFirstLaunch) { this.onFirstLaunch(); this.onFirstLaunch = null; }
-        if (this.onLaunch) this.onLaunch(m.origin, m.target);
+        if (this.onLaunch) this.onLaunch(m.origin, m.target, m.deliveryType);
       }
 
       const speed = Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * m.baseSpeed));

@@ -128,15 +128,15 @@ class TerminalUI {
     await this.delay(60);
     await this.typewrite('WOPR STRATEGIC DEFENSE SYSTEM', 'bright');
     await this.delay(30);
-    await this.typewrite('NORAD COMMAND CENTER - CHEYENNE MOUNTAIN', 'dim');
+    await this.typewrite('SAC COMMAND POST — OFFUTT AFB, NEBRASKA', 'dim');
     await this.delay(30);
     await this.typewrite('SYSTEM INITIALIZATION...', 'dim');
     await this.delay(50);
 
     const bootLines = [
-      'MEMORY CHECK............OK',
-      'MISSILE TRACKING........OK',
-      'SATELLITE UPLINK........OK',
+      'VACUUM TUBE CHECK.......OK',
+      'DEW LINE UPLINK.........OK',
+      'BOMBER TRACKING.........OK',
       'THREAT ASSESSMENT.......OK',
       'STRATEGIC PLANNING......OK',
     ];
@@ -260,7 +260,9 @@ class TerminalUI {
     await this.delay(500);
     await this.typewrite('  LAUNCHING PRIMARY STRIKE...', 'bright');
     await this.delay(200);
-    await this.typewrite('  MISSILES AWAY.', 'bright');
+    const launchMsg = (typeof CURRENT_ERA !== 'undefined' && CURRENT_ERA === '1957')
+      ? '  BOMBERS AWAY.' : '  MISSILES AWAY.';
+    await this.typewrite(launchMsg, 'bright');
   }
 
   async showAftermath(sequence, simElapsedSec, casualties) {

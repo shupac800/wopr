@@ -64,16 +64,35 @@ class InfoPanel {
       });
     });
 
-    // 1983-era baseline numbers
+    // Era-specific baseline numbers
+    this.forceBaselines = {
+      '1957': {
+        nato: { icbm: 0, slbm: 0, bombers: 1655, total: 6000 },
+        pact: { icbm: 4, slbm: 0, bombers: 1500, total: 3000 },
+      },
+      '1983': {
+        nato: { icbm: 1054, slbm: 640, bombers: 297, total: 11000 },
+        pact: { icbm: 1398, slbm: 980, bombers: 150, total: 10000 },
+      },
+    };
+    const era = typeof CURRENT_ERA !== 'undefined' ? CURRENT_ERA : '1957';
     this.baseForces = {
-      nato: { icbm: 1054, slbm: 640, bombers: 297, total: 11000 },
-      pact: { icbm: 1398, slbm: 980, bombers: 150, total: 10000 },
+      nato: { ...this.forceBaselines[era].nato },
+      pact: { ...this.forceBaselines[era].pact },
     };
 
     this.currentForces = {
       nato: { ...this.baseForces.nato },
       pact: { ...this.baseForces.pact },
     };
+  }
+
+  setEra(era) {
+    this.baseForces = {
+      nato: { ...this.forceBaselines[era].nato },
+      pact: { ...this.forceBaselines[era].pact },
+    };
+    this.reset();
   }
 
   reset() {
@@ -134,14 +153,15 @@ class InfoPanel {
     return hh + ':' + mm;
   }
 
-  logLaunch(originName, targetName, simSec) {
+  logLaunch(originName, targetName, simSec, deliveryType) {
     this.warheads++;
     this.updateCounters();
-    this.degradeForces(originName);
+    this.degradeForces(originName, deliveryType);
     this._recordDataPoint(simSec);
     const ts = this.formatTimestamp(simSec);
+    const label = deliveryType === 'icbm' ? 'LAUNCH' : 'SORTIE';
     this.attackLog.insertAdjacentHTML('beforeend',
-      '<span class="ts">' + ts + '</span> <span class="launch">LAUNCH ' + originName + ' &gt; ' + targetName + '</span>\n');
+      '<span class="ts">' + ts + '</span> <span class="launch">' + label + ' ' + originName + ' &gt; ' + targetName + '</span>\n');
     this._scheduleScroll();
   }
 
@@ -257,7 +277,7 @@ class InfoPanel {
   }
 
   // Reduce force counts as warheads are expended
-  degradeForces(originName) {
+  degradeForces(originName, deliveryType) {
     const city = CITIES.find(c => c.name === originName);
     if (!city) return;
 
@@ -266,10 +286,17 @@ class InfoPanel {
 
     const f = this.currentForces[side];
 
-    // Each launch expends from the pool
-    if (f.icbm > 0) {
-      f.icbm = Math.max(0, f.icbm - 1);
-      f.total = Math.max(0, f.total - 3); // ~3 warheads per ICBM
+    if (deliveryType === 'icbm') {
+      if (f.icbm > 0) {
+        f.icbm = Math.max(0, f.icbm - 1);
+        f.total = Math.max(0, f.total - 3);
+      }
+    } else {
+      // Bomber sortie — one bomber, one warhead
+      if (f.bombers > 0) {
+        f.bombers = Math.max(0, f.bombers - 1);
+        f.total = Math.max(0, f.total - 1);
+      }
     }
 
     this.updateForces();

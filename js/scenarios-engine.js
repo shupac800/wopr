@@ -12,16 +12,19 @@ class ScenarioEngine {
   }
 
   async load() {
-    try {
-      // Cache-bust using the same ?v= hash as the script tags (or timestamp fallback)
-      const scriptHash = (document.querySelector('script[src*="scenarios-engine"]')?.src.match(/\?v=([^&]+)/) || [])[1] || Date.now();
-      const res = await fetch('data/scenarios.json?v=' + scriptHash);
-      const data = await res.json();
-      this.scenarios = data.scenarios;
-    } catch (e) {
-      // fetch fails on file:// protocol — fall back to embedded data
-      console.warn('fetch failed (file:// protocol?), using embedded scenarios');
-      this.scenarios = EMBEDDED_SCENARIOS;
+    if (CURRENT_ERA === '1957') {
+      // 1957 uses only the 10 embedded scenarios
+      this.scenarios = EMBEDDED_SCENARIOS.slice();
+    } else {
+      try {
+        const scriptHash = (document.querySelector('script[src*="scenarios-engine"]')?.src.match(/\?v=([^&]+)/) || [])[1] || Date.now();
+        const res = await fetch('data/scenarios.json?v=' + scriptHash);
+        const data = await res.json();
+        this.scenarios = data.scenarios;
+      } catch (e) {
+        console.warn('fetch failed (file:// protocol?), using embedded scenarios');
+        this.scenarios = EMBEDDED_SCENARIOS.slice();
+      }
     }
     return this.scenarios;
   }
@@ -241,6 +244,7 @@ class ScenarioEngine {
             origin,
             target,
             delay: baseDelay + missileIdx * (300 + Math.random() * 200),
+            deliveryType: origin.type === 'sub' ? 'icbm' : (wave.deliveryType || (CURRENT_ERA === '1957' ? 'bomber' : 'icbm')),
           });
         }
         missileIdx++;
@@ -260,9 +264,11 @@ class ScenarioEngine {
     // ESCALATION — any nuclear use inevitably leads to global annihilation
     this.addEscalation(missiles, submarines, priorTargetLocs);
 
-    // Escalation involves ALL submarine nations — ensure they're all shown
+    // Escalation involves all submarine nations — ensure they're all shown
     const allSubs = assignSubmarines(
-      ["us", "nato", "uk", "ussr", "pact", "france", "china"], 1
+      CURRENT_ERA === '1983'
+        ? ["us", "ussr", "uk", "france", "china"]
+        : ["us", "ussr"], 1
     );
     // Merge without duplicates
     const subNames = new Set(submarines.map(s => s.name));
@@ -337,6 +343,7 @@ class ScenarioEngine {
           origin,
           target,
           delay: i * 400 + Math.random() * 300,
+          deliveryType: CURRENT_ERA === '1957' ? 'bomber' : 'icbm',
         });
       }
     }
@@ -356,9 +363,11 @@ class ScenarioEngine {
     // ESCALATION — any nuclear use inevitably leads to global annihilation
     this.addEscalation(missiles, submarines, []);
 
-    // Escalation involves ALL submarine nations
+    // Escalation involves all submarine nations
     const allSubs = assignSubmarines(
-      ["us", "nato", "uk", "ussr", "pact", "france", "china"], 1
+      CURRENT_ERA === '1983'
+        ? ["us", "ussr", "uk", "france", "china"]
+        : ["us", "ussr"], 1
     );
     const subNames = new Set(submarines.map(s => s.name));
     for (const s of allSubs) {
@@ -426,7 +435,8 @@ class ScenarioEngine {
     }
 
     // Helper to add a salvo of missiles
-    const addSalvo = (origins, targets, baseDelay) => {
+    const defaultDelivery = CURRENT_ERA === '1957' ? 'bomber' : 'icbm';
+    const addSalvo = (origins, targets, baseDelay, deliveryType = defaultDelivery) => {
       if (origins.length === 0 || targets.length === 0) return;
       let idx = 0;
       for (const target of targets) {
@@ -436,6 +446,7 @@ class ScenarioEngine {
             origin,
             target,
             delay: baseDelay + idx * STAGGER + Math.random() * 100,
+            deliveryType,
           });
         }
         idx++;
@@ -485,7 +496,7 @@ class ScenarioEngine {
         name: s.name, lat: s.lat, lon: s.lon,
         region: nation, type: "sub", pop: 0,
       }));
-      addSalvo(subOrigins, subTargets, t);
+      addSalvo(subOrigins, subTargets, t, 'icbm');
     }
 
     // --- PHASE 3: Full superpower exchange (T + 12s) ---
@@ -503,7 +514,7 @@ class ScenarioEngine {
 
     // --- PHASE 4: NATO/Warsaw Pact full exchange (T + 17s) ---
     t += 5000;
-    const natoCities = citiesFor(["nato", "uk", "french", "english", "italian", "turkish"]);
+    const natoCities = citiesFor(["nato", "uk", "english", "italian", "turkish"]);
     const pactCities = citiesFor(["pact", "czech", "romanian", "bulgarian"]);
     const natoBases = basesFor(["nato", "uk"]);
     const pactBases = basesFor(["pact"]);
@@ -511,58 +522,50 @@ class ScenarioEngine {
     addSalvo(pactBases.length > 0 ? pactBases : pactCities.slice(0, 8), natoCities, t);
     addSalvo(natoBases.length > 0 ? natoBases : natoCities.slice(0, 8), pactCities, t + 300);
 
-    // UK/France fire at USSR
+    // UK fires at USSR
     const ukBases = basesFor(["uk"]);
-    const frBases = basesFor(["france"]);
-    addSalvo(ukBases.length > 0 ? ukBases : citiesFor(["uk"]).slice(0, 3), ussrCities.slice(0, 8), t + 600);
-    addSalvo(frBases.length > 0 ? frBases : citiesFor(["french"]).slice(0, 3), ussrCities.slice(0, 6), t + 900);
+    addSalvo(ukBases.length > 0 ? ukBases : citiesFor(["english"]).slice(0, 3), ussrCities.slice(0, 8), t + 600);
 
-    // --- PHASE 5: China enters (T + 22s) ---
-    t += 5000;
-    const chinaCities = citiesFor(["china"]);
-    const chinaBases = basesFor(["china"]);
-    const chinaOrigins = chinaBases.length > 0 ? chinaBases : chinaCities.slice(0, 5);
+    if (CURRENT_ERA === '1983') {
+      // France fires at USSR
+      const frBases = basesFor(["france"]);
+      addSalvo(frBases.length > 0 ? frBases : citiesFor(["french"]).slice(0, 3), ussrCities.slice(0, 6), t + 900);
 
-    // China fires at USSR and US
-    addSalvo(chinaOrigins, ussrCities.slice(0, 10), t);
-    addSalvo(chinaOrigins, usCities.slice(0, 6), t + 1500);
+      // --- PHASE 5: China enters (T + 22s) ---
+      t += 5000;
+      const chinaCities = citiesFor(["china"]);
+      const chinaBases = basesFor(["china"]);
+      const chinaOrigins = chinaBases.length > 0 ? chinaBases : chinaCities.slice(0, 5);
+      addSalvo(chinaOrigins, ussrCities.slice(0, 10), t);
+      addSalvo(chinaOrigins, usCities.slice(0, 6), t + 1500);
+      addSalvo(ussrBases.length > 0 ? ussrBases.slice(0, 5) : ussrCities.slice(0, 5), chinaCities, t + 2000);
+      addSalvo(usBases.length > 0 ? usBases.slice(0, 5) : usCities.slice(0, 5), chinaCities.slice(0, 10), t + 2500);
 
-    // USSR and US fire at China
-    addSalvo(ussrBases.length > 0 ? ussrBases.slice(0, 5) : ussrCities.slice(0, 5), chinaCities, t + 2000);
-    addSalvo(usBases.length > 0 ? usBases.slice(0, 5) : usCities.slice(0, 5), chinaCities.slice(0, 10), t + 2500);
-
-    // --- PHASE 6: Regional nuclear powers (T + 28s) ---
-    t += 6000;
-
-    // India-Pakistan exchange
-    const indiaCities = citiesFor(["india"]).sort((a, b) => (b.pop || 0) - (a.pop || 0));
-    const pakCities = citiesFor(["pakistan"]).sort((a, b) => (b.pop || 0) - (a.pop || 0));
-    if (indiaCities.length > 0 && pakCities.length > 0) {
-      addSalvo(indiaCities.slice(0, 4), pakCities, t);
-      addSalvo(pakCities.slice(0, 3), indiaCities.slice(0, 8), t + 800);
+      // --- PHASE 6: Regional nuclear powers (T + 28s) ---
+      t += 6000;
+      const indiaCities = citiesFor(["india"]).sort((a, b) => (b.pop || 0) - (a.pop || 0));
+      const pakCities = citiesFor(["pakistan"]).sort((a, b) => (b.pop || 0) - (a.pop || 0));
+      if (indiaCities.length > 0 && pakCities.length > 0) {
+        addSalvo(indiaCities.slice(0, 4), pakCities, t);
+        addSalvo(pakCities.slice(0, 3), indiaCities.slice(0, 8), t + 800);
+      }
+      const israelCities = allCitiesFor(["israel"]);
+      const mideastTargets = citiesFor(["iraq", "iranian", "syrian", "egypt", "saudi", "libyan"]);
+      if (israelCities.length > 0 && mideastTargets.length > 0) {
+        addSalvo(israelCities, mideastTargets, t + 1500);
+      }
     }
 
-    // Israel fires at regional threats
-    const israelCities = allCitiesFor(["israel"]);
-    const mideastTargets = citiesFor(["iraq", "iranian", "syrian", "egypt", "saudi", "libyan"]);
-    if (israelCities.length > 0 && mideastTargets.length > 0) {
-      addSalvo(israelCities, mideastTargets, t + 1500);
-    }
-
-    // --- PHASE 7: Global saturation — every remaining city targeted (T + 35s) ---
-    // "USE IT OR LOSE IT" — all remaining forces fire at everything
+    // --- PHASE 5/7: Global saturation — all remaining bases fire ---
+    // "USE IT OR LOSE IT"
     t += 7000;
 
-    // Collect ALL bases and ALL cities
     const allBases = CITIES.filter(c => c.type === 'base');
     const allTargetCities = CITIES.filter(c => c.type !== 'base').sort((a, b) => (b.pop || 0) - (a.pop || 0));
 
-    // Fire from every base at cities in other regions
     let globalIdx = 0;
     for (const base of allBases) {
-      // Pick targets not in the same region
       const enemies = allTargetCities.filter(c => c.region !== base.region);
-      // Each base fires 2-3 missiles at different targets
       const numShots = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < numShots && i < enemies.length; i++) {
         const target = enemies[(globalIdx + i) % enemies.length];
@@ -570,33 +573,35 @@ class ScenarioEngine {
           origin: base,
           target,
           delay: t + globalIdx * 80 + Math.random() * 150,
+          deliveryType: defaultDelivery,
         });
       }
       globalIdx += numShots;
     }
 
-    // --- PHASE 8: Final submarine salvo — empty the tubes (T + 42s) ---
-    t += 7000;
-    for (const nation of subNations) {
-      const subs = SSBN_PATROLS[nation];
-      if (!subs) continue;
-      // Every sub fires at the nearest major enemy cities
-      const enemies = (["us", "uk", "france"].includes(nation))
-        ? citiesFor(eastBlock.concat(["china"])).sort((a, b) => (b.pop || 0) - (a.pop || 0))
-        : citiesFor(westBlock).sort((a, b) => (b.pop || 0) - (a.pop || 0));
-
-      for (let si = 0; si < subs.length; si++) {
-        const sub = subs[si];
-        const subOrigin = { name: sub.name, lat: sub.lat, lon: sub.lon, region: nation, type: "sub", pop: 0 };
-        // Each sub fires 3-4 missiles
-        const numShots = 3 + Math.floor(Math.random() * 2);
-        for (let i = 0; i < numShots && i < enemies.length; i++) {
-          const target = enemies[(si * numShots + i) % enemies.length];
-          missiles.push({
-            origin: subOrigin,
-            target,
-            delay: t + (si * numShots + i) * 200 + Math.random() * 100,
-          });
+    // --- 1983 only: Final submarine salvo (T + 42s) ---
+    if (CURRENT_ERA === '1983') {
+      t += 7000;
+      const subNations2 = Object.keys(SSBN_PATROLS);
+      for (const nation of subNations2) {
+        const nationSubs = SSBN_PATROLS[nation];
+        if (!nationSubs) continue;
+        const enemies = (["us", "uk", "france"].includes(nation))
+          ? citiesFor(eastBlock.concat(["china"])).sort((a, b) => (b.pop || 0) - (a.pop || 0))
+          : citiesFor(westBlock).sort((a, b) => (b.pop || 0) - (a.pop || 0));
+        for (let si = 0; si < nationSubs.length; si++) {
+          const sub = nationSubs[si];
+          const subOrigin = { name: sub.name, lat: sub.lat, lon: sub.lon, region: nation, type: "sub", pop: 0 };
+          const numShots = 3 + Math.floor(Math.random() * 2);
+          for (let i = 0; i < numShots && i < enemies.length; i++) {
+            const target = enemies[(si * numShots + i) % enemies.length];
+            missiles.push({
+              origin: subOrigin,
+              target,
+              delay: t + (si * numShots + i) * 200 + Math.random() * 100,
+              deliveryType: 'icbm',
+            });
+          }
         }
       }
     }
