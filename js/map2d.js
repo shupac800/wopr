@@ -512,7 +512,11 @@ class MissileSystem2D {
       started: false,
       elapsed: 0,
       // Bombers: ~0.25 km/s (~900 km/h), ICBMs: ~5 km/s
-      baseSpeed: (isBomber ? 0.25 : 5) / Math.max(1, haversineKm2D(origin, target)),
+      // 1957: bombers 0.22 km/s, R-7 ICBM 4.9 km/s; 1983: bombers 0.24 km/s, ICBMs 7.0 km/s
+      baseSpeed: (isBomber
+        ? (CURRENT_ERA === '1957' ? 0.22 : 0.24)
+        : (CURRENT_ERA === '1957' ? 4.9 : 7.0)
+      ) / Math.max(1, haversineKm2D(origin, target)),
       done: false,
       deliveryType,
     };
