@@ -232,7 +232,8 @@ class MissileSystem {
         m.trailMat.opacity = m.deliveryType === 'bomber' ? 0.45 : 0.6;
       }
 
-      const speed = Math.min(5.0, Math.max(0.1, TIME_COMPRESSION * m.baseSpeed));
+      const isBmb = m.deliveryType === 'bomber';
+      const speed = Math.min(isBmb ? 0.5 : 5.0, Math.max(isBmb ? 0.005 : 0.1, TIME_COMPRESSION * m.baseSpeed));
       m.progress += deltaTime * speed;
 
       if (m.progress >= 1.0) {
